@@ -1,0 +1,542 @@
+---
+title: "Widget de Próximas Citas"
+description: "Visualiza y gestiona las citas del día en tiempo real"
+icon: "calendar-days"
+---
+
+## ¿Qué es el widget de próximas citas?
+
+Es una tabla interactiva en el Dashboard que muestra las **próximas citas del día** con detalles clave para operación rápida.
+
+**Características**:
+- Muestra solo citas de **hoy** (según zona horaria de la clínica)
+- Ordenadas por **hora de inicio** (más próximas primero)
+- Incluye nombre del paciente, servicio, proveedor, hora y estado
+- Acciones rápidas: Ver detalles, editar, cancelar
+
+<Note>
+El widget se actualiza automáticamente cada 5 minutos junto con las estadísticas generales.
+</Note>
+
+<Frame>
+  <img src="/images/screenshots/dashboard_appointments_widget.png" alt="Widget de próximas citas mostrando tabla con hora, paciente, servicio, proveedor y acciones" />
+</Frame>
+
+---
+
+## Columnas de la tabla
+
+### 1. Hora
+
+**Formato**: `HH:MM - HH:MM` (ej: `10:00 - 10:30`)
+
+```
+Ejemplo:
+- Cita A: 09:00 - 09:45 (Duración: 45 minutos)
+- Cita B: 10:00 - 10:30 (Duración: 30 minutos)
+```
+
+**Zona horaria**: Siempre en la zona horaria de la clínica (`Europe/Madrid` por defecto).
+
+<Tip>
+Las horas se alinean con el horario de apertura de la clínica. Si abre a las 16:00, las citas serán 16:00, 16:30, 17:00 (no 16:35 o 17:05).
+</Tip>
+
+---
+
+### 2. Paciente
+
+**Formato**: Nombre completo del paciente (ej: `Manuel López Sánchez`)
+
+**Detalles**:
+- Si el paciente existe en el sistema, muestra su nombre registrado
+- Si es un paciente nuevo (creado vía WhatsApp), muestra el nombre capturado por el bot
+- Clickeable: Al hacer clic, abre el perfil del paciente (en desarrollo)
+
+```
+Ejemplo:
+- Paciente: "Eduardo Cassanovas García"
+- Al hacer clic → Abre modal con historial de citas, teléfono, notas
+```
+
+<Warning>
+**Multi-clínica**: Si un paciente existe en otra clínica con nombre diferente, el sistema actualiza su nombre cuando agenda en tu clínica.
+</Warning>
+
+---
+
+### 3. Servicio
+
+**Formato**: Nombre del servicio (ej: `Corte de pelo`, `Tinte`)
+
+**Detalles**:
+- Muestra el servicio seleccionado al crear la cita
+- Incluye duración implícita (no visible, pero determina `end_datetime`)
+- Si no hay servicio asignado, muestra `Sin servicio` (raro, pero posible)
+
+```
+Ejemplo:
+- Servicio: "Corte de pelo"
+- Duración: 30 minutos (configurada en "Servicios")
+- Precio: €15 (suma a "Ingresos Estimados" cuando se completa)
+```
+
+---
+
+### 4. Proveedor
+
+**Formato**: Nombre del proveedor (ej: `Peluquero 1`, `Barbero 2`)
+
+**Detalles**:
+- Muestra el proveedor asignado a la cita
+- Si la clínica tiene varios proveedores, ayuda a distribuir carga
+- Clickeable: Al hacer clic, filtra citas de ese proveedor (en desarrollo)
+
+<Info>
+Si tu clínica tiene solo un proveedor, esta columna siempre mostrará el mismo nombre. Útil si planeas contratar más personal.
+</Info>
+
+---
+
+### 5. Estado
+
+**Valores posibles**:
+
+| Estado | Badge | Significado |
+|--------|-------|-------------|
+| `CONFIRMED` | 🔵 Azul | Cita agendada, esperando a ser completada |
+| `COMPLETED` | ✅ Verde | Cita finalizada (paciente atendido) |
+| `CANCELLED` | ❌ Rojo | Cita cancelada (por usuario o paciente) |
+
+**Transiciones automáticas**:
+
+```
+CONFIRMED → COMPLETED (cuando pasa la hora de fin)
+CONFIRMED → CANCELLED (cuando usuario/paciente cancela)
+COMPLETED → (final, no cambia)
+CANCELLED → (final, no cambia)
+```
+
+<Note>
+El cambio de `CONFIRMED` a `COMPLETED` ocurre automáticamente cada 60 segundos (job del scheduler).
+</Note>
+
+---
+
+### 6. Acciones
+
+**Botones disponibles**:
+
+#### Ver Detalles
+- **Icono**: 👁️ (ojo)
+- **Acción**: Abre modal con información completa de la cita
+- **Incluye**: Teléfono del paciente, notas, fecha de creación, canal (WhatsApp/Web)
+
+#### Editar
+- **Icono**: ✏️ (lápiz)
+- **Acción**: Permite modificar fecha, hora, servicio o proveedor
+- **Validación**: Verifica disponibilidad del nuevo horario antes de guardar
+
+<Warning>
+Editar la hora recalcula la disponibilidad. Si el nuevo slot está ocupado, la edición fallará.
+</Warning>
+
+#### Cancelar
+- **Icono**: 🗑️ (basura)
+- **Acción**: Cambia el estado a `CANCELLED`
+- **Confirmación**: Muestra diálogo "¿Estás seguro?" antes de cancelar
+
+**Efectos de cancelar**:
+- Libera el horario para nuevas reservas
+- Elimina la cita de "Citas Confirmadas" (contador disminuye)
+- NO se puede deshacer (la cita queda marcada como cancelada permanentemente)
+
+---
+
+## Ordenamiento y filtros
+
+### Ordenamiento automático
+
+Las citas se muestran **ordenadas por hora de inicio** (ascendente):
+
+```
+Ejemplo:
+09:00 - 09:30 (Corte de pelo)
+10:00 - 10:45 (Tinte)
+11:00 - 11:30 (Manicura)
+```
+
+**Citas del pasado (hoy)**:
+- Si son las 12:00, las citas de 09:00 y 10:00 se muestran con estado `COMPLETED`
+- Permanecen en la tabla hasta la medianoche (útil para revisión del día)
+
+---
+
+### Filtros disponibles
+
+Actualmente el widget **NO tiene filtros interactivos**. Siempre muestra:
+- **Fecha**: Hoy (no se pueden ver citas de otros días desde el Dashboard)
+- **Clínica**: La seleccionada en el menú superior
+- **Estado**: Todos los estados (confirmadas, completadas, canceladas)
+
+<Info>
+Para ver citas de otros días, usa la sección **"Citas"** en el menú lateral (calendario completo).
+</Info>
+
+---
+
+## Actualización en tiempo real
+
+### ¿Cómo se actualiza?
+
+El widget usa el mismo mecanismo de **polling** que las estadísticas:
+
+1. Frontend hace petición GET `/v1/dashboard/appointments?clinic_id=...` cada 5 minutos
+2. Backend consulta PostgreSQL con filtro `DATE(start_datetime) = TODAY`
+3. Frontend actualiza la tabla sin refrescar la página
+
+**Eventos que gatillan actualizaciones**:
+- Nueva cita creada vía WhatsApp → Aparece en 5 minutos
+- Usuario edita una cita → Cambios visibles en 5 minutos
+- Cita se completa automáticamente → Estado cambia en 1-5 minutos
+
+<Tip>
+Si necesitas ver cambios instantáneos (ej: acabas de crear una cita), refresca la página (F5).
+</Tip>
+
+---
+
+## Casos de uso comunes
+
+### Escenario 1: Verificar próximas citas al llegar
+
+**Objetivo**: Saber quién viene en las próximas horas.
+
+**Pasos**:
+1. Abres el Dashboard a las 09:00
+2. El widget muestra:
+   - 09:30 - Manuel López (Corte de pelo)
+   - 10:00 - Laura García (Tinte)
+   - 11:00 - Pedro Martínez (Barba)
+3. **Acción**: Preparas los materiales para el tinte de Laura (requiere tiempo de setup)
+
+---
+
+### Escenario 2: Cancelar cita de paciente que no viene
+
+**Objetivo**: Liberar un slot cuando el paciente llama para cancelar.
+
+**Pasos**:
+1. Paciente llama a las 10:15: "No puedo ir a mi cita de las 11:00"
+2. Abres el Dashboard
+3. Buscas la cita de las 11:00 en el widget
+4. Haces clic en el botón 🗑️ (Cancelar)
+5. Confirmas la cancelación
+6. **Resultado**:
+   - Estado cambia a `CANCELLED`
+   - El horario 11:00 queda disponible para nuevas reservas
+   - "Citas Confirmadas" disminuye en 1
+
+<Warning>
+La cancelación es **permanente**. Si el paciente cambia de opinión, debes crear una nueva cita.
+</Warning>
+
+---
+
+### Escenario 3: Editar cita porque paciente llega tarde
+
+**Objetivo**: Mover una cita de 10:00 a 10:30 porque el paciente avisa que llegará tarde.
+
+**Pasos**:
+1. Paciente envía WhatsApp a las 09:50: "Llegaré 30 minutos tarde"
+2. Abres el Dashboard
+3. Encuentras la cita de las 10:00
+4. Haces clic en ✏️ (Editar)
+5. Cambias la hora a 10:30
+6. Sistema valida:
+   - ¿El slot 10:30 está libre? ✅
+   - ¿El proveedor está disponible? ✅
+   - ¿La clínica está abierta? ✅
+7. Guardas los cambios
+8. **Resultado**: Cita ahora aparece como 10:30 - 11:00
+
+<Note>
+Si el slot 10:30 estaba ocupado, la edición falla y debes elegir otra hora (ej: 10:45, 11:00).
+</Note>
+
+---
+
+### Escenario 4: Ver detalles de un paciente recurrente
+
+**Objetivo**: Recordar preferencias del paciente antes de atenderlo.
+
+**Pasos**:
+1. Ves en el widget: `11:00 - Juan Pérez (Corte de pelo)`
+2. Haces clic en 👁️ (Ver detalles)
+3. El modal muestra:
+   - Teléfono: +34612345678
+   - Notas: "Prefiere corte corto, sin tijera en las patillas"
+   - Historial: 5 citas previas (todas completadas)
+4. **Acción**: Preparas la máquina de afeitar (no tijera) antes de que llegue
+
+---
+
+## Integración con WhatsApp
+
+### Citas creadas por el bot
+
+Cuando un paciente agenda vía WhatsApp:
+
+1. Bot captura: Nombre, fecha, hora, servicio
+2. Crea la cita en la base de datos con estado `CONFIRMED`
+3. En 5 minutos (máximo), la cita aparece en el widget del Dashboard
+
+**Ejemplo de flujo**:
+
+```
+[WhatsApp - 10:15]
+Paciente: "Quiero una cita mañana a las 16:00"
+Bot: "¿Qué servicio necesitas?"
+Paciente: "Corte de pelo"
+Bot: "Perfecto, ¿cómo te llamas?"
+Paciente: "Carlos Ruiz"
+Bot: "✅ Cita agendada para mañana 16:00"
+
+[Dashboard - 10:20]
+Widget muestra nueva fila:
+- Fecha: Mañana
+- 16:00 - 16:30
+- Carlos Ruiz
+- Corte de pelo
+- Peluquero 1
+- CONFIRMED
+```
+
+---
+
+### Cancelaciones vía WhatsApp
+
+Si el paciente cancela por WhatsApp:
+
+1. Paciente: "Cancela mi cita de las 16:00"
+2. Bot pregunta: "¿Quieres cancelar o reagendar?"
+3. Paciente: "Cancelar"
+4. Bot ejecuta `cancel_appointment(appointment_id=...)`
+5. Estado cambia a `CANCELLED` en la base de datos
+6. En 5 minutos, el widget muestra el badge rojo ❌
+
+<Tip>
+El bot SIEMPRE pide confirmación antes de cancelar. No cancela automáticamente si el mensaje es ambiguo.
+</Tip>
+
+---
+
+## Limitaciones actuales
+
+### 1. Solo muestra citas de HOY
+
+**Problema**: No puedes ver citas de mañana o la próxima semana desde el Dashboard.
+
+**Solución**: Usa la sección **"Citas"** (menú lateral) para ver el calendario completo.
+
+---
+
+### 2. No permite crear citas
+
+**Problema**: El widget solo visualiza, no tiene botón "Crear nueva cita".
+
+**Solución**:
+- **Vía WhatsApp**: El paciente agenda con el bot
+- **Manualmente**: Usa la sección "Citas" → Botón "Nueva Cita"
+
+---
+
+### 3. No filtra por proveedor
+
+**Problema**: Si tienes 3 peluqueros, no puedes ver solo las citas de "Peluquero 1".
+
+**Solución (temporal)**: Usa la columna "Proveedor" para identificar visualmente.
+
+**Mejora futura**: Dropdown para filtrar por proveedor.
+
+---
+
+### 4. No muestra citas pasadas de otros días
+
+**Problema**: Una vez pasa la medianoche, las citas de ayer desaparecen del widget.
+
+**Solución**: Usa reportes históricos (en desarrollo) o exporta datos vía API.
+
+---
+
+## Estados especiales y casos raros
+
+### Cita creada pero paciente no vino
+
+**Escenario**: Cita de las 10:00, paciente no apareció, ahora son las 10:45.
+
+**Estado en el sistema**:
+- Estado: `COMPLETED` (marcado automáticamente por el job)
+- Ingresos estimados: Suma el precio del servicio (€15)
+- **Problema**: El ingreso real fue €0 (paciente no vino)
+
+**Solución manual**:
+1. Cancela la cita (cambia a `CANCELLED`)
+2. Esto elimina el ingreso de "Ingresos Estimados"
+3. Opcional: Agrega nota en el perfil del paciente ("No se presentó el 15/01/2026")
+
+<Warning>
+El sistema NO detecta automáticamente inasistencias. Debes marcarlas manualmente.
+</Warning>
+
+---
+
+### Cita con servicio eliminado
+
+**Escenario**: Tenías un servicio "Manicura", creaste citas con ese servicio, luego eliminaste "Manicura" de la lista de servicios.
+
+**Estado en el sistema**:
+- La cita sigue existiendo
+- Columna "Servicio" muestra: `Servicio eliminado (ID: abc-123)`
+- Puedes editar la cita para cambiar a otro servicio
+
+<Info>
+El sistema conserva la relación `appointment.service_id` incluso si el servicio fue eliminado (integridad referencial con `ON DELETE SET NULL`).
+</Info>
+
+---
+
+### Cita con proveedor suspendido
+
+**Escenario**: Proveedor "Peluquero 2" fue suspendido (cambio de personal), pero tiene citas agendadas.
+
+**Estado en el sistema**:
+- Cita sigue apareciendo en el widget
+- Columna "Proveedor" muestra: `Peluquero 2` (nombre original)
+- Puedes reasignar la cita a otro proveedor activo
+
+**Pasos para reasignar**:
+1. Haz clic en ✏️ (Editar)
+2. Cambia el proveedor a "Peluquero 1"
+3. Guarda los cambios
+4. Sistema valida que "Peluquero 1" esté disponible en ese horario
+
+---
+
+## Rendimiento y escalabilidad
+
+### ¿Cuántas citas puede mostrar?
+
+**Límite práctico**: Hasta 50 citas en el widget sin degradación de UX.
+
+**Cálculo**:
+- Clínica abierta: 10:00 - 20:00 (10 horas)
+- Duración promedio por cita: 30 minutos
+- Citas máximas/día: 10h × 2 citas/h = 20 citas
+- Con 3 proveedores: 20 × 3 = 60 citas/día
+
+**Si tienes &gt;50 citas/día**:
+- El widget mostrará todas, pero con scroll vertical
+- Considera usar filtros por proveedor (cuando esté disponible)
+
+---
+
+### Impacto en la base de datos
+
+Cada actualización del widget ejecuta esta query:
+
+```sql
+SELECT a.id, a.start_datetime, a.end_datetime, a.status,
+       u.full_name AS patient_name,
+       s.name AS service_name,
+       p.name AS provider_name
+FROM appointments a
+JOIN users u ON a.patient_id = u.id
+JOIN services s ON a.service_id = s.id
+JOIN providers p ON a.provider_id = p.id
+WHERE a.clinic_id = :clinic_id
+  AND DATE(a.start_datetime) = CURRENT_DATE
+ORDER BY a.start_datetime ASC;
+```
+
+**Optimización**:
+- Índice compuesto en `(clinic_id, start_datetime)` → query &lt;10ms
+- Cache de 5 minutos → 12 queries/hora (carga mínima)
+
+<Note>
+El sistema soporta **decenas de miles de citas** sin problemas de rendimiento gracias a los índices.
+</Note>
+
+---
+
+## Solución de problemas
+
+### Las citas no aparecen en el widget
+
+**Causas posibles**:
+1. **Zona horaria incorrecta**: La cita está en UTC pero la clínica en `Europe/Madrid`
+   - **Solución**: Verifica `CLINIC_DEFAULT_TZ` en configuración
+2. **Cita creada para otro día**: El widget solo muestra HOY
+   - **Solución**: Verifica la fecha en la sección "Citas"
+3. **Estado cancelado**: Las citas canceladas aparecen pero con badge rojo
+   - **Solución**: Verifica el estado en la columna "Estado"
+
+---
+
+### El estado no cambia de CONFIRMED a COMPLETED
+
+**Diagnóstico**:
+1. Verifica que el job del scheduler esté corriendo:
+   ```bash
+   curl http://localhost:8000/system/scheduler/status
+   ```
+2. Revisa los logs del scheduler:
+   ```bash
+   grep "complete_appointments" /var/log/clinic/app.log
+   ```
+
+**Causas comunes**:
+- **Job pausado**: El scheduler no está activo
+- **Error en la query**: Verifica logs de errores en PostgreSQL
+
+<Warning>
+Si el job no corre por &gt;1 hora, las citas NO se completarán automáticamente. Contacta a soporte.
+</Warning>
+
+---
+
+### Editar cita falla con "Horario no disponible"
+
+**Diagnóstico**:
+1. Verifica que el nuevo horario esté dentro de `work_hours` de la clínica
+2. Verifica que el proveedor NO tenga otra cita en ese horario
+3. Verifica que NO haya un `closure` (cierre) en esa fecha/hora
+
+**Ejemplo de error**:
+```
+Error: El proveedor "Peluquero 1" no está disponible a las 15:00
+Causa: Peluquero 1 solo trabaja de 09:00-13:00 (mañanas)
+Solución: Cambia a las 12:00 o elige otro proveedor
+```
+
+---
+
+## Próximos pasos
+
+<CardGroup cols={2}>
+  <Card title="Estadísticas Generales" icon="chart-line" href="/dashboard/stats-overview">
+    Volver a la vista general del Dashboard
+  </Card>
+
+  <Card title="Ingresos Detallados" icon="money-bill-wave" href="/dashboard/revenue-tracking">
+    Analizar de dónde vienen tus ingresos
+  </Card>
+
+  <Card title="Gestión de Citas" icon="calendar" href="/appointments/overview">
+    Ver calendario completo con todas las citas
+  </Card>
+
+  <Card title="API de Citas" icon="code" href="/api-reference/dashboard/get-appointments">
+    Integrar el widget en tu sistema
+  </Card>
+</CardGroup>

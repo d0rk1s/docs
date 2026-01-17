@@ -1,0 +1,375 @@
+---
+title: "Multiple Periods Per Day"
+description: "Configure split shifts and non-contiguous time periods for flexible scheduling"
+icon: "calendar-days"
+---
+
+## Feature Overview
+
+The **Multiple Periods Per Day** feature (introduced 2025-11-21) allows you to configure **multiple non-contiguous time periods** for the same weekday.
+
+<Info>
+This feature enables realistic scheduling for split shifts, lunch breaks, and different work periods without manual slot blocking.
+</Info>
+
+## When to Use Multiple Periods
+
+<CardGroup cols={2}>
+  <Card title="Split Shifts" icon="clock">
+    **Example**: Hair Salon
+    - Morning: 09:00-13:00
+    - Afternoon: 15:00-19:00
+    - Lunch: 13:00-15:00 (closed)
+  </Card>
+
+  <Card title="Extended Breaks" icon="mug-hot">
+    **Example**: Medical Clinic
+    - Morning: 08:00-12:00
+    - Afternoon: 16:00-20:00
+    - Break: 12:00-16:00 (closed)
+  </Card>
+
+  <Card title="Two-Shift Operations" icon="users">
+    **Example**: Gym
+    - Early shift: 06:00-10:00
+    - Evening shift: 18:00-22:00
+    - Off-peak: Closed
+  </Card>
+
+  <Card title="Provider-Specific Patterns" icon="user-doctor">
+    **Example**: Multi-Provider Clinic
+    - Provider A: Mornings only
+    - Provider B: Afternoons only
+    - Provider C: Full day (split)
+  </Card>
+</CardGroup>
+
+## Step-by-Step: Creating Multiple Periods
+
+<Frame>
+  <img src="/images/screenshots/work_hours_create_02_multiple_periods.png" alt="Configuración de múltiples períodos horarios para el mismo día con gaps" />
+</Frame>
+
+<Steps>
+  <Step title="Create First Period">
+    Configure the first time period for the day.
+
+    **Example (Monday Morning)**:
+    - Weekday: `1` (Monday)
+    - Opening: `09:00`
+    - Closing: `13:00`
+    - Click **Guardar** (Save)
+
+    ```
+    Monday (1): 09:00 ━━━━━━━━━━━━━━━━ 13:00
+    ```
+  </Step>
+
+  <Step title="Create Second Period">
+    **For the same weekday**, create a second period.
+
+    **Example (Monday Afternoon)**:
+    - Weekday: `1` (Monday) ← **Same day**
+    - Opening: `15:00`
+    - Closing: `19:00`
+    - Click **Guardar** (Save)
+
+    ```
+    Monday (1): 09:00 ━━━━━━ 13:00   15:00 ━━━━━━ 19:00
+                             ↑
+                          Gap: 13:00-15:00 (lunch)
+    ```
+  </Step>
+
+  <Step title="Validation">
+    The system automatically validates that the new period **does not overlap** with existing periods.
+
+    **Overlap Formula**: `A_start < B_end AND B_start < A_end`
+
+    ✅ **Valid**: 09:00-13:00 + 15:00-19:00 (gap)
+
+    ❌ **Invalid**: 09:00-14:00 + 13:00-17:00 (overlap 13:00-14:00)
+  </Step>
+
+  <Step title="Result">
+    You now have a split-shift schedule with a gap.
+
+    **Available Slots** (30-minute service):
+    - Morning: 09:00, 09:30, 10:00, ..., 12:30
+    - Afternoon: 15:00, 15:30, 16:00, ..., 18:30
+    - **NO slots in gap**: 13:00-15:00 ✅ Correct
+  </Step>
+</Steps>
+
+## Overlap Validation Explained
+
+The system **prevents overlapping time periods** using this formula:
+
+```
+Two periods overlap if:
+  A_start < B_end  AND  B_start < A_end
+```
+
+### Examples
+
+<AccordionGroup>
+  <Accordion title="✅ Valid: Gap Between Periods">
+    **Configuration**:
+    - Period A: 09:00-13:00
+    - Period B: 15:00-19:00
+
+    **Check**:
+    - `09:00 < 19:00` ✅
+    - `15:00 < 13:00` ❌ False
+
+    **Result**: **Valid** (no overlap, gap 13:00-15:00)
+
+    ```
+    09:00 ━━━━━━ 13:00   15:00 ━━━━━━ 19:00
+                   ↑
+                Gap: 13:00-15:00 ✅
+    ```
+  </Accordion>
+
+  <Accordion title="✅ Valid: Contiguous Periods">
+    **Configuration**:
+    - Period A: 09:00-13:00
+    - Period B: 13:00-17:00
+
+    **Check**:
+    - `09:00 < 17:00` ✅
+    - `13:00 < 13:00` ❌ False
+
+    **Result**: **Valid** (contiguous, `A_end == B_start`)
+
+    ```
+    09:00 ━━━━━━━━━━━━ 13:00━━━━━━━━━━━━ 17:00
+                          ↑
+                    Contiguous ✅
+    ```
+
+    <Note>
+    Contiguous periods are allowed when `A_end == B_start`. No gap, but no overlap either.
+    </Note>
+  </Accordion>
+
+  <Accordion title="❌ Invalid: Overlapping Periods">
+    **Configuration**:
+    - Period A: 09:00-14:00
+    - Period B: 13:00-17:00
+
+    **Check**:
+    - `09:00 < 17:00` ✅
+    - `13:00 < 14:00` ✅ Both true
+
+    **Result**: **Invalid** (overlap 13:00-14:00)
+
+    ```
+    09:00 ━━━━━━━━━━━━━━ 14:00
+                   13:00 ━━━━━━━━━━━━━━ 17:00
+                      ↑
+                  Overlap: 13:00-14:00 ❌
+    ```
+
+    **Error**: `"Overlap detected: Period 13:00-17:00 overlaps with existing period 09:00-14:00"`
+  </Accordion>
+
+  <Accordion title="❌ Invalid: Nested Periods">
+    **Configuration**:
+    - Period A: 08:00-18:00 (full day)
+    - Period B: 12:00-14:00 (lunch break)
+
+    **Check**:
+    - `08:00 < 14:00` ✅
+    - `12:00 < 18:00` ✅ Both true
+
+    **Result**: **Invalid** (B is nested inside A)
+
+    ```
+    08:00 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 18:00
+              12:00 ━━━━ 14:00
+                 ↑
+              Nested ❌
+    ```
+
+    <Warning>
+    You cannot create a nested period. To configure lunch breaks, use two separate periods before and after the break.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+## How Availability Works with Multiple Periods
+
+The availability system generates slots **only within configured periods**, not in gaps.
+
+### Example: Split Shift Availability
+
+**Configuration**:
+```
+Monday (1):
+  Clinic Hours: 09:00-13:00 + 15:00-19:00
+  Service Duration: 30 minutes
+```
+
+**Slot Generation**:
+
+```
+Morning Period (09:00-13:00):
+  09:00, 09:30, 10:00, 10:30, 11:00, 11:30, 12:00, 12:30 ✅
+
+Gap (13:00-15:00):
+  NO SLOTS GENERATED ✅ (clinic closed)
+
+Afternoon Period (15:00-19:00):
+  15:00, 15:30, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30 ✅
+```
+
+<Info>
+The system automatically skips gaps when generating slots. You don't need to manually block time.
+</Info>
+
+## Real-World Examples
+
+### Example 1: Hair Salon with Lunch Break
+
+**Business Hours**:
+- Morning shift: 09:00-13:00
+- Lunch break: 13:00-15:00 (closed)
+- Afternoon shift: 15:00-19:00
+
+**Configuration**:
+
+| Day | Period 1 | Period 2 |
+|-----|----------|----------|
+| Monday (1) | 09:00-13:00 | 15:00-19:00 |
+| Tuesday (2) | 09:00-13:00 | 15:00-19:00 |
+| Wednesday (3) | 09:00-13:00 | *Not configured* |
+| Thursday (4) | 09:00-13:00 | 15:00-19:00 |
+| Friday (5) | 09:00-13:00 | 15:00-19:00 |
+| Saturday (6) | 10:00-14:00 | *Not configured* |
+| Sunday (7) | *Closed* | *Closed* |
+
+**Result**:
+- **Mon, Tue, Thu, Fri**: Full split-shift (morning + afternoon)
+- **Wednesday**: Morning only (half day)
+- **Saturday**: Weekend hours (no split)
+- **Sunday**: Closed
+
+### Example 2: Medical Clinic with Different Providers
+
+**Clinic Hours** (Monday):
+- 08:00-20:00 (operational window)
+
+**Provider Hours** (Monday):
+
+| Provider | Period 1 | Period 2 | Result |
+|----------|----------|----------|--------|
+| Dr. Smith | 09:00-13:00 | *Not configured* | Mornings only |
+| Dr. Jones | *Not configured* | 15:00-19:00 | Afternoons only |
+| Dr. Brown | 09:00-13:00 | 15:00-19:00 | Full day (split) |
+
+**Availability by Provider**:
+- **Dr. Smith**: 09:00, 09:30, ..., 12:30 (morning slots only)
+- **Dr. Jones**: 15:00, 15:30, ..., 18:30 (afternoon slots only)
+- **Dr. Brown**: 09:00, ..., 12:30 + 15:00, ..., 18:30 (both periods)
+
+### Example 3: Gym with Two Shifts
+
+**Business Model**: Peak hours only (early morning + evening)
+
+**Configuration** (Monday):
+
+| Period | Time | Target Audience |
+|--------|------|----------------|
+| 1 | 06:00-10:00 | Early birds (before work) |
+| 2 | 18:00-22:00 | After work crowd |
+
+**Gap**: 10:00-18:00 (closed during off-peak hours)
+
+## Common Questions
+
+<AccordionGroup>
+  <Accordion title="How many periods can I create per day?">
+    There is **no hard limit**, but practical usage is 2-3 periods per day.
+
+    **Recommended**:
+    - 2 periods: Split shift (morning + afternoon)
+    - 3 periods: Complex schedules (early + mid + late)
+
+    **Not recommended**:
+    - 5+ periods: Makes scheduling confusing for users
+  </Accordion>
+
+  <Accordion title="Can I edit a period without affecting others?">
+    **Yes**. When editing a period, the system uses **self-exclusion** validation:
+    - The period being edited is excluded from overlap checks
+    - Only validates against OTHER periods
+
+    See [Edit & Delete Hours](/work-hours/edit-delete-hours) for details.
+  </Accordion>
+
+  <Accordion title="Can I delete one period without deleting all?">
+    **Yes**. You can delete individual periods:
+    - Deleting Period 1 keeps Period 2 intact
+    - Deleting the only period for a day closes the clinic that day
+
+    **Warning**: Deleting a period invalidates availability cache.
+  </Accordion>
+
+  <Accordion title="What happens to existing appointments in gaps?">
+    Existing appointments are **not affected** by work hour changes.
+
+    **Scenario**:
+    1. You have an appointment at 14:00 (no gap configured)
+    2. You create periods: 09:00-13:00 + 15:00-19:00 (gap 13:00-15:00)
+    3. Existing 14:00 appointment **remains valid** ✅
+    4. New appointments **cannot** be booked in gap ✅
+  </Accordion>
+
+  <Accordion title="Can I use multiple periods for providers too?">
+    **Yes**. Providers can have multiple periods just like clinics.
+
+    **Example**:
+    - Clinic: 08:00-20:00 (full day)
+    - Provider: 09:00-13:00 + 15:00-19:00 (split shift)
+    - Result: Provider works split shift within clinic hours
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Tip>
+**Use multiple periods instead of manual blocking**: Instead of blocking slots manually, configure work hours to reflect actual availability.
+</Tip>
+
+<Tip>
+**Keep gaps realistic**: A 2-hour lunch break (13:00-15:00) is typical. Very short gaps (&lt;30 min) may confuse customers.
+</Tip>
+
+<Warning>
+**Don't use multiple periods for one-time changes**: For holidays or exceptional days, use the **Closures** feature. Multiple periods are for recurring weekly schedules.
+</Warning>
+
+<Info>
+**Cache invalidation is automatic**: When you create, update, or delete periods, availability caches are cleared automatically.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Provider Hours" icon="user-doctor" href="/work-hours/provider-hours">
+    Configure split shifts for individual providers
+  </Card>
+
+  <Card title="Edit Work Hours" icon="pen-to-square" href="/work-hours/edit-delete-hours">
+    Learn how to edit periods with self-exclusion
+  </Card>
+
+  <Card title="Closures" icon="calendar-xmark" href="/closures/overview">
+    Configure one-time closures for holidays
+  </Card>
+
+  <Card title="Availability API" icon="code" href="/api-reference/availability">
+    Understand how slots are generated
+  </Card>
+</CardGroup>

@@ -1,0 +1,431 @@
+---
+title: "Crear Cierre"
+description: "Guía paso a paso para bloquear períodos de no disponibilidad con análisis de impacto"
+---
+
+# Crear Cierre
+
+Esta guía te enseñará a crear cierres para bloquear períodos de tiempo cuando tu clínica o un proveedor específico no estará disponible para atender pacientes.
+
+<Tip>
+**Recomendación**: Antes de crear un cierre, usa el [Preview de Impacto](/closures/impact-preview) para verificar cuántos slots se bloquearán. Esto te ayuda a validar que las fechas son correctas.
+</Tip>
+
+## Antes de Empezar
+
+**Decide el tipo de cierre** que necesitas:
+
+- **Cierre de clínica** (clinic-wide): Toda la clínica cerrada, ningún proveedor disponible
+- **Cierre de proveedor** (provider-specific): Solo un proveedor específico no disponible, otros sí
+
+Ver [Tipos de Cierres](/closures/overview#tipos-de-cierres) para más detalles.
+
+## Pasos para Crear un Cierre
+
+<Frame>
+  <img src="/images/screenshots/closures_create_01_form.png" alt="Formulario de creación de cierre con selección de tipo, proveedor y fechas" />
+</Frame>
+
+<Steps>
+  <Step title="Navegar a Cierres">
+    Desde el menú principal, ve a:
+    - **Gestión** → **Cierres** → **Nuevo Cierre**
+
+    O desde el Dashboard:
+    - Click en widget "Próximos Cierres" → **Crear Nuevo**
+  </Step>
+
+  <Step title="Seleccionar tipo de cierre">
+    Elige el tipo de cierre:
+
+    **Opción A: Cierre de Clínica (clinic-wide)**
+    - Toda la clínica cerrada
+    - Bloquea TODOS los slots de disponibilidad
+    - Usa para: vacaciones completas, días festivos, mantenimiento general
+
+    **Opción B: Cierre de Proveedor (provider-specific)**
+    - Solo un proveedor específico no disponible
+    - Otros proveedores siguen atendiendo
+    - Usa para: permisos personales, capacitaciones, citas médicas
+  </Step>
+
+  <Step title="Seleccionar proveedor (si aplica)">
+    **Solo si elegiste "Cierre de Proveedor"**:
+
+    Del dropdown, selecciona el proveedor que no estará disponible:
+    - Dr. García
+    - Ana López
+    - María Fernández
+    - (etc.)
+
+    <Note>
+    Si elegiste "Cierre de Clínica", omite este paso (provider_id será NULL).
+    </Note>
+  </Step>
+
+  <Step title="Seleccionar fecha y hora de inicio">
+    Define cuándo empieza el período cerrado:
+
+    **Fecha**: Usa el date picker para elegir día, mes, año
+    - Ejemplo: `2026-08-01` (1 de agosto de 2026)
+
+    **Hora**: Define la hora exacta
+    - Ejemplo: `00:00` (medianoche del día seleccionado)
+    - Para cierres de día completo, usa `00:00`
+    - Para cierres parciales (medio día), usa la hora específica (ej: `09:00`)
+
+    <Tip>
+    Para cierres de múltiples días completos, usa `00:00` como hora de inicio. Ejemplo: Vacaciones del 1 al 15 de agosto → inicio: `2026-08-01 00:00`
+    </Tip>
+  </Step>
+
+  <Step title="Seleccionar fecha y hora de fin">
+    Define cuándo termina el período cerrado:
+
+    **Fecha**: Debe ser igual o posterior a fecha de inicio
+    - Ejemplo: `2026-08-15` (15 de agosto de 2026)
+
+    **Hora**: Define la hora exacta
+    - Ejemplo: `23:59` (última hora del día seleccionado)
+    - Para cierres de día completo, usa `23:59`
+    - Para cierres parciales, usa la hora específica (ej: `14:00`)
+
+    <Warning>
+    La fecha/hora de fin DEBE ser posterior a la de inicio. El sistema validará automáticamente y mostrará error si es inválido.
+    </Warning>
+  </Step>
+
+  <Step title="Ingresar razón (opcional pero recomendado)">
+    Describe el motivo del cierre. Esto ayuda para:
+    - Auditoría y revisión histórica
+    - Recordar por qué se creó el cierre
+    - Trazabilidad del sistema
+
+    **Ejemplos de buenas razones**:
+    - ✅ "Vacaciones de verano - Playa del Carmen"
+    - ✅ "Día festivo - Navidad"
+    - ✅ "Capacitación: Curso de técnicas avanzadas"
+    - ✅ "Permiso médico personal - Dr. García"
+
+    **Evita razones genéricas**:
+    - ❌ "Cerrado" (sin contexto)
+    - ❌ "Vacaciones" (sin detalles)
+  </Step>
+
+  <Step title="Preview de Impacto (NUEVO - Recomendado)">
+    **Antes de confirmar**, haz click en **"Preview Impacto"** para ver:
+
+    - Total de slots disponibles normalmente
+    - Slots que se bloquearán con este cierre
+    - Porcentaje de impacto (slots bloqueados / total slots)
+    - Nivel de impacto: HIGH, MEDIUM, LOW
+
+    **Resultado del preview**:
+    ```
+    Período: 2026-08-01 a 2026-08-15 (15 días)
+    Slots normales: 300 slots
+    Slots bloqueados: 300 slots (100%)
+    Nivel: HIGH
+    Email notification: Sí ✅
+    ```
+
+    [Ver Tutorial Completo: Preview de Impacto](/closures/impact-preview)
+
+    <Tip>
+    Si el impacto es HIGH (100% de slots bloqueados), considera:
+    - Verificar que las fechas son correctas
+    - Evaluar si necesitas notificar manualmente a tus clientes
+    - Considerar dividir el cierre en períodos más pequeños si es posible
+    </Tip>
+  </Step>
+
+  <Step title="Confirmar creación">
+    Si el preview de impacto es aceptable, haz click en **"Crear Cierre"**.
+
+    El sistema ejecutará:
+    1. Validación de fechas (fin > inicio)
+    2. Creación del cierre en base de datos
+    3. Registro de jobs dinámicos (closure_{id}_start, closure_{id}_end)
+    4. Cálculo de impacto real
+    5. **Si impacto es HIGH**: Envío automático de email de alerta
+    6. **Si cierre empieza hoy**: Emisión de evento WebSocket `clinic_status_changed`
+    7. Invalidación de cache de disponibilidad
+  </Step>
+</Steps>
+
+## Resultado de Crear un Cierre
+
+Después de crear el cierre, el sistema habrá realizado:
+
+### 1. Cierre Creado en Base de Datos
+
+El cierre se almacena en la tabla `closures` con:
+- `clinic_id`: Tu clínica
+- `provider_id`: NULL (clinic-wide) o UUID del proveedor
+- `starts_at`: Fecha/hora de inicio (UTC)
+- `ends_at`: Fecha/hora de fin (UTC)
+- `reason`: Razón ingresada
+
+### 2. Jobs Dinámicos Registrados
+
+APScheduler registra automáticamente 2 jobs con DateTrigger:
+
+**Job 1: `closure_{id}_start`**
+- Trigger: `starts_at` (fecha/hora de inicio)
+- Acción: Emite evento WebSocket `clinic_status_changed` con status `closed`
+
+**Job 2: `closure_{id}_end`**
+- Trigger: `ends_at` (fecha/hora de fin)
+- Acción: Emite evento WebSocket `clinic_status_changed` con status `open` (si no hay otros cierres activos)
+
+<Note>
+Los jobs se ejecutan automáticamente en las fechas programadas. No requieren intervención manual.
+</Note>
+
+### 3. Impact Analysis Calculado
+
+El sistema ejecuta `AvailabilityImpactService` para calcular:
+- Total de slots disponibles en el período (sin el cierre)
+- Slots bloqueados por el cierre
+- Porcentaje de impacto
+- Nivel de impacto: HIGH (100%), MEDIUM (50-99%), LOW (&lt;50%)
+
+### 4. Email Notification (si impacto HIGH)
+
+**Solo si impacto es HIGH (todos los slots bloqueados)**:
+
+El sistema envía automáticamente un email a los administradores de la clínica con:
+- Detalles del cierre (fechas, razón)
+- Nivel de impacto y slots afectados
+- Recomendaciones de acción
+
+**Idempotencia**: Solo se envía 1 email por cierre (controlado por `notification_sent_at` + `notification_impact_level`)
+
+<Warning>
+Si el impacto es MEDIUM o LOW, NO se envía email automático. Debes notificar manualmente a clientes si lo consideras necesario.
+</Warning>
+
+### 5. WebSocket Event (si cierre empieza hoy)
+
+Si `starts_at` es hoy, el sistema emite inmediatamente:
+
+```json
+{
+  "event": "clinic_status_changed",
+  "data": {
+    "status": "closed",
+    "clinic_id": "abc-123",
+    "reason": "Vacaciones de verano"
+  }
+}
+```
+
+El frontend actualiza interfaces automáticamente (sin refresh manual).
+
+### 6. Availability Cache Invalidated
+
+El sistema invalida toda la cache de disponibilidad para tu clínica:
+- Cache de `get_availability` (3 min TTL)
+- Cache de `OperationalStatusService` (30 seg TTL)
+- Cache de `ConfigurationStatusService` (5 min TTL)
+
+**Resultado**: Las próximas consultas de disponibilidad reflejarán el cierre inmediatamente.
+
+## Ejemplos Completos
+
+<AccordionGroup>
+  <Accordion title="Ejemplo 1: Vacaciones de verano (15 días, clinic-wide)">
+    **Escenario**: Toda la clínica cerrará del 1 al 15 de agosto de 2026.
+
+    **Configuración**:
+    - **Tipo**: Cierre de clínica (clinic-wide)
+    - **Proveedor**: (No aplica)
+    - **Inicio**: `2026-08-01 00:00`
+    - **Fin**: `2026-08-15 23:59`
+    - **Razón**: "Vacaciones de verano - Playa del Carmen"
+
+    **Preview de Impacto**:
+    - Slots normales: 300 slots (15 días × 20 slots/día)
+    - Slots bloqueados: 300 slots (100%)
+    - Nivel: **HIGH**
+    - Email notification: **Sí ✅**
+
+    **Resultado**:
+    - Cierre creado ✅
+    - Jobs registrados: `closure_abc_start` (2026-08-01 00:00), `closure_abc_end` (2026-08-15 23:59)
+    - Email enviado a admins ✅
+    - Upcoming closure visible desde 2026-07-18 (14 días antes)
+    - NO se pueden agendar citas del 1-15 de agosto
+  </Accordion>
+
+  <Accordion title="Ejemplo 2: Día festivo (1 día, clinic-wide)">
+    **Escenario**: Clínica cerrada el 25 de diciembre (Navidad).
+
+    **Configuración**:
+    - **Tipo**: Cierre de clínica
+    - **Proveedor**: (No aplica)
+    - **Inicio**: `2026-12-25 00:00`
+    - **Fin**: `2026-12-25 23:59`
+    - **Razón**: "Día festivo - Navidad"
+
+    **Preview de Impacto**:
+    - Slots normales: 20 slots
+    - Slots bloqueados: 20 slots (100%)
+    - Nivel: **HIGH**
+    - Email notification: **Sí ✅**
+
+    **Resultado**:
+    - Cierre creado ✅
+    - Email enviado ✅
+    - Upcoming closure visible desde 2026-12-11
+    - 25/12 completamente bloqueado
+  </Accordion>
+
+  <Accordion title="Ejemplo 3: Permiso médico (2 días, provider-specific)">
+    **Escenario**: Dr. García no disponible 3-4 de febrero por permiso médico.
+
+    **Configuración**:
+    - **Tipo**: Cierre de proveedor
+    - **Proveedor**: Dr. García
+    - **Inicio**: `2026-02-03 00:00`
+    - **Fin**: `2026-02-04 23:59`
+    - **Razón**: "Permiso médico personal"
+
+    **Preview de Impacto**:
+    - Slots Dr. García: 40 slots (2 días × 20 slots/día)
+    - Slots bloqueados: 40 slots (100% de Dr. García)
+    - Slots totales clínica: 120 slots (3 proveedores)
+    - Porcentaje total: 33% (impacto **MEDIUM**)
+    - Email notification: **No ❌** (solo HIGH)
+
+    **Resultado**:
+    - Cierre creado ✅
+    - Solo Dr. García bloqueado 3-4 febrero
+    - Otros proveedores (Dra. López, Dra. Fernández) siguen disponibles ✅
+    - NO se envía email (impacto no es HIGH)
+  </Accordion>
+
+  <Accordion title="Ejemplo 4: Capacitación (medio día, provider-specific)">
+    **Escenario**: Ana López en curso de 9:00 a 14:00.
+
+    **Configuración**:
+    - **Tipo**: Cierre de proveedor
+    - **Proveedor**: Ana López
+    - **Inicio**: `2026-03-10 09:00`
+    - **Fin**: `2026-03-10 14:00`
+    - **Razón**: "Capacitación: Curso de técnicas avanzadas"
+
+    **Preview de Impacto**:
+    - Slots Ana mañana (9-14): 10 slots
+    - Slots bloqueados: 10 slots
+    - Slots Ana tarde (14-18): 8 slots (siguen disponibles ✅)
+    - Porcentaje Ana: 56% (**MEDIUM**)
+    - Porcentaje total clínica: 12% (**LOW**)
+    - Email notification: **No ❌**
+
+    **Resultado**:
+    - Cierre creado ✅
+    - Ana bloqueada solo 9:00-14:00
+    - Ana disponible 14:00-18:00 ✅
+    - Otros proveedores disponibles todo el día ✅
+  </Accordion>
+</AccordionGroup>
+
+## Validaciones Automáticas
+
+El sistema previene errores comunes:
+
+<AccordionGroup>
+  <Accordion title="Validación de fechas">
+    **¿Qué verifica?**
+    - Fecha de fin debe ser posterior a fecha de inicio
+    - Ambas fechas deben ser válidas (formato ISO 8601)
+
+    **Si falla**:
+    ```
+    Error 400: "ends_at must be after starts_at"
+    ```
+
+    **Solución**: Verifica las fechas ingresadas.
+  </Accordion>
+
+  <Accordion title="Validación de proveedor (si provider-specific)">
+    **¿Qué verifica?**
+    - El provider_id existe en la base de datos
+    - El proveedor pertenece a tu clínica
+
+    **Si falla**:
+    ```
+    Error 404: "Provider not found"
+    ```
+
+    **Solución**: Selecciona un proveedor válido del dropdown.
+  </Accordion>
+
+  <Accordion title="Validación de permisos">
+    **¿Qué verifica?**
+    - Solo ADMIN o CLINIC_ADMIN pueden crear cierres
+
+    **Si falla**:
+    ```
+    Error 403: "Cannot manage this clinic"
+    ```
+
+    **Solución**: Solicita permisos de administrador.
+  </Accordion>
+</AccordionGroup>
+
+## Advertencias Importantes
+
+<Warning>
+**No se pueden agendar citas en períodos cerrados**:
+
+Si un cliente o staff intenta agendar cita en un período cerrado, el sistema devolverá:
+```
+Error 400: "El horario solicitado no está disponible"
+```
+
+Verifica que los cierres sean correctos ANTES de crearlos.
+</Warning>
+
+<Warning>
+**Cierres NO afectan citas ya agendadas**:
+
+Si ya existen citas agendadas en el período que cierras, esas citas NO se cancelan automáticamente. Debes:
+1. Cancelar manualmente citas existentes en ese período
+2. Notificar a los pacientes afectados
+3. Ofrecer re-agendar para otra fecha
+
+El sistema solo previene NUEVAS citas en el período cerrado.
+</Warning>
+
+<Tip>
+**Usa Preview de Impacto para validar**:
+
+Antes de crear, ejecuta preview para:
+- Ver exactamente cuántos slots se bloquearán
+- Validar que las fechas son correctas
+- Identificar si hay citas existentes que debes manejar
+
+Esto previene errores y mejora la planificación.
+</Tip>
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Preview de Impacto" icon="chart-mixed" href="/closures/impact-preview">
+    Aprende a analizar impacto antes de crear
+  </Card>
+
+  <Card title="Ver Upcoming Closures" icon="calendar-clock" href="/closures/view-upcoming">
+    Revisa cierres próximos (14 días)
+  </Card>
+
+  <Card title="Cancelar Cierre" icon="trash-can" href="/closures/cancel-closure">
+    Cómo eliminar un cierre existente
+  </Card>
+
+  <Card title="Volver a Overview" icon="arrow-left" href="/closures/overview">
+    Conceptos generales de cierres
+  </Card>
+</CardGroup>

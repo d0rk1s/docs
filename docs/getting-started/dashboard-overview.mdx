@@ -1,0 +1,193 @@
+---
+title: "Entender el Dashboard"
+description: "Navegación y componentes principales del dashboard"
+---
+
+# Dashboard Principal
+
+El dashboard es tu pantalla principal después de iniciar sesión. Desde aquí puedes acceder a todas las funciones del sistema y ver un resumen de la actividad de tu clínica.
+
+## Componentes Principales
+
+<Frame>
+  <img src="/images/screenshots/dashboard_first_time.png" alt="Vista general del dashboard con estadísticas, navegación y widgets principales" />
+</Frame>
+
+### 1. Barra de Navegación Superior
+
+La barra superior contiene:
+
+- **Logo de la clínica**: Click para volver al dashboard
+- **Selector de clínica**: Si tienes acceso a múltiples clínicas
+- **Notificaciones**: Icono de campana con alertas importantes
+- **Menú de usuario**: Acceso a configuración y logout
+
+<Tip>
+Las notificaciones te alertan sobre eventos importantes como citas próximas, límite de plan alcanzado, o problemas de configuración.
+</Tip>
+
+### 2. Menú Lateral (Sidebar)
+
+La navegación principal está en el sidebar izquierdo:
+
+- **Dashboard**: Pantalla principal (esta página)
+- **Citas**: Gestión del calendario de citas
+- **Servicios**: Configurar servicios de la clínica
+- **Proveedores**: Gestionar tu equipo de trabajo
+- **Horarios**: Configurar horarios de apertura
+- **Cierres**: Programar vacaciones y cierres
+- **Conversaciones**: Monitoreo de WhatsApp (solo admin)
+- **Suscripción**: Ver plan actual y uso (solo admin)
+
+<Note>
+Algunos elementos del menú solo son visibles para usuarios con rol de Admin.
+</Note>
+
+### 3. Estadísticas de Citas
+
+Tarjetas con métricas principales:
+
+<CardGroup cols={3}>
+  <Card title="Citas de Hoy" icon="calendar-day">
+    Número de citas programadas para hoy
+  </Card>
+  <Card title="Citas Completadas" icon="circle-check">
+    Total de citas finalizadas este mes
+  </Card>
+  <Card title="Tasa de Conversión" icon="chart-line">
+    % de conversaciones WhatsApp que resultaron en cita
+  </Card>
+</CardGroup>
+
+**¿Qué significan estos números?**
+
+- **Citas de Hoy**: Te ayuda a planificar la carga de trabajo diaria
+- **Citas Completadas**: Indicador de actividad mensual
+- **Tasa de Conversión**: Mide la efectividad del bot de WhatsApp (ej: 75% significa que 3 de cada 4 conversaciones terminan en cita)
+
+### 4. Widget de Próximas Citas
+
+Muestra una lista de las próximas citas del día con:
+
+- **Hora de inicio**
+- **Nombre del paciente**
+- **Servicio reservado**
+- **Proveedor asignado**
+- **Estado** (Confirmada, Pendiente, Completada)
+
+<Tip>
+Haz click en cualquier cita para ver detalles completos o modificarla.
+</Tip>
+
+### 5. Uso del Plan de Suscripción
+
+Barra de progreso que muestra:
+
+- **Citas usadas** este mes
+- **Límite del plan** actual
+- **Porcentaje consumido**
+
+**Ejemplo**: 45/200 citas usadas (22.5%)
+
+<Warning>
+Si alcanzas el límite de tu plan, no podrás agendar más citas hasta el siguiente período de facturación. Considera hacer upgrade si estás cerca del límite.
+</Warning>
+
+### 6. Ingresos Estimados (Admin)
+
+Tarjeta que muestra:
+
+- **Ingresos del mes actual**: Suma de precios de citas completadas
+- **Comparación con mes anterior**: % de cambio
+
+<Note>
+Estos son ingresos estimados basados en el precio de los servicios. No incluyen pagos reales procesados.
+</Note>
+
+## Navegación Rápida
+
+### Acciones Comunes desde el Dashboard
+
+<Steps>
+  <Step title="Agendar nueva cita">
+    Click en **"Nueva Cita"** en la barra superior o navega a **Citas > Calendario**
+  </Step>
+  <Step title="Buscar un paciente">
+    Usa la barra de búsqueda en la parte superior del dashboard o navega a **Citas > Buscar Paciente**
+  </Step>
+  <Step title="Ver citas del día">
+    Revisa el widget de "Próximas Citas" en el dashboard o ve a **Citas > Calendario > Vista Día**
+  </Step>
+  <Step title="Configurar un nuevo servicio">
+    Navega a **Servicios > Nuevo Servicio** o **Servicios > Importar desde Catálogo**
+  </Step>
+</Steps>
+
+## Personalización del Dashboard
+
+### Filtros Disponibles
+
+Puedes filtrar la información del dashboard:
+
+- **Rango de fechas**: Hoy, Esta Semana, Este Mes, Personalizado
+- **Proveedor**: Ver estadísticas de un proveedor específico
+- **Servicio**: Ver métricas de un servicio específico
+
+### Refrescar Datos
+
+El dashboard se actualiza automáticamente cada 5 minutos. Para forzar una actualización:
+
+1. Click en el icono de **"Refrescar"** en la esquina superior derecha
+2. O simplemente recarga la página (F5)
+
+<Tip>
+Si acabas de agendar una cita y no aparece en el dashboard, espera unos segundos y refresca.
+</Tip>
+
+## Próximos Pasos
+
+Ahora que entiendes el dashboard, es hora de empezar a usar el sistema:
+
+<CardGroup cols={2}>
+  <Card title="Agendar tu Primera Cita" icon="calendar-plus" href="/appointments/create-appointment">
+    Aprende a crear una cita manualmente paso a paso
+  </Card>
+  <Card title="Configurar Servicios" icon="wrench" href="/services/create-service">
+    Crea los servicios que ofrece tu clínica
+  </Card>
+  <Card title="Configurar Horarios" icon="clock" href="/work-hours/clinic-hours">
+    Define los horarios de apertura de tu clínica
+  </Card>
+  <Card title="Gestionar Proveedores" icon="user-group" href="/providers/create-provider">
+    Agrega a tu equipo de trabajo
+  </Card>
+</CardGroup>
+
+## Preguntas Frecuentes
+
+<AccordionGroup>
+  <Accordion title="¿Por qué mis estadísticas están vacías?">
+    Si es tu primera vez usando el sistema, las estadísticas estarán vacías hasta que:
+    - Agendas tu primera cita
+    - Completas tu primera cita
+    - Recibes conversaciones por WhatsApp
+
+    Esto es completamente normal.
+  </Accordion>
+
+  <Accordion title="¿Cómo cambio el rango de fechas de las estadísticas?">
+    Usa el selector de fechas en la parte superior del dashboard. Puedes elegir:
+    - Hoy
+    - Esta Semana
+    - Este Mes
+    - Rango Personalizado (seleccionas fecha inicio y fin)
+  </Accordion>
+
+  <Accordion title="¿Qué pasa si alcanzo el límite de mi plan?">
+    Cuando alcanzas el límite de citas de tu plan:
+    1. Recibirás una notificación en el dashboard
+    2. No podrás agendar más citas manualmente
+    3. El bot de WhatsApp informará a los clientes que no hay disponibilidad
+    4. Puedes hacer upgrade a un plan superior para continuar
+  </Accordion>
+</AccordionGroup>

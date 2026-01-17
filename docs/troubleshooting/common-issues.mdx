@@ -1,0 +1,329 @@
+---
+title: 'Common Issues'
+description: 'Troubleshooting guide for the most frequent problems in the clinic management system'
+icon: 'circle-exclamation'
+---
+
+<Note>
+This page lists the top 10 most common issues reported by users. For specific troubleshooting guides, see the links at the bottom.
+</Note>
+
+<Frame>
+  <img src="/images/screenshots/troubleshooting_common_errors.png" alt="Panel de troubleshooting mostrando errores comunes y sus soluciones" />
+</Frame>
+
+## Top 10 Common Issues
+
+<AccordionGroup>
+  <Accordion title="Cannot log in - 'Invalid credentials' error" icon="lock">
+    **Symptom**: Login fails with "Invalid email or password" error message.
+
+    **Diagnosis**:
+    - Wrong email or password
+    - Account not activated
+    - Password expired (90+ days)
+    - Email case sensitivity issue
+
+    **Solution**:
+    <Steps>
+      <Step title="Verify email format">
+        Ensure email is exactly as registered (case-sensitive). Check for extra spaces.
+      </Step>
+      <Step title="Reset password">
+        Click "Forgot password?" and follow email instructions.
+      </Step>
+      <Step title="Check account status">
+        Contact your clinic admin to verify your account is `APPROVED` status.
+      </Step>
+      <Step title="Clear browser cache">
+        Sometimes cached cookies cause login issues. Try incognito mode.
+      </Step>
+    </Steps>
+
+    <Warning>
+    If you've been inactive for 90+ days, your password may have expired. You'll need to reset it via email.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="No available time slots shown" icon="calendar-xmark">
+    **Symptom**: Availability calendar shows "No slots available" even though clinic is open.
+
+    **Diagnosis**:
+    - Work hours not configured (clinic or provider)
+    - Closure period active
+    - Subscription limit reached
+    - All resources booked
+
+    **Solution**:
+    <Steps>
+      <Step title="Verify work hours">
+        Go to **Configuration** → **Work Hours** and ensure both clinic-level AND provider-level hours are set.
+      </Step>
+      <Step title="Check for closures">
+        Go to **Closures** and verify there are no active closures for the selected date.
+      </Step>
+      <Step title="Verify subscription limits">
+        Go to **Settings** → **Subscription** and check if you've reached your monthly appointment limit.
+      </Step>
+      <Step title="Review resource availability">
+        If service requires resources, ensure resources are configured and available.
+      </Step>
+    </Steps>
+
+    See [Availability Incorrect](/troubleshooting/availability-incorrect) for detailed debugging.
+  </Accordion>
+
+  <Accordion title="WhatsApp bot not responding" icon="message-xmark">
+    **Symptom**: Patient sends message to WhatsApp number but receives no response.
+
+    **Diagnosis**:
+    - WhatsApp integration disabled
+    - Grace period expired (30 days without appointments)
+    - Twilio credentials invalid
+    - OpenAI API key expired
+
+    **Solution**:
+    <Steps>
+      <Step title="Verify WhatsApp is active">
+        Go to **Settings** → **WhatsApp** and check that integration is ACTIVE (green status).
+      </Step>
+      <Step title="Check grace period">
+        If you haven't created appointments in 30+ days, WhatsApp auto-disables. Create an appointment to reactivate.
+      </Step>
+      <Step title="Verify Twilio webhook">
+        In Twilio console, check that webhook URL points to your backend: `https://your-domain.com/v1/whatsapp/webhook`
+      </Step>
+      <Step title="Test manually">
+        Send a test message like "Hola" from a different phone number.
+      </Step>
+    </Steps>
+
+    See [WhatsApp Not Working](/troubleshooting/whatsapp-not-working) for comprehensive debugging.
+  </Accordion>
+
+  <Accordion title="Cannot create appointment - 'Time not available' error" icon="calendar-circle-exclamation">
+    **Symptom**: System shows available slots but creation fails with "El horario solicitado no está disponible".
+
+    **Diagnosis**:
+    - Race condition (slot booked by another user)
+    - Timezone mismatch (UTC vs local)
+    - Service duration conflict
+    - Resource conflict
+
+    **Solution**:
+    <Steps>
+      <Step title="Refresh availability">
+        Click **Refresh** to get latest available slots (cache may be stale).
+      </Step>
+      <Step title="Verify timezone">
+        System stores in UTC but displays in clinic timezone (default: Europe/Madrid). Check browser timezone settings.
+      </Step>
+      <Step title="Check service duration">
+        Ensure selected slot has enough time for service duration + buffer_before.
+      </Step>
+      <Step title="Retry with different slot">
+        If issue persists with same slot, try a different time.
+      </Step>
+    </Steps>
+
+    <Warning>
+    If you consistently see this error, there may be a timezone configuration issue. Contact support with your clinic ID and timestamp.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Phone number not accepted - Invalid format error" icon="phone-xmark">
+    **Symptom**: System rejects phone number with "Invalid phone format" error.
+
+    **Diagnosis**:
+    - Phone not in E.164 format
+    - Missing country code
+    - Invalid characters (spaces, dashes, parentheses)
+
+    **Solution**:
+    <Steps>
+      <Step title="Use E.164 format">
+        Required format: `+[country code][number]`
+
+        Examples:
+        - Spain: `+34612345678` ✅
+        - US: `+14155551234` ✅
+        - Wrong: `612345678` ❌
+        - Wrong: `+34 612 345 678` ❌
+      </Step>
+      <Step title="Remove formatting">
+        Remove spaces, dashes, parentheses: `(612) 345-678` → `+34612345678`
+      </Step>
+      <Step title="Verify country code">
+        Spain (+34), US (+1), Mexico (+52), Argentina (+54), etc.
+      </Step>
+    </Steps>
+
+    <Info>
+    The system automatically normalizes phone numbers on the backend, but the UI input must be valid E.164 to pass validation.
+    </Info>
+  </Accordion>
+
+  <Accordion title="Dashboard not updating with recent appointments" icon="chart-line-down">
+    **Symptom**: Dashboard stats (appointments count, revenue) not reflecting recent changes.
+
+    **Diagnosis**:
+    - Cache not invalidated
+    - Browser cache stale
+    - Background job delayed
+
+    **Solution**:
+    <Steps>
+      <Step title="Refresh browser">
+        Press `Ctrl+F5` (Windows) or `Cmd+Shift+R` (Mac) to force refresh.
+      </Step>
+      <Step title="Wait 1-2 minutes">
+        Dashboard stats are cached for 30 seconds. Recent changes may take up to 2 minutes to appear.
+      </Step>
+      <Step title="Clear browser cache">
+        Go to browser settings and clear cached data for the last hour.
+      </Step>
+      <Step title="Check appointment status">
+        Verify appointment status is `CONFIRMED` or `COMPLETED`. `CANCELLED` appointments don't count in stats.
+      </Step>
+    </Steps>
+  </Accordion>
+
+  <Accordion title="Cannot delete service - 'Service has appointments' error" icon="trash-xmark">
+    **Symptom**: Service deletion fails with error "Cannot delete service with existing appointments".
+
+    **Diagnosis**:
+    - Service has past appointments (audit trail)
+    - Service has future appointments (data integrity)
+
+    **Solution**:
+    <Steps>
+      <Step title="Cancel future appointments first">
+        Go to **Appointments** → Filter by service → Cancel all future appointments.
+      </Step>
+      <Step title="Deactivate instead of delete">
+        If service has past appointments, use **Deactivate** instead of delete. This preserves history.
+      </Step>
+      <Step title="Wait for appointments to complete">
+        Alternatively, wait for all appointments to complete naturally, then delete.
+      </Step>
+    </Steps>
+
+    <Warning>
+    Deleting a service with appointments would break data integrity. The system enforces this constraint at the database level.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Closure not blocking appointments" icon="door-open">
+    **Symptom**: Created closure period but system still shows available slots.
+
+    **Diagnosis**:
+    - Closure `starts_at` / `ends_at` incorrect timezone
+    - Provider-specific closure (doesn't affect other providers)
+    - Cache not invalidated
+
+    **Solution**:
+    <Steps>
+      <Step title="Verify closure dates">
+        Go to **Closures** and check `starts_at` and `ends_at` are in correct timezone (should show as local time).
+      </Step>
+      <Step title="Check if provider-specific">
+        If closure is provider-specific, other providers will still show availability. Create clinic-level closure to block all.
+      </Step>
+      <Step title="Wait for cache invalidation">
+        Availability cache is 3 minutes. Wait up to 3 minutes and refresh.
+      </Step>
+      <Step title="Verify closure is active">
+        Check closure status is ACTIVE (not DRAFT or CANCELLED).
+      </Step>
+    </Steps>
+  </Accordion>
+
+  <Accordion title="Subscription limit reached but can't upgrade" icon="credit-card-blank">
+    **Symptom**: "Appointment limit reached" error but upgrade button doesn't work.
+
+    **Diagnosis**:
+    - Stripe checkout session expired
+    - Payment method declined
+    - Browser blocked popup
+
+    **Solution**:
+    <Steps>
+      <Step title="Allow popups">
+        Ensure browser allows popups from your domain (Stripe checkout opens in new window).
+      </Step>
+      <Step title="Retry upgrade">
+        Click **Upgrade** again. Previous checkout session may have expired (60 minutes).
+      </Step>
+      <Step title="Check payment method">
+        Ensure credit card is valid and has sufficient funds.
+      </Step>
+      <Step title="Enable overage temporarily">
+        If urgent, enable **Allow Overage** in Settings → Subscription to continue with extra charges.
+      </Step>
+    </Steps>
+  </Accordion>
+
+  <Accordion title="Work hours not saving - Overlap error" icon="clock-rotate-left">
+    **Symptom**: Cannot save work hours with error "Work hours overlap".
+
+    **Diagnosis**:
+    - Two periods overlap (e.g., 09:00-14:00 and 13:00-17:00)
+    - Editing period overlaps with another existing period
+    - Database validation conflict
+
+    **Solution**:
+    <Steps>
+      <Step title="Check for overlaps">
+        Ensure no two periods share the same time:
+        - ❌ Period A: 09:00-14:00, Period B: 13:00-17:00 (OVERLAP 13:00-14:00)
+        - ✅ Period A: 09:00-13:00, Period B: 13:00-17:00 (CONTIGUOUS, no overlap)
+      </Step>
+      <Step title="Delete conflicting period first">
+        If editing, delete the existing period, then create the new one.
+      </Step>
+      <Step title="Use contiguous times">
+        If you want back-to-back periods, use the same time for end/start: 13:00-13:00 is allowed.
+      </Step>
+    </Steps>
+
+    <Info>
+    The system allows multiple non-contiguous periods per day (e.g., morning + afternoon shifts), but they cannot overlap.
+    </Info>
+  </Accordion>
+</AccordionGroup>
+
+## Quick Links to Specific Troubleshooting
+
+<CardGroup cols={2}>
+  <Card title="WhatsApp Issues" icon="message-bot" href="/troubleshooting/whatsapp-not-working">
+    Bot not responding, voice messages, hallucinations
+  </Card>
+  <Card title="Availability Issues" icon="calendar-days" href="/troubleshooting/availability-incorrect">
+    No slots shown, timezone issues, work hours conflicts
+  </Card>
+  <Card title="Contact Support" icon="headset" href="/troubleshooting/contact-support">
+    How to report bugs and get help from the support team
+  </Card>
+  <Card title="FAQs" icon="circle-question" href="/faqs">
+    Frequently asked questions about features and usage
+  </Card>
+</CardGroup>
+
+## Still Having Issues?
+
+If your problem is not listed here, try these resources:
+
+1. Check the [FAQs](/faqs) for answers to common questions
+2. Search the documentation using the search bar (top right)
+3. Review specific troubleshooting guides:
+   - [WhatsApp Not Working](/troubleshooting/whatsapp-not-working)
+   - [Availability Incorrect](/troubleshooting/availability-incorrect)
+4. [Contact Support](/troubleshooting/contact-support) with detailed information
+
+<Tip>
+Before contacting support, gather this information to speed up resolution:
+- Clinic ID (from Settings)
+- Exact error message (screenshot)
+- Steps to reproduce the issue
+- Browser and OS version
+</Tip>

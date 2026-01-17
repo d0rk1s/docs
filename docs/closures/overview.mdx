@@ -1,0 +1,301 @@
+---
+title: "Cierres y Vacaciones - Visión General"
+description: "Sistema completo de gestión de períodos de no disponibilidad con análisis de impacto y notificaciones automáticas"
+---
+
+# Cierres y Vacaciones
+
+Los **cierres** te permiten bloquear períodos de tiempo específicos cuando tu clínica o un proveedor no está disponible para atender pacientes. A diferencia de los horarios de trabajo (que definen disponibilidad recurrente), los cierres son excepciones temporales para fechas específicas.
+
+<Frame>
+  <img src="/images/screenshots/closures_list_overview.png" alt="Vista general de la lista de cierres con próximos cierres y acciones" />
+</Frame>
+
+## ¿Qué son los Cierres?
+
+Un cierre representa un período temporal de no disponibilidad en tu clínica. Cada cierre incluye:
+
+- **Fecha y hora de inicio**: Cuándo comienza el período cerrado
+- **Fecha y hora de fin**: Cuándo finaliza el período cerrado
+- **Tipo**: Cierre de toda la clínica o solo de un proveedor específico
+- **Razón**: Motivo del cierre (opcional pero recomendado)
+- **Impacto estimado**: Cuántos slots de citas se bloquearán
+
+<Tip>
+El sistema calcula automáticamente el impacto del cierre y puede enviar notificaciones por email si el impacto es alto (todos los slots bloqueados).
+</Tip>
+
+## Tipos de Cierres
+
+<CardGroup cols={2}>
+  <Card title="Cierre de Clínica" icon="building-circle-xmark" color="#DC2626">
+    **Toda la clínica cerrada**
+
+    Cuando ningún proveedor puede atender pacientes. Ejemplos:
+    - Vacaciones de verano
+    - Días festivos (Navidad, Año Nuevo)
+    - Mudanza de local
+    - Mantenimiento general
+
+    **Impacto**: Bloquea TODOS los slots de disponibilidad
+  </Card>
+
+  <Card title="Cierre de Proveedor" icon="user-xmark" color="#F59E0B">
+    **Solo un proveedor específico**
+
+    Cuando un proveedor individual no está disponible. Ejemplos:
+    - Permiso personal
+    - Cita médica
+    - Capacitación/curso
+    - Vacaciones personales
+
+    **Impacto**: Bloquea solo los slots de ese proveedor
+  </Card>
+</CardGroup>
+
+## Cierres vs Horarios de Trabajo
+
+Es importante entender cuándo usar cada sistema:
+
+| Concepto | Horarios de Trabajo | Cierres |
+|----------|---------------------|---------|
+| **Propósito** | Disponibilidad recurrente semanal | Excepciones temporales |
+| **Frecuencia** | Se repiten cada semana | Fechas específicas únicas |
+| **Ejemplo** | "Lunes de 9:00 a 18:00" | "Cerrado del 1 al 15 de agosto" |
+| **Duración** | Indefinida (hasta que cambies) | Temporal (inicio y fin definidos) |
+| **Uso recomendado** | Horario normal de operación | Vacaciones, festivos, permisos |
+
+### ¿Cuándo usar cada uno?
+
+**Usa Horarios de Trabajo cuando**:
+- Defines el horario normal de tu clínica (ej: lunes-viernes 9:00-18:00)
+- Cambias permanentemente el horario de un proveedor
+- Configuras turnos recurrentes (mañanas/tardes)
+
+**Usa Cierres cuando**:
+- Planeas vacaciones (1 semana o más)
+- Tienes un día festivo (1 día específico)
+- Un proveedor tiene permiso temporal (2-3 días)
+- Cierras por evento excepcional (mudanza, mantenimiento)
+
+<Warning>
+**Nota importante**: Los cierres tienen prioridad sobre los horarios de trabajo. Si defines un cierre, ese período estará bloqueado incluso si los horarios de trabajo indican disponibilidad.
+</Warning>
+
+## Nuevas Features (2026-01-03)
+
+El sistema de cierres incluye características avanzadas para mejor control y visibilidad:
+
+### 1. Preview de Impacto
+
+**Antes de crear** un cierre, puedes ver exactamente cuántos slots de citas se bloquearán y el nivel de impacto (HIGH, MEDIUM, LOW). Esto te ayuda a:
+- Validar que el período elegido es correcto
+- Evaluar si debes notificar manualmente a tus clientes
+- Considerar alternativas si el impacto es muy alto
+
+[Ver Tutorial: Preview de Impacto](/closures/impact-preview)
+
+### 2. Notificaciones por Email Automáticas
+
+Si un cierre tiene **impacto HIGH** (todos los slots bloqueados), el sistema envía automáticamente un email de alerta para que tomes acción. Características:
+- Envío automático al crear el cierre
+- Solo para cierres de alto impacto
+- Idempotencia: 1 solo email por cierre (no duplicados)
+- Incluye detalles del impacto y fechas afectadas
+
+### 3. Upcoming Closures (Próximos 14 Días)
+
+El sistema muestra advertencias tempranas de cierres que empezarán en los próximos 14 días:
+- Widget en Dashboard con countdown
+- API endpoint `/configuration-status` incluye upcoming closures
+- Ordenados por proximidad (más cercanos primero)
+
+[Ver Tutorial: Ver Upcoming Closures](/closures/view-upcoming)
+
+### 4. Actualizaciones en Tiempo Real (WebSocket)
+
+Cuando un cierre empieza o termina, el sistema emite eventos WebSocket (`clinic_status_changed`) para actualizar interfaces en tiempo real:
+- Frontend se actualiza automáticamente
+- No requiere refresh manual
+- Sincronización instantánea entre dispositivos
+
+## Flujos de Trabajo Principales
+
+<CardGroup cols={2}>
+  <Card title="Crear Cierre" icon="calendar-plus" href="/closures/create-closure">
+    Bloquear período de no disponibilidad
+  </Card>
+
+  <Card title="Preview de Impacto" icon="chart-mixed" href="/closures/impact-preview">
+    Analizar impacto antes de crear
+  </Card>
+
+  <Card title="Ver Upcoming Closures" icon="calendar-clock" href="/closures/view-upcoming">
+    Revisar cierres próximos (14 días)
+  </Card>
+
+  <Card title="Cancelar Cierre" icon="trash-can" href="/closures/cancel-closure">
+    Eliminar cierre existente
+  </Card>
+</CardGroup>
+
+## Mejores Prácticas
+
+<AccordionGroup>
+  <Accordion title="Siempre ejecuta Preview de Impacto antes de crear">
+    **Por qué es importante**:
+    - Evitas bloquear disponibilidad sin querer
+    - Valideas que las fechas son correctas
+    - Identificas si necesitas notificar manualmente a clientes
+
+    **Cómo hacerlo**:
+    1. Completa formulario de cierre con fechas
+    2. Click en "Preview Impacto"
+    3. Revisa cuántos slots se bloquearán
+    4. Solo procede si el impacto es aceptable
+  </Accordion>
+
+  <Accordion title="Usa razones descriptivas">
+    **Por qué es importante**:
+    - Facilita la auditoría y revisión histórica
+    - Ayuda a recordar por qué se creó el cierre
+    - Mejora la trazabilidad del sistema
+
+    **Ejemplos de buenas razones**:
+    - ✅ "Vacaciones de verano - Playa del Carmen"
+    - ✅ "Día festivo - Navidad"
+    - ✅ "Capacitación: Curso de técnicas avanzadas"
+    - ❌ "Cerrado" (muy genérico)
+    - ❌ "Vacaciones" (sin detalles)
+  </Accordion>
+
+  <Accordion title="Planifica con anticipación (14+ días)">
+    **Por qué es importante**:
+    - Tus clientes pueden ver "Upcoming Closures" en el sistema
+    - Tienes tiempo para notificar manualmente si es necesario
+    - Reduces cancelaciones de último minuto
+
+    **Recomendación**:
+    - Crea cierres para vacaciones con **al menos 2 semanas** de anticipación
+    - Revisa la sección "Upcoming Closures" semanalmente
+    - Para cierres de emergencia, notifica a clientes afectados manualmente
+  </Accordion>
+
+  <Accordion title="Usa cierres de proveedor cuando sea posible">
+    **Por qué es importante**:
+    - Mantiene disponibilidad parcial (otros proveedores siguen atendiendo)
+    - Reduce el impacto en la agenda general
+    - Los clientes tienen más opciones de horarios
+
+    **Cuándo usar cierre de clínica**:
+    - Días festivos oficiales
+    - Vacaciones de toda la clínica
+    - Mantenimiento general del local
+
+    **Cuándo usar cierre de proveedor**:
+    - Vacaciones personales de un empleado
+    - Capacitaciones individuales
+    - Permisos médicos
+  </Accordion>
+
+  <Accordion title="Revisa upcoming closures semanalmente">
+    **Por qué es importante**:
+    - Detectas conflictos con anticipación
+    - Puedes ajustar o cancelar si cambian planes
+    - Mantienes control sobre la disponibilidad futura
+
+    **Cómo hacerlo**:
+    1. Navega a Dashboard o Cierres
+    2. Revisa sección "Próximos Cierres"
+    3. Verifica que todos siguen siendo válidos
+    4. Cancela los que ya no apliquen
+  </Accordion>
+</AccordionGroup>
+
+## Casos de Uso Comunes
+
+<AccordionGroup>
+  <Accordion title="Vacaciones de verano (2 semanas)">
+    **Escenario**: Toda la clínica cerrará del 1 al 15 de agosto.
+
+    **Configuración**:
+    - Tipo: Cierre de clínica (clinic-wide)
+    - Inicio: 2026-08-01 00:00
+    - Fin: 2026-08-15 23:59
+    - Razón: "Vacaciones de verano"
+
+    **Resultado**:
+    - Todos los slots bloqueados (impacto HIGH)
+    - Email notification enviado automáticamente
+    - Upcoming closure visible desde 2026-07-18 (14 días antes)
+
+    [Ver Tutorial: Crear Cierre](/closures/create-closure)
+  </Accordion>
+
+  <Accordion title="Día festivo (Navidad)">
+    **Escenario**: Clínica cerrada el 25 de diciembre.
+
+    **Configuración**:
+    - Tipo: Cierre de clínica
+    - Inicio: 2026-12-25 00:00
+    - Fin: 2026-12-25 23:59
+    - Razón: "Día festivo - Navidad"
+
+    **Resultado**:
+    - Slots del 25/12 bloqueados (impacto HIGH)
+    - Email notification enviado
+    - Upcoming closure visible desde 2026-12-11
+  </Accordion>
+
+  <Accordion title="Permiso médico (2 días)">
+    **Escenario**: Proveedor "Dr. García" no disponible 3-4 de febrero.
+
+    **Configuración**:
+    - Tipo: Cierre de proveedor
+    - Proveedor: Dr. García
+    - Inicio: 2026-02-03 00:00
+    - Fin: 2026-02-04 23:59
+    - Razón: "Permiso médico personal"
+
+    **Resultado**:
+    - Solo slots de Dr. García bloqueados (impacto MEDIUM/LOW)
+    - NO se envía email (impacto no es HIGH)
+    - Otros proveedores siguen disponibles
+  </Accordion>
+
+  <Accordion title="Capacitación (medio día)">
+    **Escenario**: Proveedor "Ana López" en curso de 9:00 a 14:00.
+
+    **Configuración**:
+    - Tipo: Cierre de proveedor
+    - Proveedor: Ana López
+    - Inicio: 2026-03-10 09:00
+    - Fin: 2026-03-10 14:00
+    - Razón: "Capacitación: Técnicas avanzadas"
+
+    **Resultado**:
+    - Solo slots 9:00-14:00 de Ana bloqueados (impacto LOW)
+    - NO se envía email
+    - Disponible por la tarde (14:00-18:00)
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Crear Tu Primer Cierre" icon="calendar-plus" href="/closures/create-closure">
+    Guía paso a paso para bloquear un período
+  </Card>
+
+  <Card title="Analizar Impacto" icon="chart-mixed" href="/closures/impact-preview">
+    Aprende a usar el preview de impacto
+  </Card>
+
+  <Card title="Ver Upcoming Closures" icon="calendar-clock" href="/closures/view-upcoming">
+    Revisa cierres próximos (14 días)
+  </Card>
+
+  <Card title="Cancelar Cierre" icon="trash-can" href="/closures/cancel-closure">
+    Cómo eliminar un cierre existente
+  </Card>
+</CardGroup>

@@ -1,0 +1,299 @@
+---
+title: 'Crear Servicio'
+description: 'Crea un nuevo servicio desde cero con configuración personalizada'
+icon: 'plus'
+---
+
+## Cuándo Crear un Servicio Manualmente
+
+Crea un servicio desde cero cuando:
+
+- ✅ Tu servicio es **único** o muy específico de tu clínica
+- ✅ Necesitas **configuración personalizada** que no existe en el catálogo
+- ✅ Quieres control total sobre todos los parámetros
+
+<Tip>
+  Si tu servicio es **común** (corte de pelo, manicura, consulta general), considera [importar desde el catálogo](/services/create-from-catalog). Es más rápido y viene con configuraciones estándar.
+</Tip>
+
+## Pasos para Crear un Servicio
+
+<Steps>
+  <Step title="Abrir el formulario 'Nuevo Servicio'">
+    1. Navega a la sección **"Servicios"** en el menú lateral
+    2. Haz clic en el botón **"Nuevo Servicio"** o **"+ Agregar Servicio"**
+
+    <Frame>
+      <img src="/images/screenshots/services_create_01_button.png" alt="Botón de nuevo servicio en la lista de servicios" />
+    </Frame>
+
+    3. Se abre el formulario de creación vacío
+
+    <Frame>
+      <img src="/images/screenshots/services_create_02_form.png" alt="Formulario de creación de servicio con todos los campos" />
+    </Frame>
+  </Step>
+
+  <Step title="Ingresar el nombre del servicio">
+    Escribe un nombre descriptivo y claro:
+
+    **Ejemplos buenos**:
+    - ✅ "Corte de Pelo Caballero"
+    - ✅ "Manicura con Esmaltado Permanente"
+    - ✅ "Consulta General (30 min)"
+
+    **Ejemplos malos**:
+    - ❌ "Corte 1" (poco descriptivo)
+    - ❌ "Srv-01" (no es legible para humanos)
+    - ❌ "CORTE" (todo mayúsculas dificulta lectura)
+
+    <Info>
+      El nombre se mostrará en la agenda, en WhatsApp y en los reportes. Hazlo claro para que tus pacientes y staff lo entiendan fácilmente.
+    </Info>
+  </Step>
+
+  <Step title="Seleccionar categoría (opcional)">
+    Elige una categoría del menú desplegable:
+    - **Peluquería**
+    - **Estética**
+    - **Salud**
+    - **Barbería**
+    - **Tratamientos Faciales**
+    - **Masajes**
+    - O crea una **nueva categoría** (si tu sistema lo permite)
+
+    <Tip>
+      Las categorías ayudan a organizar servicios y facilitan búsquedas. Si tu clínica ofrece muchos servicios, usa categorías.
+    </Tip>
+  </Step>
+
+  <Step title="Configurar duración (en minutos)">
+    Ingresa la duración total del servicio en minutos:
+
+    **Considera**:
+    - ⏱️ Tiempo de atención al paciente
+    - 🧹 Tiempo de limpieza/preparación entre citas
+    - 📝 Tiempo de documentación (si aplica)
+
+    **Ejemplos**:
+    - Corte de pelo: **30 minutos** (25 min corte + 5 min limpieza)
+    - Manicura: **45 minutos** (40 min servicio + 5 min preparación)
+    - Consulta médica: **20 minutos** (15 min consulta + 5 min documentación)
+
+    <Warning>
+      **Usa duraciones realistas**. Si configuras 15 minutos para un servicio que realmente toma 30, generarás conflictos en la agenda y retrasos.
+    </Warning>
+  </Step>
+
+  <Step title="Configurar precio (opcional)">
+    Ingresa el precio del servicio en tu moneda local (ej: EUR, USD, MXN):
+
+    - **Si tiene precio fijo**: Ingresa el monto (ej: `25.00`)
+    - **Si el precio varía**: Déjalo vacío o usa `0.00`
+
+    <Info>
+      El precio es **opcional** porque algunos servicios varían según el caso. Por ejemplo, "Consulta Especializada" puede tener precio variable según el tratamiento.
+    </Info>
+  </Step>
+
+  <Step title="Asignar proveedor (opcional)">
+    Selecciona un proveedor específico **solo si**:
+    - ✅ **Solo ese proveedor** puede realizar el servicio (ej: "Dr. García - Cirugía")
+    - ✅ El servicio requiere **habilidades especializadas** de ese proveedor
+
+    **Déjalo sin asignar si**:
+    - ❌ **Cualquier proveedor** puede realizar el servicio (ej: "Corte de Pelo")
+
+    <Tip>
+      Dejar servicios **sin asignar** maximiza la disponibilidad de slots. El sistema buscará cualquier proveedor disponible con el horario correcto.
+    </Tip>
+  </Step>
+
+  <Step title="Configurar recursos requeridos (opcional)">
+    Si el servicio necesita recursos físicos específicos:
+
+    1. Haz clic en **"Agregar Recurso"**
+    2. Selecciona del menú desplegable:
+       - Sala de operaciones
+       - Equipo láser
+       - Camilla especial
+       - Etc.
+    3. Agrega tantos recursos como necesites
+
+    **Ejemplo**: "Depilación Láser" requiere → `Equipo Láser` + `Sala de Tratamiento`
+
+    <Info>
+      El sistema **verifica disponibilidad** de recursos antes de permitir agendar. Si el recurso está ocupado, el slot no estará disponible.
+    </Info>
+  </Step>
+
+  <Step title="Configurar buffer (opcional)">
+    Si necesitas tiempo de preparación **antes** del servicio:
+
+    1. Activa el campo **"Buffer antes (minutos)"**
+    2. Ingresa los minutos necesarios (ej: `15`)
+
+    **Ejemplo**: Cirugía menor necesita 15 min de preparación → buffer = `15`
+
+    **Cómo funciona**:
+    - Servicio dura 30 min, buffer es 15 min
+    - Cita agendada a las 10:00
+    - Sistema bloquea desde **09:45** (buffer) hasta **10:30** (fin del servicio)
+
+    <Warning>
+      El buffer **reduce slots disponibles**. Úsalo solo cuando realmente necesites tiempo de preparación entre citas.
+    </Warning>
+  </Step>
+
+  <Step title="Guardar servicio">
+    1. Revisa toda la configuración
+    2. Haz clic en **"Guardar"** o **"Crear Servicio"**
+    3. El sistema valida los datos (nombre, duración mínima, etc.)
+    4. Si todo es correcto, el servicio se crea y aparece en la lista
+
+    ✅ **Resultado**: El servicio ya está disponible para agendar citas.
+  </Step>
+</Steps>
+
+## Validaciones del Sistema
+
+El sistema verifica automáticamente:
+
+| Campo | Validación | Error Común |
+|-------|-----------|-------------|
+| **Nombre** | No vacío, max 200 caracteres | "El nombre es requerido" |
+| **Duración** | Mínimo 5 minutos, máximo 480 minutos (8 horas) | "Duración debe ser entre 5 y 480 minutos" |
+| **Precio** | Número positivo o vacío | "Precio no puede ser negativo" |
+| **Categoría** | Debe existir en el sistema | "Categoría no encontrada" |
+| **Proveedor** | Debe existir y estar activo | "Proveedor no encontrado o inactivo" |
+| **Recursos** | Deben existir y estar activos | "Recurso no encontrado" |
+
+## Errores Comunes y Soluciones
+
+<AccordionGroup>
+  <Accordion title='"El nombre ya existe" - Servicio duplicado'>
+    **Problema**: Ya existe un servicio con ese nombre exacto.
+
+    **Soluciones**:
+    1. Cambia el nombre ligeramente (ej: "Corte de Pelo (Premium)")
+    2. Verifica si puedes **reutilizar** el servicio existente
+    3. Si el servicio existente está **inactivo**, reactívalo en lugar de crear uno nuevo
+  </Accordion>
+
+  <Accordion title='"Duración inválida" - Minutos incorrectos'>
+    **Problema**: La duración está fuera del rango permitido (5-480 minutos).
+
+    **Soluciones**:
+    1. Verifica que ingresaste **minutos**, no horas (ej: usa `60` para 1 hora)
+    2. Si necesitas un servicio de más de 8 horas, considera dividirlo en múltiples sesiones
+    3. No uses decimales (ej: usa `15` no `15.5`)
+  </Accordion>
+
+  <Accordion title='"Proveedor no disponible" - Proveedor inactivo'>
+    **Problema**: El proveedor seleccionado está desactivado.
+
+    **Soluciones**:
+    1. Ve a la sección **Proveedores** y verifica el estado
+    2. Reactiva el proveedor si es necesario
+    3. O selecciona otro proveedor activo
+  </Accordion>
+
+  <Accordion title='"Recurso no encontrado" - Recurso eliminado'>
+    **Problema**: Intentas asignar un recurso que ya no existe.
+
+    **Soluciones**:
+    1. Ve a la sección **Recursos** y verifica qué recursos están disponibles
+    2. Crea el recurso faltante si es necesario
+    3. O selecciona un recurso alternativo
+  </Accordion>
+</AccordionGroup>
+
+## Después de Crear el Servicio
+
+Una vez creado, puedes:
+
+<CardGroup cols={2}>
+  <Card title="Agendar Citas" icon="calendar">
+    El servicio ya está disponible para crear citas desde la agenda o WhatsApp
+  </Card>
+  <Card title="Asignar a Más Proveedores" icon="users">
+    Si dejaste sin asignar, cualquier proveedor puede usarlo. Si asignaste, solo ese proveedor.
+  </Card>
+  <Card title="Modificar Configuración" icon="pen" href="/services/edit-service">
+    Puedes editar el servicio en cualquier momento sin afectar citas pasadas
+  </Card>
+  <Card title="Ver Estadísticas" icon="chart-line">
+    Revisa cuántas citas se han agendado con este servicio y los ingresos generados
+  </Card>
+</CardGroup>
+
+## Casos de Uso Comunes
+
+### Servicio de Peluquería Básico
+
+```yaml
+Nombre: Corte de Pelo Caballero
+Categoría: Peluquería
+Duración: 30 minutos
+Precio: 15.00 EUR
+Proveedor: (sin asignar - cualquiera puede hacerlo)
+Recursos: (ninguno)
+Buffer: (ninguno)
+```
+
+### Servicio Médico Especializado
+
+```yaml
+Nombre: Consulta Cardiológica
+Categoría: Salud
+Duración: 45 minutos
+Precio: 80.00 EUR
+Proveedor: Dr. García (especialista)
+Recursos: Sala de Consulta 1, Electrocardiógrafo
+Buffer: 15 minutos (preparación de equipos)
+```
+
+### Servicio de Estética con Equipos
+
+```yaml
+Nombre: Depilación Láser Piernas Completas
+Categoría: Estética
+Duración: 60 minutos
+Precio: 120.00 EUR
+Proveedor: (sin asignar)
+Recursos: Equipo Láser 1, Sala de Tratamiento 2
+Buffer: 10 minutos (limpieza y preparación)
+```
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card
+    title="Importar desde Catálogo"
+    icon="book"
+    href="/services/create-from-catalog"
+  >
+    Descubre cómo importar servicios pre-configurados (más rápido)
+  </Card>
+  <Card
+    title="Editar Servicio"
+    icon="pen"
+    href="/services/edit-service"
+  >
+    Modifica un servicio existente
+  </Card>
+  <Card
+    title="Asignar a Proveedores"
+    icon="user-tie"
+    href="/providers/assign-services"
+  >
+    Vincula servicios con proveedores específicos
+  </Card>
+  <Card
+    title="Ver Servicios"
+    icon="list"
+    href="/services/view-services"
+  >
+    Explora todos tus servicios
+  </Card>
+</CardGroup>

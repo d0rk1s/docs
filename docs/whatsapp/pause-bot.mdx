@@ -1,0 +1,460 @@
+---
+title: "Pausar el Bot de WhatsApp"
+description: "Desactiva el bot temporalmente para tomar control manual de la conversación"
+---
+
+# Pausar el Bot de WhatsApp
+
+Pausar el bot te permite detener las respuestas automáticas y tomar control manual de la conversación con el paciente. Esto es útil cuando:
+
+- El bot no puede resolver una consulta compleja
+- El paciente está frustrado o confundido
+- Necesitas atención humana personalizada
+- Hay una queja o situación delicada
+- Quieres enviar mensajes proactivos sin que el bot interfiera
+
+## ¿Qué Sucede al Pausar?
+
+<Card icon="pause" color="#FFA500">
+Cuando pausas una conversación, el bot **deja de responder automáticamente**. Los nuevos mensajes del paciente quedan sin respuesta hasta que:
+- Staff envíe un mensaje manualmente
+- Se reactive el bot (cambiar estado de "Pausada" a "Activa")
+</Card>
+
+**Cambios visibles**:
+- Estado cambia de "Activa" (verde) a "Pausada" (naranja)
+- Badge naranja aparece en la lista de conversaciones
+- Bot ignora nuevos mensajes del paciente
+- Staff puede enviar mensajes manuales
+
+<Warning>
+**IMPORTANTE**: Cuando pausas el bot, el paciente NO recibe notificación automática. Debes responderle manualmente para que sepa que estás atendiendo la conversación.
+</Warning>
+
+<Frame>
+  <img src="/images/screenshots/whatsapp_pause_bot_toggle.png" alt="Toggle para pausar el bot de WhatsApp con estado activo/pausado" />
+</Frame>
+
+## Formas de Pausar el Bot
+
+### Opción 1: Desde la Lista de Conversaciones
+
+Esta es la forma más rápida cuando estás monitoreando múltiples conversaciones.
+
+<Steps>
+  <Step title="Ve a WhatsApp → Conversaciones">
+    Navega a la sección **WhatsApp** → **Conversaciones** desde el menú lateral.
+  </Step>
+
+  <Step title="Encuentra la conversación">
+    Usa búsqueda o filtros para encontrar la conversación que quieres pausar.
+  </Step>
+
+  <Step title="Haz clic en 'Pausar'">
+    Haz clic en el botón **"Pausar"** (icono de pausa ⏸️) en la columna de acciones.
+  </Step>
+
+  <Step title="Confirma la acción">
+    Aparece un modal de confirmación:
+    ```
+    ¿Pausar conversación con María García?
+    El bot dejará de responder automáticamente.
+    Tendrás que enviar mensajes manualmente.
+
+    [Cancelar] [Pausar Conversación]
+    ```
+    Haz clic en **"Pausar Conversación"**.
+  </Step>
+
+  <Step title="Verifica el cambio">
+    El estado cambia a "Pausada" (badge naranja).
+  </Step>
+</Steps>
+
+### Opción 2: Desde el Historial de Mensajes
+
+Esta es la forma recomendada cuando ya estás revisando una conversación problemática.
+
+<Steps>
+  <Step title="Abre el historial">
+    Desde la lista de conversaciones, haz clic en **"Ver"** para abrir el historial completo.
+  </Step>
+
+  <Step title="Haz clic en 'Pausar Bot'">
+    En la parte superior del historial, haz clic en el botón **"Pausar Bot"** (icono de pausa ⏸️).
+  </Step>
+
+  <Step title="Confirma la acción">
+    Confirma en el modal que aparece.
+  </Step>
+
+  <Step title="Envía mensaje manual">
+    Inmediatamente después de pausar, usa el campo de texto en la parte inferior para enviar un mensaje como staff:
+    ```
+    "Hola [Nombre], disculpa la demora. Ahora te atiendo personalmente. ¿En qué puedo ayudarte?"
+    ```
+  </Step>
+</Steps>
+
+## Cuándo Pausar el Bot
+
+### 1. Conversación Circular (Bot Repitiendo)
+
+**Síntomas**:
+- Paciente hace la misma pregunta 3+ veces
+- Bot responde con la misma información cada vez
+- Conversación tiene 10+ mensajes sin resolver
+
+**Ejemplo**:
+```
+Paciente: "Necesito cita para mañana"
+Bot: "Mañana tenemos disponibles: 10:00, 11:30, 15:00"
+
+Paciente: "Necesito cita para mañana por la tarde"
+Bot: "Mañana tenemos disponibles: 10:00, 11:30, 15:00"
+
+Paciente: "Pero solo quiero por la tarde"
+Bot: "Mañana tenemos disponibles: 10:00, 11:30, 15:00"
+```
+
+**Qué hacer**:
+1. Pausar el bot
+2. Responder manualmente: "Hola, por la tarde solo tenemos 15:00. ¿Te sirve ese horario?"
+
+### 2. Paciente Frustrado o Confundido
+
+**Síntomas**:
+- Paciente usa palabras como "no entiendo", "error", "no funciona"
+- Paciente envía mensajes en mayúsculas (enojo)
+- Paciente pregunta "¿hay alguien ahí?"
+
+**Ejemplo**:
+```
+Paciente: "No entiendo, solo quiero UNA CITA"
+Bot: "Claro, ¿para qué servicio?"
+Paciente: "YA TE DIJE, CORTE DE PELO"
+Bot: "Perfecto, ¿qué día prefieres?"
+Paciente: "NO FUNCIONA ESTO"
+```
+
+**Qué hacer**:
+1. Pausar el bot INMEDIATAMENTE
+2. Disculparse y tomar control: "Disculpa la confusión. Soy [Nombre] del equipo. Te ayudo ahora."
+3. Resolver manualmente con empatía
+
+### 3. Consulta Compleja o Excepcional
+
+**Ejemplos de consultas complejas**:
+- "¿Puedo agendar para 3 personas al mismo tiempo?"
+- "Tengo una discapacidad, ¿tienen accesibilidad?"
+- "¿Aceptan seguro médico?"
+- "Necesito hablar con el dueño"
+- "¿Cuánto cuesta el servicio X?" (si precios no están en sistema)
+
+**Qué hacer**:
+1. Pausar el bot
+2. Responder con información personalizada que el bot no tiene
+
+### 4. Queja o Situación Delicada
+
+**Ejemplos**:
+- "El corte que me hicieron la semana pasada quedó mal"
+- "Me cobraron de más"
+- "El peluquero fue grosero"
+- "Quiero cancelar mi suscripción"
+
+**Qué hacer**:
+1. Pausar el bot INMEDIATAMENTE (quejas nunca deben ser manejadas por bot)
+2. Responder con empatía: "Lamento mucho lo sucedido. Soy [Nombre], gerente de la clínica. Déjame ayudarte a resolver esto."
+3. Escalar a supervisor si es necesario
+
+### 5. Mensajes Proactivos de Staff
+
+**Ejemplos**:
+- Enviar recordatorio de cita personalizado
+- Informar cambio de horario de la clínica
+- Ofrecer promoción especial
+- Hacer seguimiento post-servicio
+
+**Qué hacer**:
+1. Pausar el bot ANTES de enviar mensaje proactivo
+2. Enviar mensaje como staff
+3. Dejar pausado si esperas respuesta (o reactivar después)
+
+## Enviar Mensaje Manual (Después de Pausar)
+
+Una vez pausado el bot, puedes enviar mensajes manualmente:
+
+### Desde el Historial
+
+<Steps>
+  <Step title="Asegúrate de que está pausado">
+    Verifica que el estado sea "Pausada" (badge naranja).
+  </Step>
+
+  <Step title="Usa el campo de texto">
+    En la parte inferior del historial, escribe tu mensaje en el campo de texto.
+  </Step>
+
+  <Step title="Identifícate como staff">
+    Incluye tu nombre o rol en el mensaje:
+    ```
+    "Hola, soy Laura del equipo de [Clínica]. ¿En qué puedo ayudarte?"
+    ```
+  </Step>
+
+  <Step title="Haz clic en 'Enviar'">
+    El mensaje se envía vía WhatsApp con tu nombre como remitente (metadata).
+  </Step>
+</Steps>
+
+**Tutorial completo**: [Enviar Mensaje Manual](/whatsapp/send-manual-message)
+
+## Reactivar el Bot
+
+Una vez resuelto el problema, puedes reactivar el bot para volver a la operación normal.
+
+<Steps>
+  <Step title="Ve al historial o lista de conversaciones">
+    Abre la conversación pausada.
+  </Step>
+
+  <Step title="Haz clic en 'Reactivar Bot'">
+    El botón de pausa cambia a **"Reactivar Bot"** (icono de play ▶️).
+  </Step>
+
+  <Step title="Confirma la acción">
+    Confirma en el modal:
+    ```
+    ¿Reactivar bot para María García?
+    El bot volverá a responder automáticamente.
+
+    [Cancelar] [Reactivar Bot]
+    ```
+  </Step>
+
+  <Step title="Verifica el cambio">
+    El estado cambia de "Pausada" (naranja) a "Activa" (verde).
+  </Step>
+
+  <Step title="Envía mensaje de transición (opcional)">
+    Opcionalmente, envía un mensaje manual antes de reactivar:
+    ```
+    "Perfecto, quedó todo resuelto. Si necesitas algo más, el asistente automático puede ayudarte 24/7."
+    ```
+    Luego reactiva el bot.
+  </Step>
+</Steps>
+
+## Pausar Múltiples Conversaciones (Batch)
+
+Si necesitas pausar muchas conversaciones al mismo tiempo (ej: mantenimiento, cierre temporal):
+
+<Warning>
+**Funcionalidad en desarrollo**: La pausa masiva estará disponible en una futura versión.
+</Warning>
+
+**Workaround actual**:
+1. Usa el filtro de estado para ver solo conversaciones "Activas"
+2. Pausa una por una desde la lista
+3. Opcionalmente, usa la API REST para pausa programática (requiere conocimientos técnicos)
+
+## Notificar al Paciente
+
+Cuando pausas el bot, es importante que el paciente sepa que hay un humano atendiéndolo.
+
+### Mensaje Recomendado (Primera Respuesta)
+
+```
+Hola [Nombre], disculpa la demora.
+
+Soy [Tu Nombre] del equipo de [Clínica]. He visto tu consulta y te ayudo personalmente.
+
+[Respuesta a su consulta]
+```
+
+**Ejemplo real**:
+```
+Hola María, disculpa la demora.
+
+Soy Laura del equipo de Peluquería Estilo. He visto que necesitas cita para mañana por la tarde.
+
+Tenemos disponible a las 15:00 con Ana (especialista en cortes modernos) o a las 17:30 con Pedro.
+
+¿Cuál prefieres?
+```
+
+### Mensaje Recomendado (Antes de Reactivar)
+
+```
+Perfecto, [Nombre]. Todo listo.
+
+Si necesitas algo más en el futuro, nuestro asistente automático puede ayudarte 24/7 (responde en segundos).
+
+¡Hasta pronto!
+```
+
+## Mejores Prácticas
+
+<Tip>
+**Pausa proactivamente**: Si detectas que la conversación empieza a ir en círculos, pausa ANTES de que el paciente se frustre.
+</Tip>
+
+<Tip>
+**Identifícate siempre**: Cuando envíes el primer mensaje manual, di tu nombre y rol. Esto genera confianza.
+</Tip>
+
+<Tip>
+**Reactiva cuando esté resuelto**: No dejes conversaciones pausadas indefinidamente. Reactiva el bot una vez que hayas terminado.
+</Tip>
+
+<Warning>
+**No pauses sin responder**: Si pausas el bot, DEBES responder manualmente inmediatamente. Dejar al paciente sin respuesta es peor que dejar el bot activo.
+</Warning>
+
+## Indicadores de Rendimiento
+
+### Métricas a Monitorear
+
+El sistema rastrea métricas de pausa para ayudarte a entender cuándo y por qué se pausa:
+
+<AccordionGroup>
+  <Accordion title="% de Conversaciones Pausadas">
+    **Qué mide**: Porcentaje de conversaciones que requieren intervención manual.
+
+    **Valores típicos**:
+    - **&lt;5%**: Excelente, el bot maneja casi todo
+    - **5-15%**: Normal, algunos casos complejos
+    - **>15%**: Alto, el bot puede necesitar mejoras
+
+    **Dónde verlo**: Dashboard → Métricas WhatsApp
+  </Accordion>
+
+  <Accordion title="Tiempo Promedio Pausado">
+    **Qué mide**: Cuánto tiempo tarda staff en resolver conversaciones pausadas.
+
+    **Valores típicos**:
+    - **&lt;5 min**: Excelente respuesta de staff
+    - **5-15 min**: Aceptable
+    - **>30 min**: Muy lento, paciente puede abandonar
+
+    **Dónde verlo**: Dashboard → Métricas WhatsApp
+  </Accordion>
+
+  <Accordion title="Razones de Pausa Más Comunes">
+    **Qué mide**: Por qué se pausan conversaciones (categorizadas manualmente o automáticamente).
+
+    **Categorías**:
+    - Consulta compleja
+    - Paciente frustrado
+    - Queja o situación delicada
+    - Error técnico del bot
+    - Mensaje proactivo de staff
+
+    **Dónde verlo**: Dashboard → Métricas WhatsApp → Desglose de Pausas
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+### No puedo pausar el bot
+
+**Causa 1**: Conversación ya está pausada.
+
+**Solución**: Verifica el estado. Si ya está pausada, simplemente envía mensaje manual.
+
+---
+
+**Causa 2**: Permisos insuficientes.
+
+**Solución**: Solo usuarios con rol `staff` o `admin` pueden pausar. Contacta a tu administrador.
+
+---
+
+**Causa 3**: Error técnico.
+
+**Solución**: Refresca la página. Si persiste, reporta a equipo técnico con `conversation_id`.
+
+### Pausé el bot pero sigue respondiendo
+
+**Causa**: Cache del navegador.
+
+**Solución**:
+1. Refresca la página (F5)
+2. Verifica que el estado sea "Pausada" (naranja)
+3. Si persiste, limpia cache del navegador y refresca
+
+### ¿Cómo sé si el paciente recibió mi mensaje manual?
+
+**Respuesta**: El sistema muestra estado de entrega en el historial:
+
+- **✓** (un check): Mensaje enviado a Twilio
+- **✓✓** (dos checks): Mensaje entregado a WhatsApp del paciente
+- **✓✓** (azul): Mensaje leído por el paciente
+
+**Latencia típica**: 1-3 segundos para delivery, variable para lectura.
+
+## Casos de Uso Avanzados
+
+### Pausa Temporal para Consultar con Otro
+
+**Escenario**: El paciente pregunta algo que no sabes (ej: precio de servicio especial).
+
+<Steps>
+  <Step title="Pausa el bot">
+    Inmediatamente para evitar que el bot responda mientras consultas.
+  </Step>
+
+  <Step title="Envía mensaje de espera">
+    "Hola [Nombre], déjame consultar eso con el equipo y te respondo en 2 minutos."
+  </Step>
+
+  <Step title="Consulta internamente">
+    Pregunta a supervisor, revisa documentación, etc.
+  </Step>
+
+  <Step title="Responde con información">
+    "Listo, el precio del servicio X es [precio]. ¿Deseas agendar?"
+  </Step>
+
+  <Step title="Reactiva el bot (opcional)">
+    Si la consulta quedó resuelta, reactiva el bot.
+  </Step>
+</Steps>
+
+### Escalar a Supervisor
+
+**Escenario**: Queja grave que requiere gerente o dueño.
+
+<Steps>
+  <Step title="Pausa el bot">
+    Inmediatamente para controlar la conversación.
+  </Step>
+
+  <Step title="Envía mensaje de escalamiento">
+    "Entiendo tu situación. Voy a conectar tu caso con [Nombre del Supervisor], quien te contactará en los próximos 10 minutos."
+  </Step>
+
+  <Step title="Notifica a supervisor">
+    Envía mensaje interno a supervisor con resumen del caso y `conversation_id`.
+  </Step>
+
+  <Step title="Mantén pausado">
+    NO reactives el bot hasta que supervisor resuelva.
+  </Step>
+
+  <Step title="Supervisor toma control">
+    Supervisor envía mensajes manuales desde su cuenta.
+  </Step>
+</Steps>
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Enviar Mensaje Manual" icon="paper-plane" href="/whatsapp/send-manual-message">
+    Aprende a enviar mensajes como staff
+  </Card>
+  <Card title="Ver Historial de Mensajes" icon="clock-rotate-left" href="/whatsapp/message-history">
+    Revisa conversaciones completas para entender contexto
+  </Card>
+</CardGroup>

@@ -1,0 +1,381 @@
+---
+title: "Ver Conversaciones WhatsApp"
+description: "Monitorea y consulta todas las conversaciones de pacientes con el bot"
+---
+
+# Ver Conversaciones WhatsApp
+
+El sistema te permite consultar todas las conversaciones que los pacientes han tenido con el bot de WhatsApp. Esto es útil para:
+
+- Monitorear la actividad del bot
+- Verificar que el bot está agendando citas correctamente
+- Detectar conversaciones problemáticas
+- Auditar interacciones con pacientes
+- Analizar patrones de uso
+
+## Acceder a la Lista de Conversaciones
+
+### Paso 1: Ir a la Sección WhatsApp
+
+<Steps>
+  <Step title="Navega al menú principal">
+    Desde el dashboard, haz clic en la sección **"WhatsApp"** en el menú lateral izquierdo.
+  </Step>
+
+  <Step title="Selecciona 'Conversaciones'">
+    Dentro de la sección WhatsApp, haz clic en **"Conversaciones"** para ver el listado completo.
+  </Step>
+</Steps>
+
+### Paso 2: Entender la Vista de Conversaciones
+
+La vista de conversaciones muestra una tabla con las siguientes columnas:
+
+| Columna | Descripción |
+|---------|-------------|
+| **Paciente** | Nombre del paciente (si está registrado) o "Paciente Desconocido" |
+| **Teléfono** | Número de WhatsApp en formato E.164 (+34612345678) |
+| **Último Mensaje** | Fragmento del último mensaje enviado o recibido |
+| **Fecha** | Timestamp del último mensaje (fecha y hora) |
+| **Estado** | Activa, Pausada, o Finalizada |
+| **Mensajes** | Cantidad total de mensajes en la conversación |
+| **Acciones** | Botones para ver detalles, pausar, o enviar mensaje |
+
+<Frame>
+  <img src="/images/screenshots/whatsapp_conversations_list.png" alt="Tabla de conversaciones de WhatsApp mostrando pacientes, mensajes y estados" />
+</Frame>
+
+### Ejemplo de Vista
+
+```
+┌─────────────────┬──────────────────┬─────────────────────────────┬──────────────────┬────────┬──────────┬──────────┐
+│ Paciente        │ Teléfono         │ Último Mensaje              │ Fecha            │ Estado │ Mensajes │ Acciones │
+├─────────────────┼──────────────────┼─────────────────────────────┼──────────────────┼────────┼──────────┼──────────┤
+│ María García    │ +34612345678     │ "Perfecto, gracias!"        │ 17/01/2026 14:35 │ Activa │ 8        │ [Ver]    │
+│ Juan López      │ +34612345678     │ Bot: "Cita confirmada..."   │ 17/01/2026 10:22 │ Activa │ 12       │ [Ver]    │
+│ Ana Martínez    │ +34698765432     │ "Necesito cancelar"         │ 16/01/2026 18:45 │ Pausada│ 15       │ [Ver]    │
+│ Paciente Nuevo  │ +34623456789     │ "Hola"                      │ 16/01/2026 09:10 │ Activa │ 2        │ [Ver]    │
+└─────────────────┴──────────────────┴─────────────────────────────┴──────────────────┴────────┴──────────┴──────────┘
+```
+
+## Filtrar Conversaciones
+
+### Filtro por Estado
+
+Usa el dropdown **"Estado"** para filtrar conversaciones por estado:
+
+<Tabs>
+  <Tab title="Todas">
+    Muestra todas las conversaciones independientemente del estado.
+  </Tab>
+  <Tab title="Activas">
+    Solo conversaciones donde el bot está respondiendo automáticamente.
+  </Tab>
+  <Tab title="Pausadas">
+    Conversaciones donde el bot fue pausado manualmente por staff.
+  </Tab>
+  <Tab title="Finalizadas">
+    Conversaciones que el paciente o el sistema marcaron como terminadas.
+  </Tab>
+</Tabs>
+
+### Filtro por Fecha
+
+Usa el selector de rango de fechas para filtrar conversaciones por período:
+
+<AccordionGroup>
+  <Accordion title="Hoy">
+    Muestra solo conversaciones con mensajes de hoy.
+  </Accordion>
+  <Accordion title="Últimos 7 días">
+    Filtra conversaciones de la última semana.
+  </Accordion>
+  <Accordion title="Últimos 30 días">
+    Filtra conversaciones del último mes (opción por defecto).
+  </Accordion>
+  <Accordion title="Rango personalizado">
+    Selecciona fechas específicas de inicio y fin.
+  </Accordion>
+</AccordionGroup>
+
+### Buscar por Paciente o Teléfono
+
+Usa la barra de búsqueda para encontrar conversaciones específicas:
+
+**Ejemplos de búsqueda**:
+- `María` - Busca por nombre de paciente
+- `García` - Busca por apellido
+- `+34612` - Busca por número de teléfono
+- `612345678` - Busca por parte del número
+
+<Tip>
+La búsqueda es case-insensitive (no distingue mayúsculas/minúsculas) y busca en nombre, apellido, y teléfono simultáneamente.
+</Tip>
+
+## Interpretar los Estados
+
+### Estado: Activa
+
+<Card icon="comments" color="#0D9373">
+**Activa**: El bot está respondiendo automáticamente a los mensajes del paciente.
+</Card>
+
+**Qué significa**:
+- El paciente puede enviar mensajes y recibir respuestas instantáneas
+- El bot procesará mensajes con LLM y herramientas
+- No hay intervención manual de staff
+
+**Cuándo usar**: Operación normal del bot 24/7.
+
+### Estado: Pausada
+
+<Card icon="pause" color="#FFA500">
+**Pausada**: El bot NO responderá automáticamente. Staff debe responder manualmente.
+</Card>
+
+**Qué significa**:
+- El bot ignorará nuevos mensajes del paciente
+- Staff debe enviar respuestas manualmente
+- La conversación requiere atención humana
+
+**Cuándo usar**: Cuando el bot no puede resolver la consulta (caso complejo, queja, etc.)
+
+**Cómo pausar**: Ver tutorial [Pausar el Bot](/whatsapp/pause-bot)
+
+### Estado: Finalizada
+
+<Card icon="check-circle" color="#6B7280">
+**Finalizada**: Conversación completada. El bot no responderá a menos que se reactive.
+</Card>
+
+**Qué significa**:
+- La conversación alcanzó un objetivo (cita agendada, cancelación confirmada)
+- O el paciente dijo explícitamente "adiós", "gracias", etc.
+- El bot marcó la conversación como completa
+
+**Reactivación**: Si el paciente envía un nuevo mensaje, el bot crea una nueva conversación automáticamente.
+
+## Acciones Disponibles
+
+### Ver Detalles
+
+Haz clic en el botón **"Ver"** o en la fila completa para:
+- Ver el historial completo de mensajes
+- Revisar qué herramientas invocó el bot
+- Ver timestamps precisos de cada mensaje
+- Acceder a acciones adicionales (pausar, enviar mensaje manual)
+
+**Tutorial**: [Ver Historial de Mensajes](/whatsapp/message-history)
+
+### Pausar Conversación
+
+Haz clic en el botón **"Pausar"** (icono de pausa) para detener el bot en esa conversación.
+
+**Resultado**:
+- Bot dejará de responder automáticamente
+- Estado cambia a "Pausada"
+- Staff puede tomar control manualmente
+
+**Tutorial**: [Pausar el Bot](/whatsapp/pause-bot)
+
+### Enviar Mensaje Manual
+
+Haz clic en el botón **"Enviar"** (icono de avión de papel) para enviar un mensaje como staff.
+
+**Cuándo usar**:
+- Responder preguntas complejas que el bot no maneja
+- Enviar información personalizada
+- Contactar proactivamente a un paciente
+- Resolver quejas o situaciones delicadas
+
+**Tutorial**: [Enviar Mensaje Manual](/whatsapp/send-manual-message)
+
+## Indicadores Visuales
+
+### Badges de Estado
+
+El sistema usa badges de colores para indicar estado:
+
+<CardGroup cols={3}>
+  <Card title="Verde" icon="circle" color="#0D9373">
+    Conversación activa (bot respondiendo)
+  </Card>
+  <Card title="Naranja" icon="circle" color="#FFA500">
+    Conversación pausada (atención manual)
+  </Card>
+  <Card title="Gris" icon="circle" color="#6B7280">
+    Conversación finalizada
+  </Card>
+</CardGroup>
+
+### Iconos de Mensajes Recientes
+
+El sistema marca conversaciones con mensajes nuevos:
+
+<Note>
+**Punto rojo** junto al nombre indica que hay mensajes sin leer (recibidos en los últimos 5 minutos).
+</Note>
+
+## Ordenamiento de la Lista
+
+Por defecto, las conversaciones se ordenan por **última actividad** (más reciente primero). Puedes cambiar el ordenamiento haciendo clic en los encabezados de columna:
+
+| Columna | Ordenamiento |
+|---------|--------------|
+| **Paciente** | Alfabético (A-Z o Z-A) |
+| **Fecha** | Cronológico (más reciente o más antiguo primero) |
+| **Mensajes** | Cantidad (más mensajes o menos mensajes primero) |
+
+## Paginación
+
+Si tienes más de 50 conversaciones, el sistema usa paginación:
+
+<Steps>
+  <Step title="Navegación inferior">
+    Usa los botones **"Anterior"** y **"Siguiente"** en la parte inferior de la tabla.
+  </Step>
+
+  <Step title="Ir a página específica">
+    Escribe el número de página en el campo y presiona Enter.
+  </Step>
+
+  <Step title="Cambiar resultados por página">
+    Usa el dropdown para mostrar 10, 25, 50, o 100 conversaciones por página.
+  </Step>
+</Steps>
+
+## Casos de Uso Comunes
+
+### Monitorear Actividad del Bot
+
+**Objetivo**: Verificar que el bot está funcionando correctamente.
+
+<Steps>
+  <Step title="Filtra por 'Hoy'">
+    Selecciona el filtro de fecha "Hoy" para ver conversaciones activas.
+  </Step>
+
+  <Step title="Revisa estados">
+    Verifica que la mayoría están en estado "Activa" (verde).
+  </Step>
+
+  <Step title="Identifica pausadas">
+    Si hay muchas "Pausadas" (naranja), puede indicar problemas con el bot.
+  </Step>
+
+  <Step title="Revisa detalles de pausadas">
+    Haz clic en conversaciones pausadas para entender por qué fallaron.
+  </Step>
+</Steps>
+
+### Auditar Citas Agendadas
+
+**Objetivo**: Verificar que el bot agendó citas correctamente.
+
+<Steps>
+  <Step title="Busca paciente">
+    Usa la barra de búsqueda para encontrar al paciente.
+  </Step>
+
+  <Step title="Abre historial">
+    Haz clic en "Ver" para abrir el historial completo.
+  </Step>
+
+  <Step title="Verifica herramientas">
+    Busca mensajes del bot que digan "Herramienta usada: create_appointment".
+  </Step>
+
+  <Step title="Confirma datos">
+    Verifica que fecha, hora, y servicio sean correctos en la confirmación del bot.
+  </Step>
+
+  <Step title="Valida en calendario">
+    Ve al calendario de citas para confirmar que la cita existe en el sistema.
+  </Step>
+</Steps>
+
+### Identificar Conversaciones Problemáticas
+
+**Objetivo**: Detectar conversaciones donde el bot no pudo ayudar.
+
+**Señales de problemas**:
+- Conversación con 10+ mensajes sin agendar cita (paciente repite preguntas)
+- Paciente usa palabras como "no entiendo", "error", "no funciona"
+- Conversación pausada por staff
+- Múltiples invocaciones de la misma herramienta (ej: `get_availability` 5+ veces)
+
+**Qué hacer**:
+1. Abre el historial completo
+2. Identifica el mensaje donde falló
+3. Revisa qué herramienta invocó el bot
+4. Reporta el problema a equipo técnico con ID de conversación
+
+## Exportar Conversaciones
+
+<Warning>
+**Funcionalidad en desarrollo**: La exportación de conversaciones a CSV/Excel estará disponible en una futura versión.
+</Warning>
+
+Actualmente puedes:
+- Copiar manualmente información de conversaciones específicas
+- Tomar screenshots de la lista de conversaciones
+- Contactar a soporte técnico para exportaciones manuales
+
+## Mejores Prácticas
+
+<Tip>
+**Revisa diariamente**: Dedica 5-10 minutos cada mañana a revisar las conversaciones del día anterior para detectar problemas temprano.
+</Tip>
+
+<Tip>
+**Pausar cuando necesario**: No dudes en pausar el bot si detectas conversaciones complejas. Es mejor intervenir manualmente que frustrar al paciente.
+</Tip>
+
+<Warning>
+**No borres conversaciones**: El historial es importante para auditoría y mejora del bot. Solo marca como finalizadas si es necesario.
+</Warning>
+
+## Troubleshooting
+
+### No veo ninguna conversación
+
+**Posibles causas**:
+1. **Filtros muy restrictivos**: Verifica que no estés filtrando por fecha muy antigua o estado incorrecto.
+2. **WhatsApp no activado**: Verifica en configuración que WhatsApp esté activado para tu clínica.
+3. **Sin actividad**: Si es una clínica nueva, aún no hay conversaciones. Prueba enviando un mensaje desde tu WhatsApp al número del bot.
+
+**Solución**: Haz clic en "Limpiar filtros" y verifica configuración de WhatsApp.
+
+### Conversación aparece como "Paciente Desconocido"
+
+**Causa**: El número de WhatsApp no está registrado en la base de datos de pacientes.
+
+**Qué significa**:
+- Es la primera vez que ese número contacta la clínica
+- O el paciente aún no ha agendado una cita (no tiene datos en sistema)
+
+**Solución**: Cuando el bot agende la primera cita, el sistema creará el paciente automáticamente y el nombre aparecerá.
+
+### Todas las conversaciones aparecen como "Pausadas"
+
+**Causa probable**: Configuración incorrecta de WhatsApp o problema con Twilio.
+
+**Pasos para diagnosticar**:
+1. Ve a **Configuración → WhatsApp**
+2. Verifica que el estado sea "Activo" (verde)
+3. Verifica variables de entorno (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`)
+4. Contacta a soporte técnico si el problema persiste
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Ver Historial de Mensajes" icon="clock-rotate-left" href="/whatsapp/message-history">
+    Aprende a revisar el historial completo de una conversación
+  </Card>
+  <Card title="Pausar el Bot" icon="pause" href="/whatsapp/pause-bot">
+    Toma control manual cuando el bot no pueda resolver
+  </Card>
+  <Card title="Enviar Mensaje Manual" icon="paper-plane" href="/whatsapp/send-manual-message">
+    Responde como staff cuando sea necesario
+  </Card>
+</CardGroup>

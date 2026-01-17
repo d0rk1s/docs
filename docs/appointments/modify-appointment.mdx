@@ -1,0 +1,260 @@
+---
+title: "Modificar Cita Existente"
+description: "Cómo cambiar fecha, hora o detalles de una cita"
+---
+
+# Modificar Cita Existente
+
+Aprende a modificar citas ya agendadas para cambiar fecha, hora, servicio o proveedor.
+
+## ¿Cuándo Modificar vs Cancelar y Crear Nueva?
+
+<CardGroup cols={2}>
+  <Card title="Modificar" icon="pen-to-square" color="#0D9373">
+    Usa "Modificar" cuando solo necesitas cambiar detalles de la cita existente (fecha, hora, servicio, proveedor)
+  </Card>
+  <Card title="Cancelar y Crear" icon="rotate" color="#FFA500">
+    Usa "Cancelar y Crear" cuando necesitas cambiar el paciente o crear una cita completamente diferente
+  </Card>
+</CardGroup>
+
+<Tip>
+Modificar una cita mantiene el historial y los datos del paciente. Es más rápido que cancelar y crear una nueva.
+</Tip>
+
+## Forma 1: Desde el Calendario
+
+La forma más rápida de modificar una cita es directamente desde el calendario.
+
+<Steps>
+  <Step title="Abrir el Calendario">
+    Navega a **Citas → Calendario** en el menú lateral.
+  </Step>
+
+  <Step title="Click en la Cita">
+    Haz click en la cita que deseas modificar en el calendario. Se abrirá un modal con los detalles de la cita.
+
+    <Frame>
+      <img src="/images/screenshots/appointments_modify_01_context_menu.png" alt="Modal de detalles de la cita con botones de acción" />
+    </Frame>
+  </Step>
+
+  <Step title="Activar Modo de Edición">
+    Haz click en el botón **"Reagendar"** para modificar la fecha y hora de la cita.
+  </Step>
+
+  <Step title="Modificar Campos">
+    Cambia los campos necesarios:
+    - **Fecha y Hora**: Selecciona nueva fecha y hora
+    - **Servicio**: Cambia el servicio si es necesario
+    - **Proveedor**: Asigna otro proveedor (opcional)
+    - **Notas**: Actualiza comentarios internos (opcional)
+
+    <Frame>
+      <img src="/images/screenshots/appointments_modify_02_edit_form.png" alt="Formulario de reagendamiento con calendario y notas" />
+    </Frame>
+  </Step>
+
+  <Step title="Guardar Cambios">
+    Haz click en **"Guardar Cambios"** para confirmar la modificación.
+  </Step>
+</Steps>
+
+<Note>
+El calendario mostrará la cita en su nueva posición inmediatamente después de guardar.
+</Note>
+
+## Forma 2: Desde Búsqueda de Paciente
+
+Si no sabes cuándo es la cita, puedes buscar al paciente primero.
+
+<Steps>
+  <Step title="Buscar Paciente">
+    Ve a **Pacientes → Buscar Paciente** en el menú lateral.
+
+    Busca por:
+    - Nombre completo o parcial
+    - Teléfono en formato internacional (ej: +34612345678)
+  </Step>
+
+  <Step title="Ver Lista de Citas">
+    Una vez encontrado el paciente, verás la lista de todas sus citas (pasadas y futuras).
+  </Step>
+
+  <Step title="Seleccionar Cita">
+    Haz click en la cita que deseas modificar. Se abrirá el modal de detalles.
+  </Step>
+
+  <Step title="Editar y Guardar">
+    Sigue los pasos 3-5 de "Forma 1" (Activar modo edición, modificar campos, guardar).
+  </Step>
+</Steps>
+
+## Campos Modificables
+
+Estos son los campos que puedes cambiar al modificar una cita:
+
+| Campo | Descripción | Restricciones |
+|-------|-------------|---------------|
+| **Fecha y Hora** | Nuevo horario para la cita | Debe estar disponible (ver validaciones) |
+| **Servicio** | Cambiar el servicio prestado | Afecta la duración de la cita |
+| **Proveedor** | Asignar otro proveedor | Debe estar disponible en el nuevo horario |
+| **Notas** | Comentarios internos | Texto libre (no visible para el paciente) |
+
+<Tip>
+**El paciente NO se puede cambiar**. Si necesitas cambiar el paciente, debes cancelar la cita existente y crear una nueva con el otro paciente.
+</Tip>
+
+## Validaciones al Modificar
+
+El sistema verifica automáticamente que el nuevo horario sea válido:
+
+<Warning>
+Si alguna validación falla, recibirás un error y deberás elegir otro horario.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="Disponibilidad del Nuevo Horario">
+    **¿Qué verifica?**
+    - El nuevo horario está dentro de los **work hours** de la clínica
+    - No hay cierres programados para esa fecha
+    - El proveedor no tiene otra cita en ese horario
+
+    **Si falla**: Error "El horario solicitado no está disponible. Por favor, elige otro."
+  </Accordion>
+
+  <Accordion title="No Solapamiento con Otras Citas">
+    **¿Qué verifica?**
+    - La nueva cita no se solapa con otras citas del mismo proveedor
+
+    **Ejemplo de solapamiento**:
+    - Cita existente del proveedor: 10:00-11:00
+    - Nueva cita que intentas agendar: 10:30-11:30 ❌ **CONFLICTO**
+
+    **Si falla**: Error "El proveedor ya tiene una cita en ese horario."
+  </Accordion>
+
+  <Accordion title="Dentro de Work Hours">
+    **¿Qué verifica?**
+    - La cita comienza y termina dentro de los horarios de trabajo de la clínica y del proveedor
+
+    **Ejemplo válido**:
+    - Work hours: Lunes 09:00-18:00
+    - Cita: Lunes 10:00-11:00 ✅ **VÁLIDA**
+
+    **Ejemplo inválido**:
+    - Work hours: Lunes 09:00-18:00
+    - Cita: Lunes 17:30-18:30 ❌ **INVÁLIDA** (termina a las 18:30, fuera de work hours)
+
+    **Si falla**: Error "El horario está fuera de los horarios de trabajo."
+  </Accordion>
+
+  <Accordion title="Recursos Disponibles (si aplica)">
+    **¿Qué verifica?**
+    - Si el servicio requiere recursos específicos (ej: sala de operaciones), verifica que estén disponibles en el nuevo horario
+
+    **Si falla**: Error "Recurso no disponible en ese horario."
+  </Accordion>
+</AccordionGroup>
+
+## Confirmar Cambios
+
+Una vez que modifiques los campos necesarios:
+
+<Steps>
+  <Step title="Revisar Cambios">
+    Verifica que todos los datos sean correctos (fecha, hora, servicio, proveedor).
+  </Step>
+
+  <Step title="Click en Guardar">
+    Haz click en **"Guardar Cambios"** en la parte inferior del modal.
+  </Step>
+
+  <Step title="Validación Automática">
+    El sistema validará automáticamente que el nuevo horario esté disponible.
+    - ✅ Si es válido: La cita se modifica inmediatamente.
+    - ❌ Si no es válido: Recibirás un error y deberás elegir otro horario.
+  </Step>
+
+  <Step title="Notificación al Paciente">
+    Si tienes WhatsApp configurado, el sistema enviará automáticamente un mensaje al paciente notificándole el cambio:
+
+    *"Hola [Paciente], tu cita del [Fecha Antigua] a las [Hora Antigua] fue cambiada a [Fecha Nueva] a las [Hora Nueva]. Gracias."*
+  </Step>
+</Steps>
+
+<Tip>
+El sistema muestra una notificación verde en la esquina superior derecha confirmando que la cita fue modificada exitosamente.
+</Tip>
+
+## Casos Especiales
+
+<AccordionGroup>
+  <Accordion title="¿Puedo cambiar el paciente de una cita?">
+    **No**, el paciente NO se puede cambiar al modificar una cita.
+
+    **Solución**:
+    1. Cancela la cita existente (liberará el horario)
+    2. Crea una nueva cita con el otro paciente
+
+    Esto mantiene el historial de citas correcto para ambos pacientes.
+  </Accordion>
+
+  <Accordion title="¿Qué pasa si el nuevo horario no está disponible?">
+    Recibirás un error específico dependiendo del motivo:
+    - **"El horario solicitado no está disponible"**: Ya hay otra cita en ese horario
+    - **"El horario está fuera de los horarios de trabajo"**: El horario es fuera de work hours
+    - **"Recurso no disponible"**: El recurso requerido está ocupado
+
+    **Solución**: Elige otro horario disponible. Puedes consultar disponibilidad antes de modificar usando la vista de calendario.
+  </Accordion>
+
+  <Accordion title="¿Se notifica al paciente automáticamente?">
+    **Sí**, si tienes WhatsApp configurado y activo, el sistema enviará automáticamente un mensaje al paciente notificándole el cambio de horario.
+
+    **Contenido del mensaje**:
+    - Horario anterior (fecha y hora)
+    - Nuevo horario (fecha y hora)
+    - Nombre del servicio (si cambió)
+
+    **Si no tienes WhatsApp activo**: Deberás notificar manualmente al paciente (por teléfono, email, etc.).
+  </Accordion>
+
+  <Accordion title="¿Puedo modificar citas pasadas o completadas?">
+    **No**, solo puedes modificar citas que estén en estado **Pending** o **Confirmed**.
+
+    **Estados NO modificables**:
+    - ❌ **Completed** (cita ya finalizada)
+    - ❌ **Cancelled** (cita ya cancelada)
+
+    Si necesitas corregir datos de una cita completada, contacta al administrador del sistema.
+  </Accordion>
+
+  <Accordion title="¿Qué pasa si cambio el servicio a uno con diferente duración?">
+    El sistema **recalcula automáticamente** la hora de fin de la cita según la duración del nuevo servicio.
+
+    **Ejemplo**:
+    - Cita original: 10:00-10:30 (Servicio A, 30min)
+    - Cambias a Servicio B (60min)
+    - Nueva cita: 10:00-11:00 ✅ (mantiene hora de inicio, extiende hora de fin)
+
+    **Importante**: Verifica que el nuevo horario (con nueva duración) no genere conflictos con otras citas.
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Cancelar Cita" icon="circle-xmark" href="/appointments/cancel-appointment">
+    Aprende a cancelar una cita y liberar el horario
+  </Card>
+  <Card title="Ver Estados de Cita" icon="list-check" href="/appointments/overview#estados-de-una-cita">
+    Entiende los diferentes estados de una cita
+  </Card>
+  <Card title="Buscar por Paciente" icon="magnifying-glass" href="/appointments/search-patient">
+    Encuentra todas las citas de un paciente
+  </Card>
+  <Card title="Ver Calendario" icon="calendar" href="/appointments/view-calendar">
+    Navega el calendario de citas
+  </Card>
+</CardGroup>

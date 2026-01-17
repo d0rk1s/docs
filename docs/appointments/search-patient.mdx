@@ -1,0 +1,342 @@
+---
+title: "Buscar Paciente"
+description: "Cómo encontrar pacientes y ver su historial de citas"
+---
+
+## Introducción
+
+La búsqueda de pacientes es una funcionalidad esencial para:
+
+- Consultar el historial de citas de un paciente
+- Verificar citas futuras o pasadas
+- Modificar o cancelar citas existentes
+- Contactar al paciente para confirmaciones o recordatorios
+- Agendar nuevas citas para pacientes recurrentes
+
+El sistema permite búsquedas flexibles por nombre, teléfono o email, y muestra el historial completo de citas del paciente en tu clínica.
+
+## Métodos de Búsqueda
+
+<Tabs>
+  <Tab title="Por Nombre">
+    **Búsqueda Parcial**: Ingresa el nombre o apellido del paciente.
+
+    - **Ejemplo**: "Eduardo" encontrará "Eduardo Cassanovas Garcia"
+    - **Ejemplo**: "López" encontrará "Manuel López Sánchez"
+    - No distingue mayúsculas/minúsculas
+    - Busca coincidencias parciales en nombre completo
+
+    ```
+    Búsqueda: "Cassa"
+    Resultado: Eduardo Cassanovas Garcia ✓
+    ```
+  </Tab>
+
+  <Tab title="Por Teléfono">
+    **Búsqueda Exacta**: Ingresa el teléfono en formato E.164.
+
+    - **Formato requerido**: `+[código país][número]`
+    - **Ejemplo España**: `+34612345678`
+    - **Ejemplo USA**: `+14155551234`
+    - Debe incluir el símbolo `+` y código de país
+    - La búsqueda es exacta (no parcial)
+
+    ```
+    Búsqueda: +34612345678
+    Resultado: Paciente con ese teléfono ✓
+    ```
+
+    <Warning>
+      Sin el formato E.164 correcto (`+34612345678`), la búsqueda no encontrará resultados.
+    </Warning>
+  </Tab>
+
+  <Tab title="Por Email">
+    **Búsqueda Exacta**: Ingresa el email completo del paciente.
+
+    - **Ejemplo**: `eduardo@example.com`
+    - La búsqueda es exacta (no parcial)
+    - No distingue mayúsculas/minúsculas
+
+    ```
+    Búsqueda: eduardo@example.com
+    Resultado: Eduardo Cassanovas Garcia ✓
+    ```
+  </Tab>
+</Tabs>
+
+## Paso a Paso
+
+<Frame>
+  <img src="/images/screenshots/patients_search.png" alt="Interfaz de búsqueda de pacientes" />
+</Frame>
+
+<Steps>
+  <Step title="Navegar a Buscar Paciente">
+    En el menú lateral, selecciona **Citas > Buscar Paciente**.
+
+    También puedes usar el atajo de teclado `Ctrl + K` (o `Cmd + K` en Mac) y escribir "buscar paciente".
+  </Step>
+
+  <Step title="Ingresar Criterio de Búsqueda">
+    En el campo de búsqueda, ingresa:
+    - **Nombre o apellido** (ej: "Eduardo", "Cassanovas")
+    - **Teléfono completo** en formato E.164 (ej: `+34612345678`)
+    - **Email completo** (ej: `eduardo@example.com`)
+
+    El sistema buscará automáticamente mientras escribes.
+  </Step>
+
+  <Step title="Ver Resultados">
+    La tabla mostrará todos los pacientes que coincidan con tu búsqueda:
+
+    | Campo | Descripción |
+    |-------|-------------|
+    | **Nombre** | Nombre completo del paciente |
+    | **Teléfono** | Número en formato E.164 |
+    | **Email** | Dirección de email |
+    | **Última cita** | Fecha de la última cita (pasada o futura) |
+    | **Total citas** | Número total de citas en tu clínica |
+
+    <Info>
+      Los resultados se filtran automáticamente por tu clínica. No verás pacientes de otras clínicas.
+    </Info>
+  </Step>
+
+  <Step title="Seleccionar Paciente">
+    Haz click en cualquier fila para ver los detalles completos del paciente y su historial de citas.
+  </Step>
+</Steps>
+
+## Información del Paciente
+
+Al seleccionar un paciente, verás:
+
+### Datos Personales
+
+| Campo | Descripción | Ejemplo |
+|-------|-------------|---------|
+| **Nombre Completo** | Nombre del paciente | Eduardo Cassanovas Garcia |
+| **Teléfono** | Formato E.164 | +34612345678 |
+| **Email** | Dirección de correo | eduardo@example.com |
+| **Fecha de Registro** | Primera cita en tu clínica | 15/11/2025 |
+
+### Resumen de Citas
+
+| Métrica | Descripción |
+|---------|-------------|
+| **Total de Citas** | Número total de citas (todas las categorías) |
+| **Última Cita** | Fecha y servicio de la última cita completada |
+| **Próxima Cita** | Fecha y servicio de la próxima cita confirmada |
+| **Citas Canceladas** | Número de citas canceladas (historial) |
+
+<Note>
+  **Sistema Multi-Clínica**: Un paciente puede existir en varias clínicas con el mismo teléfono pero diferentes nombres. El sistema actualiza automáticamente el nombre del paciente con el valor más reciente proporcionado (fix implementado 2025-11-05).
+
+  **Ejemplo**: Si "Manuel López" en Clínica A agenda en Clínica B como "Eduardo Cassanovas", el sistema actualizará su nombre a "Eduardo Cassanovas" globalmente.
+</Note>
+
+## Ver Historial de Citas
+
+El historial de citas se organiza en dos secciones:
+
+### Citas Futuras
+
+- **Estados**: Pending (Pendiente), Confirmed (Confirmada)
+- **Acciones**: Modificar fecha/hora, Cancelar, Ver detalles
+- **Ordenamiento**: Por fecha ascendente (más próxima primero)
+
+### Citas Pasadas
+
+- **Estados**: Completed (Completada), Cancelled (Cancelada)
+- **Acciones**: Ver detalles, Re-agendar (crear nueva cita basada en esta)
+- **Ordenamiento**: Por fecha descendente (más reciente primero)
+
+### Filtros Disponibles
+
+- **Por Estado**: Todas, Confirmadas, Pendientes, Completadas, Canceladas
+- **Por Servicio**: Filtrar por tipo de servicio (Corte, Barba, etc.)
+- **Por Fecha**: Rango de fechas personalizado
+- **Por Proveedor**: Citas con un proveedor específico
+
+<Tip>
+  Usa los filtros combinados para encontrar rápidamente citas específicas. Ejemplo: "Citas de Corte con Peluquero 1 en noviembre de 2025".
+</Tip>
+
+## Acciones Rápidas
+
+Desde la vista de detalles del paciente, puedes realizar:
+
+<CardGroup cols={2}>
+  <Card title="Ver Detalles de Cita" icon="eye">
+    Consulta información completa de cualquier cita: fecha, hora, servicio, proveedor, duración, notas.
+  </Card>
+
+  <Card title="Modificar Cita Futura" icon="pen-to-square">
+    Cambia la fecha, hora o servicio de citas pendientes o confirmadas.
+
+    **Nota**: Solo citas futuras pueden modificarse.
+  </Card>
+
+  <Card title="Cancelar Cita" icon="ban">
+    Cancela citas futuras con motivo opcional.
+
+    **Acción irreversible**: La cita pasará a estado "Cancelled".
+  </Card>
+
+  <Card title="Agendar Nueva Cita" icon="calendar-plus">
+    Crea una nueva cita para este paciente. Los datos personales se autocompletarán.
+  </Card>
+</CardGroup>
+
+## Búsqueda Avanzada
+
+### Filtros Adicionales
+
+<Accordion title="Por Fecha de Última Cita">
+  Encuentra pacientes según cuándo fue su última visita:
+
+  - **Últimos 7 días**: Pacientes recientes
+  - **Últimos 30 días**: Pacientes del mes
+  - **Más de 90 días**: Pacientes inactivos (para campañas de re-engagement)
+  - **Rango personalizado**: Define tus propias fechas
+
+  **Caso de uso**: Identificar pacientes inactivos para enviar promociones o recordatorios.
+</Accordion>
+
+<Accordion title="Por Servicio Utilizado">
+  Filtra pacientes que hayan utilizado un servicio específico:
+
+  - **Corte de pelo**: Pacientes de corte
+  - **Barba**: Pacientes de barba
+  - **Tinte**: Pacientes de coloración
+  - **Múltiples servicios**: Pacientes con más de un tipo de servicio
+
+  **Caso de uso**: Segmentar pacientes por preferencias de servicio para marketing dirigido.
+</Accordion>
+
+<Accordion title="Exportar Resultados">
+  Descarga los resultados de búsqueda en formato CSV:
+
+  **Datos incluidos**:
+  - Nombre completo
+  - Teléfono (E.164)
+  - Email
+  - Fecha de última cita
+  - Total de citas
+  - Servicios utilizados
+
+  **Caso de uso**: Análisis externo en Excel, campañas de email marketing, reportes de retención.
+
+  <Warning>
+    Los datos exportados contienen información personal. Asegúrate de cumplir con GDPR y políticas de privacidad de tu clínica.
+  </Warning>
+</Accordion>
+
+## Casos Especiales
+
+<AccordionGroup>
+  <Accordion title="No Encuentro el Paciente">
+    **Problema**: La búsqueda no devuelve resultados.
+
+    **Soluciones**:
+
+    1. **Verificar formato de teléfono**:
+       - ✅ Correcto: `+34612345678` (incluye `+` y código de país)
+       - ❌ Incorrecto: `612345678` (falta código de país)
+       - ❌ Incorrecto: `34612345678` (falta símbolo `+`)
+
+    2. **Revisar nombre completo**:
+       - El paciente podría estar registrado con nombre diferente
+       - Prueba buscar por apellido en lugar de nombre
+       - Prueba buscar solo la primera parte del nombre
+
+    3. **Verificar clínica activa**:
+       - El paciente debe tener al menos una cita en TU clínica
+       - No puedes buscar pacientes de otras clínicas
+
+    4. **Buscar por email**:
+       - Si tienes el email del paciente, úsalo como alternativa
+       - La búsqueda por email es exacta y confiable
+  </Accordion>
+
+  <Accordion title="El Paciente Aparece con Nombres Diferentes">
+    **Problema**: El mismo paciente (mismo teléfono) aparece con nombres distintos en diferentes momentos.
+
+    **Explicación**: El sistema es **multi-clínica**, lo que significa que un paciente puede existir en varias clínicas con el mismo teléfono.
+
+    **Comportamiento del Sistema** (fix implementado 2025-11-05):
+
+    Cuando un paciente con teléfono `+34612345678` ya existe como:
+    - **Clínica A**: "Manuel López Sánchez"
+    - **Clínica B**: "Eduardo Cassanovas Garcia" (nombre más reciente)
+
+    El sistema **actualiza automáticamente** el nombre globalmente al valor más reciente:
+    - Todos los registros pasarán a mostrar "Eduardo Cassanovas Garcia"
+    - Esto respeta la última información proporcionada por el paciente
+    - Se registra en audit_logs con acción `associated_existing_patient_and_updated_name`
+
+    **Por qué sucede**:
+    - El paciente puede haberse registrado con un nombre y luego cambiarlo
+    - El sistema usa el teléfono (E.164) como identificador único
+    - El nombre se actualiza para reflejar la información más reciente
+
+    **Qué hacer**:
+    - Si el nombre es incorrecto, puedes editarlo manualmente en "Pacientes > Editar Paciente"
+    - El nuevo nombre se aplicará a todas las citas futuras
+    - Las citas pasadas conservan el nombre histórico en los registros
+
+    <Info>
+      Este comportamiento garantiza que siempre tengas la información más actualizada del paciente, mejorando la experiencia al agendar citas.
+    </Info>
+  </Accordion>
+
+  <Accordion title="Veo Citas de Otras Clínicas">
+    **Problema**: En el historial aparecen citas que no reconozco.
+
+    **Explicación**: Esto es **normal** en un sistema multi-clínica. El historial muestra todas las citas del paciente en TODAS las clínicas donde ha estado registrado.
+
+    **Comportamiento del Sistema**:
+    - El historial completo es visible para contexto
+    - Solo puedes **modificar o cancelar** citas de TU clínica
+    - Las citas de otras clínicas aparecen como "Solo lectura"
+
+    **Identificación Visual**:
+    - Las citas de tu clínica tienen botones de acción (Modificar, Cancelar)
+    - Las citas de otras clínicas no tienen botones de acción
+    - Cada cita muestra el nombre de la clínica (ej: "Peluquería Sonrisa Feliz")
+
+    **Qué hacer**:
+    - Usa el filtro "Solo mi clínica" para ver únicamente tus citas
+    - El historial completo te ayuda a entender la relación del paciente con tu red de clínicas
+
+    <Note>
+      Esta funcionalidad es útil para clínicas que pertenecen a la misma red o grupo empresarial, permitiendo visibilidad del historial completo del paciente.
+    </Note>
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Pasos
+
+<CardGroup cols={3}>
+  <Card title="Crear Cita" icon="calendar-plus" href="/appointments/create">
+    Aprende a agendar una nueva cita desde cero o para un paciente existente.
+  </Card>
+
+  <Card title="Modificar Cita" icon="pen-to-square" href="/appointments/modify">
+    Descubre cómo cambiar la fecha, hora o servicio de citas existentes.
+  </Card>
+
+  <Card title="Cancelar Cita" icon="ban" href="/appointments/cancel">
+    Conoce el proceso de cancelación y gestión de motivos de cancelación.
+  </Card>
+</CardGroup>
+
+---
+
+<Tip>
+  **Atajos de Teclado**:
+  - `Ctrl + K` (o `Cmd + K`): Abrir búsqueda rápida
+  - `Ctrl + F`: Buscar en página actual
+  - `Esc`: Cerrar modal de detalles
+</Tip>

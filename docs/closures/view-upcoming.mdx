@@ -1,0 +1,447 @@
+---
+title: "Ver Upcoming Closures"
+description: "Sistema de advertencias tempranas para cierres que empiezan en los próximos 14 días"
+---
+
+# Ver Upcoming Closures
+
+Los **Upcoming Closures** (Próximos Cierres) son advertencias tempranas que te muestran todos los cierres que empezarán en los próximos 14 días. Esto te ayuda a planificar con anticipación y gestionar la disponibilidad futura de tu clínica.
+
+<Tip>
+**Feature implementada (2026-01-01)**: Sistema proactivo de warnings para cierres próximos con countdown y ordenamiento automático.
+</Tip>
+
+## ¿Qué son Upcoming Closures?
+
+Los upcoming closures son cierres que cumplen estas características:
+
+- **Starts_at** (fecha de inicio) está dentro de los próximos **14 días**
+- **Status**: Activos (no cancelados)
+- **Visibilidad**: Se muestran en Dashboard, API, y lista de cierres
+
+### ¿Por qué 14 días?
+
+El período de 14 días fue elegido porque:
+
+- **2 semanas** es un período razonable para planificar
+- Tiempo suficiente para notificar clientes si es necesario
+- No tan lejano que los cierres sean irrelevantes
+- Configurable en backend si necesitas otro valor
+
+<Note>
+**Configuración backend**: El valor de 14 días está en `app/services/configuration_status_service.py` (variable `UPCOMING_CLOSURES_DAYS = 14`). Solo admins pueden modificarlo.
+</Note>
+
+## Dónde Ver Upcoming Closures
+
+Tienes 3 formas de ver upcoming closures:
+
+### 1. Dashboard (Widget)
+
+El Dashboard incluye un widget dedicado "Próximos Cierres":
+
+<Frame>
+  <img src="/images/screenshots/closures_upcoming_widget.png" alt="Widget de próximos cierres en el dashboard con countdown y alertas" />
+</Frame>
+
+**Ubicación**:
+- Dashboard principal → Sección "Alertas" → Widget "Próximos Cierres"
+
+**Información mostrada**:
+- Icono de alerta (⚠️) si hay cierres próximos
+- Countdown: "En X días"
+- Fechas de inicio y fin
+- Tipo (clinic-wide o provider)
+- Razón del cierre
+
+**Acciones rápidas**:
+- Click en cierre → Ver detalles
+- Botón "Editar" → Modificar fechas/razón
+- Botón "Cancelar" → Eliminar cierre
+
+### 2. Configuration-Status Endpoint
+
+Endpoint API que retorna estado completo de la clínica:
+
+**Request**:
+```http
+GET /v1/clinics/{clinic_id}/configuration-status
+```
+
+**Response** (fragmento):
+```json
+{
+  "clinic_id": "abc-123",
+  "operational_info": {
+    "is_operational": true,
+    "upcoming_closures": [
+      {
+        "id": "closure-uuid",
+        "starts_at": "2026-08-01T00:00:00Z",
+        "ends_at": "2026-08-15T23:59:59Z",
+        "reason": "Vacaciones de verano",
+        "provider_id": null,
+        "provider_name": null,
+        "days_until_start": 7
+      }
+    ]
+  }
+}
+```
+
+**Uso**: Ideal para integrar en frontend/apps que necesitan mostrar cierres próximos.
+
+### 3. Lista de Cierres
+
+La página de gestión de cierres incluye una sección "Upcoming":
+
+**Ubicación**:
+- Gestión → Cierres → Tab "Upcoming Closures"
+
+**Ventajas**:
+- Ver todos los cierres próximos en una lista
+- Filtrar por proveedor
+- Ordenar por días hasta inicio
+- Acciones bulk (cancelar múltiples)
+
+## Información Mostrada
+
+Cada upcoming closure incluye:
+
+| Campo | Descripción | Ejemplo |
+|-------|-------------|---------|
+| **Fecha de inicio** | Cuándo empieza el cierre | `2026-08-01 00:00` |
+| **Fecha de fin** | Cuándo termina el cierre | `2026-08-15 23:59` |
+| **Tipo** | Clinic-wide o Provider-specific | `Clinic-wide` |
+| **Proveedor** | Nombre del proveedor (si aplica) | `Dr. García` (o `null` si clinic-wide) |
+| **Razón** | Motivo del cierre | `Vacaciones de verano` |
+| **Days until start** | Días restantes hasta inicio (countdown) | `7 días` |
+
+### Ordenamiento
+
+Los upcoming closures se ordenan por **`days_until_start`** ascendente:
+
+- **Más cercanos primero**: Cierres que empiezan en 1-2 días aparecen arriba
+- **Menos urgentes abajo**: Cierres que empiezan en 12-14 días aparecen abajo
+
+**Ejemplo de lista ordenada**:
+```
+1. Permiso médico - Dr. García (En 2 días) ⚠️
+2. Capacitación - Ana López (En 5 días)
+3. Vacaciones de verano - Toda la clínica (En 7 días)
+4. Día festivo - Navidad (En 14 días)
+```
+
+## Cómo Ver Upcoming Closures
+
+<Steps>
+  <Step title="Navegar a Dashboard o Cierres">
+    Elige uno de los siguientes:
+
+    **Opción A: Dashboard**
+    - Ir a Dashboard principal
+    - Buscar sección "Alertas"
+    - Widget "Próximos Cierres"
+
+    **Opción B: Lista de Cierres**
+    - Ir a Gestión → Cierres
+    - Click en tab "Upcoming Closures"
+  </Step>
+
+  <Step title="Revisar lista de cierres próximos">
+    El sistema mostrará todos los cierres que empiezan en los próximos 14 días:
+
+    **Si hay cierres próximos**:
+    - Lista ordenada por días hasta inicio
+    - Countdown para cada cierre
+    - Iconos de alerta para cierres muy cercanos (&lt;3 días)
+
+    **Si NO hay cierres próximos**:
+    - Mensaje: "No hay cierres programados en los próximos 14 días"
+    - Sugerencia: "Planifica vacaciones con anticipación"
+  </Step>
+
+  <Step title="Ver detalles de un cierre">
+    Click en cualquier cierre para ver detalles completos:
+
+    - Fechas exactas (inicio y fin con hora)
+    - Tipo de cierre (clinic-wide o provider)
+    - Proveedor (si aplica)
+    - Razón
+    - Preview de impacto (cuántos slots se bloquearán)
+    - Estado actual (activo, pendiente)
+  </Step>
+
+  <Step title="Acciones rápidas">
+    Desde la vista de upcoming closures, puedes:
+
+    **Editar cierre**:
+    - Click en icono de editar (✏️)
+    - Modificar fechas, razón, o proveedor
+    - Guardar cambios
+
+    **Cancelar cierre**:
+    - Click en icono de eliminar (🗑️)
+    - Confirmar cancelación
+    - El cierre se elimina inmediatamente
+
+    [Ver Tutorial: Cancelar Cierre](/closures/cancel-closure)
+
+    **Ver preview de impacto**:
+    - Click en "Ver Impacto"
+    - Muestra cuántos slots se bloquearán
+    - Útil para validar que el cierre es correcto
+
+    [Ver Tutorial: Preview de Impacto](/closures/impact-preview)
+  </Step>
+</Steps>
+
+## Ejemplos de Upcoming Closures
+
+<AccordionGroup>
+  <Accordion title="Ejemplo 1: Vacaciones próximas (7 días)">
+    **Escenario**: Hoy es 25/07/2026, vacaciones empiezan el 01/08/2026.
+
+    **Upcoming closure mostrado**:
+    ```
+    Tipo: Clinic-wide (toda la clínica)
+    Inicio: 2026-08-01 00:00
+    Fin: 2026-08-15 23:59
+    Razón: Vacaciones de verano
+    Days until start: 7 días
+    Impacto: HIGH (300 slots bloqueados)
+    ```
+
+    **Acciones sugeridas**:
+    - ✅ Tiempo suficiente para notificar clientes
+    - ✅ Revisar calendario: ¿hay citas agendadas para esas fechas?
+    - ✅ Considerar cancelar/mover citas existentes
+
+    **Icono de alerta**: ⚠️ (cierre cercano, planificar)
+  </Accordion>
+
+  <Accordion title="Ejemplo 2: Permiso médico urgente (2 días)">
+    **Escenario**: Hoy es 01/02/2026, permiso médico empieza el 03/02/2026.
+
+    **Upcoming closure mostrado**:
+    ```
+    Tipo: Provider-specific (Dr. García)
+    Inicio: 2026-02-03 00:00
+    Fin: 2026-02-04 23:59
+    Razón: Permiso médico personal
+    Days until start: 2 días
+    Impacto: MEDIUM (40 slots bloqueados)
+    ```
+
+    **Acciones sugeridas**:
+    - ⚠️ MUY CERCANO: Notificar clientes afectados HOY
+    - ⚠️ Revisar citas del Dr. García 3-4 febrero
+    - ⚠️ Ofrecer re-agendar con otros proveedores
+
+    **Icono de alerta**: 🔴 (urgente, requiere acción inmediata)
+  </Accordion>
+
+  <Accordion title="Ejemplo 3: Capacitación futura (12 días)">
+    **Escenario**: Hoy es 01/03/2026, capacitación empieza el 13/03/2026.
+
+    **Upcoming closure mostrado**:
+    ```
+    Tipo: Provider-specific (Ana López)
+    Inicio: 2026-03-13 09:00
+    Fin: 2026-03-13 14:00
+    Razón: Capacitación: Curso de técnicas avanzadas
+    Days until start: 12 días
+    Impacto: LOW (10 slots bloqueados)
+    ```
+
+    **Acciones sugeridas**:
+    - ✅ NO urgente: Tiempo suficiente para planificar
+    - ✅ Ana sigue disponible por la tarde (14:00-18:00)
+    - ✅ Impacto mínimo, no requiere acciones especiales
+
+    **Icono de alerta**: (sin alerta, planificado correctamente)
+  </Accordion>
+
+  <Accordion title="Ejemplo 4: Múltiples cierres solapados">
+    **Escenario**: Dos cierres próximos en fechas cercanas.
+
+    **Upcoming closures mostrados**:
+    ```
+    1. Dr. García - Permiso (En 3 días)
+       - Inicio: 2026-02-04 00:00
+       - Fin: 2026-02-05 23:59
+       - Impacto: MEDIUM (20 slots)
+
+    2. Dra. López - Capacitación (En 5 días)
+       - Inicio: 2026-02-06 09:00
+       - Fin: 2026-02-06 14:00
+       - Impacto: LOW (5 slots)
+    ```
+
+    **Acciones sugeridas**:
+    - ⚠️ Cierres consecutivos: Validar que no afecten mucho disponibilidad
+    - ✅ No solapan: Dr. García (4-5 feb), Dra. López (6 feb mañana)
+    - ✅ Dra. López disponible 6 feb tarde
+
+    **Interpretación**: Planificación correcta, impacto distribuido.
+  </Accordion>
+</AccordionGroup>
+
+## Filtrado y Configuración
+
+### Filtrado por Tipo
+
+Puedes filtrar upcoming closures por tipo:
+
+- **Todos**: Muestra clinic-wide + provider-specific
+- **Solo clinic-wide**: Solo cierres de toda la clínica
+- **Solo provider-specific**: Solo cierres de proveedores individuales
+
+**Uso recomendado**:
+- Filtrar "Solo clinic-wide" para ver cierres críticos (impacto HIGH)
+- Filtrar por proveedor para planificar sustituciones
+
+### Configuración del Período (14 días)
+
+El período de 14 días es configurable en backend:
+
+**Archivo**: `app/services/configuration_status_service.py`
+```python
+UPCOMING_CLOSURES_DAYS = 14  # Días anticipados para mostrar cierres
+```
+
+**Modificación** (solo admins):
+1. Editar variable `UPCOMING_CLOSURES_DAYS`
+2. Reiniciar servidor
+3. Nuevas consultas usarán el nuevo valor
+
+**Valores recomendados**:
+- **7 días**: Para clínicas pequeñas con planificación semanal
+- **14 días**: Balance entre relevancia y anticipación (default)
+- **30 días**: Para clínicas grandes con planificación mensual
+
+<Warning>
+Aumentar a &gt;30 días puede llenar la lista con cierres muy lejanos que no son relevantes.
+</Warning>
+
+## Casos Especiales
+
+<AccordionGroup>
+  <Accordion title="No veo upcoming closures pero tengo cierres creados">
+    **Problema**: Creé cierres, pero no aparecen en "Upcoming Closures".
+
+    **Causas posibles**:
+
+    **1. Cierres empiezan en &gt;14 días**:
+    - Solo se muestran cierres que empiezan en ≤14 días
+    - Si tus cierres empiezan en 20 días, no aparecerán aún
+    - Solución: Esperar a que estén dentro de la ventana de 14 días
+
+    **2. Cierres ya pasaron**:
+    - Solo se muestran cierres futuros
+    - Si el cierre ya empezó, no es "upcoming" (es "active" o "completed")
+    - Solución: Revisar lista de "Active Closures" o "Past Closures"
+
+    **3. Cierres fueron cancelados**:
+    - Solo se muestran cierres con status ACTIVE
+    - Si cancelaste el cierre, no aparecerá
+    - Solución: Verificar que el cierre no fue cancelado por error
+  </Accordion>
+
+  <Accordion title="Veo cierres que ya pasaron en upcoming closures">
+    **Problema**: Upcoming closures muestra cierres con fechas pasadas.
+
+    **Causa**: Bug en el sistema (no debería pasar).
+
+    **Solución**:
+    1. Reportar a soporte con detalles:
+       - IDs de los cierres afectados
+       - Fechas de inicio/fin
+       - Timestamp de cuando viste el error
+    2. Temporary workaround: Refrescar la página (Ctrl+F5)
+    3. Si persiste, verificar zona horaria del servidor vs cliente
+  </Accordion>
+
+  <Accordion title="Countdown no se actualiza en tiempo real">
+    **Problema**: "Days until start" muestra "7 días" pero ya pasó un día.
+
+    **Causa**: El countdown se calcula al cargar la página, no se actualiza automáticamente.
+
+    **Solución**:
+    - Refrescar la página para ver countdown actualizado
+    - El sistema NO usa WebSocket para countdown (solo para status changes)
+    - Recomendación: Revisar upcoming closures diariamente
+
+    **Feature request**: Agregar actualización automática de countdown cada minuto (pendiente).
+  </Accordion>
+
+  <Accordion title="¿Cómo ver cierres de &gt;14 días?">
+    **Problema**: Quiero ver cierres que empiezan en 30 días.
+
+    **Solución**:
+    1. Navega a lista completa de cierres: Gestión → Cierres → "Todos"
+    2. Filtra por rango de fechas: `starts_at >= hoy` AND `starts_at <= hoy + 30 días`
+    3. Ordena por `starts_at` ascendente
+
+    **Alternativa**:
+    - Pedir a admin que aumente `UPCOMING_CLOSURES_DAYS` a 30 (configuración backend)
+  </Accordion>
+</AccordionGroup>
+
+## Mejores Prácticas
+
+<Tip>
+**Revisa upcoming closures semanalmente**:
+
+Dedica 5 minutos cada semana para:
+1. Revisar lista de upcoming closures
+2. Verificar que todos siguen siendo válidos
+3. Cancelar los que ya no apliquen
+4. Notificar clientes si es necesario
+
+Esto previene bloqueos de disponibilidad por cierres olvidados.
+</Tip>
+
+<Tip>
+**Planifica con anticipación (14+ días)**:
+
+Crea cierres con al menos 14 días de anticipación:
+- Tus clientes pueden ver upcoming closures en el sistema
+- Tiempo suficiente para notificar manualmente si es necesario
+- Reduces cancelaciones de último minuto
+</Tip>
+
+<Warning>
+**Atención a cierres muy cercanos (&lt;3 días)**:
+
+Si ves cierres con countdown de 1-2 días:
+- ⚠️ URGENTE: Notificar clientes afectados HOY
+- ⚠️ Revisar calendario: Cancelar/mover citas existentes
+- ⚠️ Considerar si el cierre sigue siendo necesario
+</Warning>
+
+<Note>
+**Upcoming closures NO afectan citas existentes**:
+
+Los upcoming closures solo bloquean NUEVAS citas. Si ya hay citas agendadas en ese período, NO se cancelan automáticamente. Debes manejarlas manualmente.
+</Note>
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Crear Cierre" icon="calendar-plus" href="/closures/create-closure">
+    Crear nuevo cierre con anticipación
+  </Card>
+
+  <Card title="Preview de Impacto" icon="chart-mixed" href="/closures/impact-preview">
+    Analizar impacto antes de crear
+  </Card>
+
+  <Card title="Cancelar Cierre" icon="trash-can" href="/closures/cancel-closure">
+    Eliminar cierre de upcoming list
+  </Card>
+
+  <Card title="Volver a Overview" icon="arrow-left" href="/closures/overview">
+    Conceptos generales de cierres
+  </Card>
+</CardGroup>

@@ -1,0 +1,334 @@
+---
+title: 'Editar Servicio'
+description: 'Modifica la configuración de un servicio existente'
+icon: 'pen'
+---
+
+## Cuándo Editar vs Crear Nuevo
+
+<CardGroup cols={2}>
+  <Card title="✅ EDITAR cuando" icon="pen">
+    - Corriges un error (ej: duración incorrecta)
+    - Ajustas el precio (subida/bajada)
+    - Cambias la descripción
+    - Reasignas a otro proveedor
+    - Agregas/quitas recursos
+    - Modificas el buffer
+  </Card>
+  <Card title="❌ CREAR NUEVO cuando" icon="plus">
+    - El cambio es **muy grande** (ej: servicio completamente diferente)
+    - Quieres ofrecer **variaciones** del servicio (ej: "Corte Básico" vs "Corte Premium")
+    - Quieres mantener el **historial separado** del servicio original
+  </Card>
+</CardGroup>
+
+<Tip>
+  **Regla general**: Si el servicio sigue siendo "el mismo" pero con ajustes, **edita**. Si es algo nuevo, **crea**.
+</Tip>
+
+## Pasos para Editar un Servicio
+
+<Steps>
+  <Step title="Buscar el servicio en la lista">
+    1. Ve a la sección **"Servicios"** en el menú lateral
+    2. Usa la barra de búsqueda para encontrar el servicio rápidamente
+    3. O filtra por categoría/proveedor si tienes muchos servicios
+    4. Localiza el servicio que quieres editar
+  </Step>
+
+  <Step title="Abrir el formulario de edición">
+    Haz clic en una de estas opciones:
+    - Botón **"Editar"** en la fila del servicio
+    - Icono de **lápiz** ✏️
+    - Click en la fila completa (si tu interfaz lo permite)
+
+    Se abre el formulario con los **datos actuales** del servicio pre-cargados.
+
+    <Frame>
+      <img src="/images/screenshots/services_edit_01_form.png" alt="Formulario de edición de servicio con datos pre-cargados" />
+    </Frame>
+  </Step>
+
+  <Step title="Modificar los campos necesarios">
+    Cambia cualquiera de estos campos:
+
+    ### Nombre del Servicio
+    - Corrige errores de escritura
+    - Hazlo más descriptivo
+    - Agrega información adicional (ej: "Corte de Pelo (30 min)")
+
+    <Info>
+      Cambiar el nombre **no afecta citas pasadas**. Se verán con el nombre antiguo en el historial.
+    </Info>
+
+    ### Duración (minutos)
+    - Aumenta si el servicio toma más tiempo del configurado
+    - Reduce si sobra tiempo entre citas
+    - Considera tiempo de limpieza y preparación
+
+    <Warning>
+      Cambiar la duración **afecta los slots disponibles** desde ahora en adelante. Citas ya agendadas mantienen su horario original.
+    </Warning>
+
+    ### Precio
+    - Actualiza según tus tarifas actuales
+    - Deja en blanco si el precio es variable
+
+    <Info>
+      El nuevo precio aplica **solo a citas nuevas**. Citas existentes mantienen el precio con el que fueron agendadas.
+    </Info>
+
+    ### Categoría
+    - Cambia si clasificaste mal el servicio
+    - Crea una nueva categoría si es necesario
+
+    ### Proveedor Asignado
+    - **Asigna** un proveedor específico si solo él puede realizar el servicio
+    - **Quita** la asignación si ahora cualquier proveedor puede hacerlo
+
+    <Tip>
+      Quitar la asignación de proveedor **aumenta slots disponibles** porque el sistema buscará cualquier proveedor libre.
+    </Tip>
+
+    ### Recursos Requeridos
+    - Agrega recursos si ahora necesitas equipos específicos
+    - Quita recursos si ya no son necesarios
+
+    ### Buffer (tiempo de preparación)
+    - Aumenta si necesitas más tiempo entre citas
+    - Reduce o quita si no es necesario
+
+    <Warning>
+      Aumentar el buffer **reduce slots disponibles** porque bloquea tiempo adicional antes de cada cita.
+    </Warning>
+  </Step>
+
+  <Step title="Revisar los cambios">
+    Antes de guardar, verifica:
+    - ✅ El nombre sea claro y descriptivo
+    - ✅ La duración sea realista (incluye limpieza/preparación)
+    - ✅ El precio sea correcto
+    - ✅ El proveedor asignado sea el correcto (o ninguno si aplica)
+    - ✅ Los recursos estén disponibles
+  </Step>
+
+  <Step title="Guardar los cambios">
+    1. Haz clic en **"Guardar"** o **"Actualizar Servicio"**
+    2. El sistema valida los datos (nombre único, duración válida, etc.)
+    3. Si todo es correcto, los cambios se aplican inmediatamente
+
+    ✅ **Resultado**: El servicio se actualiza y los cambios aplican a partir de ahora.
+  </Step>
+</Steps>
+
+## Impacto de los Cambios
+
+### En Citas Futuras
+
+| Campo Modificado | Impacto |
+|------------------|---------|
+| **Nombre** | Citas futuras usan el **nuevo nombre** |
+| **Duración** | **Slots disponibles cambian** (más o menos slots según aumento/reducción) |
+| **Precio** | Citas nuevas usan el **nuevo precio** |
+| **Proveedor** | Solo el **nuevo proveedor** puede agendar este servicio |
+| **Recursos** | Sistema verifica disponibilidad de **nuevos recursos** |
+| **Buffer** | Tiempo bloqueado antes de citas cambia |
+
+### En Citas Pasadas
+
+<Warning>
+  **Las citas pasadas NO cambian**. Mantienen el nombre, duración, precio y proveedor con los que fueron agendadas originalmente.
+</Warning>
+
+Esto es importante para:
+- ✅ **Auditoría**: Historial preciso de lo que se cobró/ofreció en cada momento
+- ✅ **Reportes**: Estadísticas correctas de ingresos y servicios realizados
+- ✅ **Facturación**: Las facturas antiguas siguen siendo válidas
+
+### En Citas Existentes (Futuras Agendadas)
+
+<AccordionGroup>
+  <Accordion title="¿Cambias el nombre?">
+    **Impacto**: Las citas ya agendadas (futuras) **mantienen el nombre antiguo**.
+
+    **Razón**: Los pacientes agendaron bajo ese nombre. Cambiarlo podría confundirlos.
+
+    **Alternativa**: Si necesitas actualizar, contacta manualmente a los pacientes afectados.
+  </Accordion>
+
+  <Accordion title="¿Cambias la duración?">
+    **Impacto**: Las citas ya agendadas **mantienen su horario original**.
+
+    **Ejemplo**:
+    - Servicio configurado: 30 minutos
+    - Cita agendada: 10:00 - 10:30
+    - Cambias duración a 45 minutos
+    - La cita del ejemplo **sigue siendo 10:00 - 10:30** (no se extiende a 10:45)
+    - Citas **nuevas** serán de 45 minutos
+
+    **Recomendación**: Si necesitas cambiar citas existentes, [reagéndalas manualmente](/appointments/reschedule-appointment).
+  </Accordion>
+
+  <Accordion title="¿Cambias el precio?">
+    **Impacto**: Las citas ya agendadas **mantienen el precio antiguo**.
+
+    **Razón**: Los pacientes acordaron ese precio al agendar. Cambiarlo sería deshonesto.
+
+    **Alternativa**: Si necesitas ajustar, contacta al paciente y explica el cambio antes de la cita.
+  </Accordion>
+
+  <Accordion title="¿Cambias el proveedor asignado?">
+    **Impacto**: **Depende de la configuración del sistema**:
+    - Algunas implementaciones **reasignan automáticamente** al nuevo proveedor
+    - Otras **mantienen el proveedor original** de cada cita
+
+    **Recomendación**: Verifica el comportamiento de tu sistema o contacta a soporte.
+  </Accordion>
+</AccordionGroup>
+
+## Errores Comunes y Soluciones
+
+<AccordionGroup>
+  <Accordion title='"Conflicto con citas existentes" al cambiar duración'>
+    **Problema**: Hay citas futuras agendadas con la duración antigua que ahora se superponen.
+
+    **Soluciones**:
+    1. **Reagenda manualmente** las citas afectadas
+    2. O **revierte el cambio** temporalmente hasta resolver conflictos
+    3. O crea un **nuevo servicio** con la nueva duración
+
+    <Warning>
+      Algunos sistemas **bloquean** cambios de duración si hay citas futuras. Debes reagendar primero.
+    </Warning>
+  </Accordion>
+
+  <Accordion title='"Proveedor no disponible" al cambiar asignación'>
+    **Problema**: El nuevo proveedor asignado está **inactivo** o **no existe**.
+
+    **Soluciones**:
+    1. Ve a la sección **Proveedores** y reactiva el proveedor
+    2. O selecciona un proveedor **activo** diferente
+    3. O deja el campo vacío para que cualquier proveedor pueda hacerlo
+  </Accordion>
+
+  <Accordion title='"Recurso no disponible" al agregar recursos'>
+    **Problema**: El recurso que intentas agregar no existe o está desactivado.
+
+    **Soluciones**:
+    1. Ve a la sección **Recursos** y verifica disponibilidad
+    2. Crea el recurso si no existe
+    3. O reactiva el recurso si está inactivo
+  </Accordion>
+
+  <Accordion title='"El nombre ya existe" al renombrar'>
+    **Problema**: Ya existe otro servicio con ese nombre exacto.
+
+    **Soluciones**:
+    1. Cambia el nombre ligeramente (ej: agrega " (Premium)" o " (V2)")
+    2. Verifica si puedes **eliminar/fusionar** el servicio duplicado
+    3. O usa un nombre más específico
+  </Accordion>
+</AccordionGroup>
+
+## Casos Especiales
+
+### Cambiar Duración de 30 a 60 Minutos
+
+**Antes**:
+- Servicio: "Consulta General" (30 min)
+- Slots disponibles: 10:00, 10:30, 11:00, 11:30, 12:00
+- Total slots: 5 slots en 2.5 horas
+
+**Después** (cambias a 60 min):
+- Servicio: "Consulta General" (60 min)
+- Slots disponibles: 10:00, 11:00, 12:00
+- Total slots: 3 slots en 2.5 horas
+
+**Impacto**: **Menos slots disponibles** (de 5 a 3). Evalúa si vale la pena.
+
+### Quitar Proveedor Asignado
+
+**Antes**:
+- Servicio: "Corte de Pelo Premium" (solo Proveedor A)
+- Proveedor A trabaja: 10:00 - 14:00 (4 horas)
+- Slots disponibles: **8 slots** (servicio de 30 min)
+
+**Después** (quitas asignación):
+- Servicio: "Corte de Pelo Premium" (cualquier proveedor)
+- Proveedor A trabaja: 10:00 - 14:00
+- Proveedor B trabaja: 14:00 - 18:00
+- Slots disponibles: **16 slots** (8 + 8)
+
+**Impacto**: **Más slots disponibles** (x2). Recomendado si varios proveedores pueden hacerlo.
+
+### Agregar Buffer de 15 Minutos
+
+**Antes**:
+- Servicio: "Depilación Láser" (30 min, sin buffer)
+- Citas agendadas: 10:00, 10:30, 11:00, 11:30
+- Tiempo bloqueado: 10:00 - 12:00 (2 horas)
+
+**Después** (agregas buffer de 15 min):
+- Servicio: "Depilación Láser" (30 min + 15 min buffer)
+- Citas posibles: 10:00, 10:45, 11:30
+- Tiempo bloqueado: 09:45 - 12:00 (2h 15min por el buffer inicial)
+
+**Impacto**: **Menos slots** (de 4 a 3 en 2 horas). Solo usa buffer si realmente necesitas tiempo de preparación.
+
+## Verificar Cambios Aplicados
+
+Después de editar, verifica que todo funciona:
+
+<Steps>
+  <Step title="Revisa la lista de servicios">
+    Confirma que el servicio muestra los **nuevos valores** (nombre, duración, precio)
+  </Step>
+
+  <Step title="Prueba agendar una cita de prueba">
+    1. Intenta agendar una cita con el servicio editado
+    2. Verifica que la duración sea la nueva
+    3. Verifica que el precio sea el nuevo
+    4. Verifica que los slots disponibles sean correctos
+    5. Cancela la cita de prueba si no es real
+  </Step>
+
+  <Step title="Verifica citas existentes (si aplica)">
+    Si había citas futuras agendadas con este servicio:
+    1. Ve a la agenda
+    2. Busca esas citas
+    3. Verifica que **no se hayan modificado** (deben mantener duración/precio antiguo)
+  </Step>
+</Steps>
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card
+    title="Ver Servicios"
+    icon="list"
+    href="/services/view-services"
+  >
+    Explora todos tus servicios editados
+  </Card>
+  <Card
+    title="Crear Servicio"
+    icon="plus"
+    href="/services/create-service"
+  >
+    Crea un nuevo servicio desde cero
+  </Card>
+  <Card
+    title="Importar desde Catálogo"
+    icon="book"
+    href="/services/create-from-catalog"
+  >
+    Importa servicios pre-configurados
+  </Card>
+  <Card
+    title="Desactivar/Eliminar Servicio"
+    icon="trash"
+    href="/services/delete-service"
+  >
+    Aprende a desactivar o eliminar servicios
+  </Card>
+</CardGroup>

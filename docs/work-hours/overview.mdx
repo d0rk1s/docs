@@ -1,0 +1,171 @@
+---
+title: "Work Hours Overview"
+description: "Comprehensive guide to clinic and provider work hours management"
+icon: "clock"
+---
+
+## What Are Work Hours?
+
+<Frame>
+  <img src="/images/screenshots/work_hours_list_overview.png" alt="Vista general de horarios de trabajo configurados para la clínica y proveedores" />
+</Frame>
+
+Work hours define the **availability windows** for your clinic and providers. They control when appointments can be booked in your system.
+
+The work hours system supports two levels:
+
+1. **Clinic Hours**: Define when your clinic is operational
+2. **Provider Hours**: Define when individual providers are available (must intersect with clinic hours)
+
+<Note>
+**New Feature (2025-11-21)**: Multiple non-contiguous time periods per day are now supported. You can configure split shifts like 09:00-13:00 + 15:00-19:00 with lunch breaks.
+</Note>
+
+## Hierarchy: Clinic Hours → Provider Hours
+
+The system uses an **intersection-based hierarchy**:
+
+```
+Clinic Hours:    08:00 ━━━━━━━━━━━━━━━━━━━━━━━━━━ 20:00
+Provider A:            09:00 ━━━━━ 13:00
+Provider B:                             15:00 ━━━━━ 19:00
+Provider C:            09:00 ━━━━━ 13:00 + 15:00 ━━━━━ 19:00
+
+Available Slots:
+  - Provider A: 09:00-13:00 ✅
+  - Provider B: 15:00-19:00 ✅
+  - Provider C: 09:00-13:00 + 15:00-19:00 ✅
+```
+
+<Warning>
+If the clinic is **closed** on a day (no clinic-level work hours configured), NO appointments can be booked that day, regardless of provider availability.
+</Warning>
+
+## Weekday Numbering
+
+The system uses numeric weekday identifiers:
+
+| Number | Day |
+|--------|-----|
+| 1 | Monday (Lunes) |
+| 2 | Tuesday (Martes) |
+| 3 | Wednesday (Miércoles) |
+| 4 | Thursday (Jueves) |
+| 5 | Friday (Viernes) |
+| 6 | Saturday (Sábado) |
+| 7 | Sunday (Domingo) |
+
+## Multiple Periods Per Day
+
+You can configure multiple non-contiguous time periods for the same day:
+
+**Example: Split Shift**
+```
+Monday (1):
+  Period 1: 09:00-13:00 (Morning)
+  Period 2: 15:00-19:00 (Afternoon)
+  Gap: 13:00-15:00 (Lunch break - NO appointments)
+```
+
+<Info>
+The system generates slots **only within configured periods**, not in gaps. This ensures professional scheduling aligned with your actual availability.
+</Info>
+
+## Overlap Validation
+
+The system **prevents overlapping time periods** for the same clinic/provider/weekday:
+
+- **Overlap Formula**: `A_start < B_end AND B_start < A_end`
+- **Contiguous Periods**: Allowed when `A_end == B_start` (e.g., 09:00-13:00 and 13:00-17:00)
+- **Validation**: Performed at application level before saving
+
+**Examples**:
+
+✅ **Valid**: 09:00-13:00 + 15:00-19:00 (gap 13:00-15:00)
+
+✅ **Valid**: 09:00-13:00 + 13:00-17:00 (contiguous)
+
+❌ **Invalid**: 09:00-14:00 + 13:00-17:00 (overlap 13:00-14:00)
+
+## Quick Start Guides
+
+<CardGroup cols={2}>
+  <Card title="Configure Clinic Hours" icon="building" href="/work-hours/clinic-hours">
+    Set up your clinic's operational hours for each day of the week
+  </Card>
+
+  <Card title="Multiple Periods Per Day" icon="calendar-days" href="/work-hours/multiple-periods">
+    Configure split shifts and non-contiguous time periods
+  </Card>
+
+  <Card title="Provider Hours" icon="user-doctor" href="/work-hours/provider-hours">
+    Set individual availability for each provider
+  </Card>
+
+  <Card title="Edit & Delete Hours" icon="pen-to-square" href="/work-hours/edit-delete-hours">
+    Modify or remove existing work hour configurations
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Start with clinic hours first">
+    Always configure clinic-level hours before setting provider hours. Provider hours are validated against clinic hours.
+  </Accordion>
+
+  <Accordion title="Use multiple periods for split shifts">
+    Instead of one long period with manual blocking, use multiple periods (e.g., 09:00-13:00 + 15:00-19:00) for automatic gap handling.
+  </Accordion>
+
+  <Accordion title="Review overlap validation errors">
+    If you get overlap errors, check the formula: `A_start < B_end AND B_start < A_end`. Adjust times to create a gap or make periods contiguous.
+  </Accordion>
+
+  <Accordion title="Use closures for one-time changes">
+    For holidays or exceptional days, use the **Closures** feature instead of deleting work hours. Work hours define your regular weekly schedule.
+  </Accordion>
+
+  <Accordion title="Cache invalidation is automatic">
+    When you create, update, or delete work hours, the system automatically clears availability caches. No manual action needed.
+  </Accordion>
+</AccordionGroup>
+
+## How Work Hours Affect Availability
+
+The availability system follows this logic:
+
+1. **Fetch clinic work hours** for the requested weekday
+2. **Fetch provider work hours** for the same weekday
+3. **Calculate intersection** of clinic and provider hours
+4. **Generate slots** within intersected periods (e.g., every 30 minutes)
+5. **Filter conflicts** (existing appointments, closures, external calendars)
+
+**Example**:
+
+```
+Request: Availability for Monday (1), 30-minute service
+
+Clinic Hours (Monday): 08:00-20:00
+Provider Hours (Monday): 09:00-13:00 + 15:00-19:00
+
+Intersection: 09:00-13:00 + 15:00-19:00
+
+Generated Slots:
+  09:00, 09:30, 10:00, 10:30, 11:00, 11:30, 12:00, 12:30
+  15:00, 15:30, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30
+
+NO slots generated: 08:00-09:00, 13:00-15:00, 19:00-20:00
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configure Clinic Hours" icon="building" href="/work-hours/clinic-hours">
+    Set up your clinic's operational schedule
+  </Card>
+
+  <Card title="Multiple Periods" icon="calendar-days" href="/work-hours/multiple-periods">
+    Learn how to configure split shifts
+  </Card>
+</CardGroup>

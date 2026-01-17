@@ -1,0 +1,437 @@
+---
+title: "Agendar Nueva Cita"
+description: "Paso a paso para crear una cita manualmente desde el panel de administración"
+---
+
+# Agendar Nueva Cita Manualmente
+
+Esta guía te muestra cómo crear una cita manualmente desde el panel de administración. Úsala cuando los pacientes llamen por teléfono, vengan en persona, o cuando necesites agendar con anticipación.
+
+## ¿Cuándo Usar Creación Manual?
+
+<CardGroup cols={2}>
+  <Card title="Creación Manual" icon="user" color="#0D9373">
+    **Úsala cuando:**
+    - Paciente llama por teléfono
+    - Paciente viene en persona
+    - Necesitas agendar con anticipación
+    - El paciente no usa WhatsApp
+  </Card>
+  <Card title="WhatsApp Automático" icon="message" color="#25D366">
+    **Úsalo cuando:**
+    - Paciente prefiere WhatsApp
+    - Fuera de horario laboral (24/7)
+    - No tienes tiempo para agendar
+    - Paciente quiere autoservicio
+  </Card>
+</CardGroup>
+
+<Note>
+El bot de WhatsApp puede agendar citas automáticamente 24/7 sin intervención humana. Más info en [Conversaciones WhatsApp](/whatsapp/overview).
+</Note>
+
+---
+
+## Paso a Paso
+
+<Frame>
+  <img src="/images/screenshots/appointments_create_02_form_empty.png" alt="Formulario de nueva cita vacío" />
+</Frame>
+
+<Steps>
+  <Step title="Abrir el Formulario de Nueva Cita">
+    Hay dos formas de abrir el formulario:
+
+    **Opción 1: Desde el Calendario**
+    1. Navega a **Citas** en el menú lateral
+    2. Click en el botón **"Nueva Cita"** o **"+"** en la esquina superior derecha
+    3. Se abrirá el formulario modal
+
+    <Frame>
+      <img src="/images/screenshots/appointments_create_01_button.png" alt="Botón de nueva cita en el calendario" />
+    </Frame>
+
+    **Opción 2: Desde el Menú Principal**
+    1. Click en **Citas** > **Nueva Cita** en el menú lateral
+    2. Se abrirá directamente el formulario
+
+    <Tip>
+    Si haces click en un día/hora específica del calendario, esa fecha/hora se pre-selecciona automáticamente en el formulario.
+    </Tip>
+  </Step>
+
+  <Step title="Seleccionar el Servicio">
+    El primer paso es elegir qué servicio prestará la clínica al paciente.
+
+    1. Click en el dropdown **"Servicio"**
+    2. Selecciona el servicio de la lista (ej: "Corte de pelo", "Consulta médica", "Tinte")
+    3. La **duración se calcula automáticamente** según la configuración del servicio
+
+    <Frame>
+      <img src="/images/screenshots/appointments_create_03_service_select.png" alt="Selección de servicio en el dropdown" />
+    </Frame>
+
+    <Tip>
+    Si no ves el servicio que necesitas, créalo primero en **Catálogo** > **Servicios**.
+
+    [Ver cómo crear servicios](/services/create-service)
+    </Tip>
+
+    <Info>
+    **Ejemplo**: Si seleccionas "Corte de pelo" (30 min), el sistema automáticamente reservará 30 minutos en el calendario.
+    </Info>
+  </Step>
+
+  <Step title="Seleccionar el Proveedor (Opcional)">
+    Elige quién atenderá al paciente. Este paso es **opcional**.
+
+    **Si seleccionas un proveedor específico:**
+    - Solo verás slots disponibles de ese proveedor
+    - La cita se asigna directamente a ese profesional
+
+    **Si NO seleccionas proveedor:**
+    - El sistema muestra slots de TODOS los proveedores disponibles
+    - El sistema asigna automáticamente según disponibilidad
+    - Útil cuando cualquier profesional puede prestar el servicio
+
+    <Frame>
+      <img src="/images/screenshots/appointments_create_04_provider_select.png" alt="Selección de proveedor" />
+    </Frame>
+
+    <Note>
+    La asignación automática busca el primer proveedor disponible que pueda prestar el servicio en el horario solicitado.
+    </Note>
+
+    <Tip>
+    Si tienes proveedores especializados (ej: "Doctora Pérez" solo hace cirugías), es mejor seleccionarlo manualmente para evitar asignaciones incorrectas.
+    </Tip>
+  </Step>
+
+  <Step title="Seleccionar Fecha y Hora">
+    Ahora elige cuándo se realizará la cita.
+
+    ### Seleccionar la Fecha
+
+    1. Click en el campo **"Fecha"**
+    2. Se abre un calendario
+    3. Click en el día deseado
+    4. El calendario se cierra automáticamente
+
+    <Frame>
+      <img src="/images/screenshots/appointments_create_05_date_picker.png" alt="Calendario para seleccionar fecha con indicadores de disponibilidad" />
+    </Frame>
+
+    ### Seleccionar la Hora
+
+    1. Después de seleccionar la fecha, verás una lista de **slots disponibles**
+    2. Los slots mostrados:
+       - Están dentro del horario de trabajo de la clínica
+       - No tienen conflictos con otras citas
+       - No están en cierres programados (vacaciones, festivos)
+       - Son del proveedor seleccionado (o de todos si no seleccionaste ninguno)
+    3. Click en el slot deseado (ej: "15:00")
+
+    <Frame>
+      <img src="/images/screenshots/appointments_create_06_time_slots.png" alt="Lista de horarios disponibles con filtros por mañana/tarde" />
+    </Frame>
+
+    <Warning>
+    **Solo se muestran horarios libres**. Si no ves ningún slot:
+    - Verifica que la clínica esté abierta ese día
+    - Verifica que no haya cierres programados
+    - Prueba con otra fecha u otro proveedor
+
+    [Ver por qué no hay slots disponibles](#troubleshooting)
+    </Warning>
+
+    <Info>
+    **Validaciones automáticas** que el sistema realiza:
+    - ✅ Horario dentro de `work_hours` de la clínica
+    - ✅ No hay solapamiento con otras citas
+    - ✅ No hay cierres programados (`closures`)
+    - ✅ No hay conflictos con calendarios externos (Google Calendar, Outlook)
+    </Info>
+
+    <Tip>
+    Los slots están alineados con el horario de apertura de la clínica. Ej: Si la clínica abre a las 16:00, verás slots a las 16:00, 16:30, 17:00 (NO 16:35, 17:05).
+    </Tip>
+  </Step>
+
+  <Step title="Ingresar Datos del Paciente">
+    Ahora ingresa la información del paciente.
+
+    ### Nombre Completo
+
+    1. Ingresa el nombre completo del paciente (ej: "María García López")
+    2. El sistema buscará automáticamente si el paciente ya existe
+
+    <Note>
+    **Autocompletado inteligente**: Si el paciente ya está en el sistema, sus datos (teléfono, email) se completarán automáticamente al escribir su nombre.
+    </Note>
+
+    ### Teléfono
+
+    1. Ingresa el teléfono en **formato internacional** (ej: `+34612345678`)
+    2. Formato: `+[código país][número]`
+       - España: `+34612345678`
+       - México: `+525512345678`
+       - Argentina: `+5491123456789`
+
+    <Warning>
+    **Formato E.164 requerido**: El sistema solo acepta teléfonos en formato internacional con `+` al inicio. Si ingresas un número sin `+`, recibirás un error de validación.
+    </Warning>
+
+    <Tip>
+    Si el paciente ya existe en el sistema y está asociado a múltiples clínicas, su nombre se actualizará automáticamente al más reciente que ingreses.
+
+    [Ver cómo funciona multi-clínica](/troubleshooting/multi-clinic-patients)
+    </Tip>
+
+    ### Email (Opcional)
+
+    1. Ingresa el email del paciente (ej: `maria.garcia@gmail.com`)
+    2. Este campo es **opcional**, pero recomendado para notificaciones
+
+    <Info>
+    **¿Paciente nuevo vs existente?**
+    - Si el teléfono ya existe → se reutilizan los datos existentes
+    - Si es nuevo → se crea un registro de paciente automáticamente
+    </Info>
+  </Step>
+
+  <Step title="Confirmar y Crear la Cita">
+    Último paso: revisa y confirma.
+
+    1. Verifica que todos los datos sean correctos:
+       - ✅ Servicio correcto
+       - ✅ Fecha y hora correctas
+       - ✅ Proveedor correcto (si seleccionaste uno)
+       - ✅ Datos del paciente correctos
+    2. Click en el botón **"Agendar Cita"** o **"Crear Cita"**
+    3. Espera el mensaje de confirmación
+
+    <Frame>
+      <img src="/images/screenshots/appointments_create_08_confirmation.png" alt="Pantalla de confirmación antes de crear la cita" />
+    </Frame>
+
+    <Tip>
+    El sistema valida automáticamente que:
+    - No hayas alcanzado el límite de tu plan de suscripción
+    - El horario siga disponible (por si alguien más agendó mientras completabas el formulario)
+    - Todos los campos requeridos estén completos
+    </Tip>
+
+    ### Notificación WhatsApp (Automática)
+
+    Si el paciente tiene un número de teléfono válido y WhatsApp está activado:
+    - **Se envía automáticamente** un mensaje de confirmación por WhatsApp
+    - El mensaje incluye: fecha, hora, servicio, y datos de la clínica
+    - El paciente puede responder al bot para modificar o cancelar
+
+    <Note>
+    Si WhatsApp no está activado en tu clínica, deberás confirmar la cita manualmente (por llamada o mensaje).
+    </Note>
+  </Step>
+</Steps>
+
+---
+
+## Resultado Final
+
+Después de crear la cita exitosamente:
+
+<Tabs>
+  <Tab title="En el Calendario">
+    - La cita aparece en el calendario en la fecha/hora seleccionada
+    - El color depende del estado:
+      - 🟠 **Naranja**: Pending (recién creada)
+      - 🟢 **Verde**: Confirmed (paciente confirmó)
+  </Tab>
+  <Tab title="En Lista de Citas">
+    - La cita aparece en **Citas** > **Todas las Citas**
+    - Estado inicial: **"Pending"**
+    - Puedes cambiar el estado manualmente a "Confirmed" cuando el paciente confirme
+  </Tab>
+  <Tab title="Notificaciones">
+    - El paciente recibe mensaje WhatsApp (si está activado)
+    - El sistema registra la creación en audit_logs (auditoría)
+    - Se actualiza el contador de citas del período de facturación actual
+  </Tab>
+</Tabs>
+
+<Info>
+**Próximos pasos comunes**:
+1. El paciente confirma → Cambias estado a "Confirmed"
+2. Llega el día de la cita → Sistema marca automáticamente como "Completed" después de la hora de fin
+3. Paciente cancela → Usas [Cancelar Cita](/appointments/cancel-appointment)
+</Info>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No veo horarios disponibles" icon="calendar-xmark">
+    **Posibles causas:**
+
+    1. **La clínica está cerrada ese día**
+       - Verifica en **Configuración** > **Horarios de Trabajo**
+       - Si es sábado/domingo, verifica si hay work_hours configurados para esos días
+
+    2. **Hay un cierre programado**
+       - Verifica en **Configuración** > **Cierres**
+       - Puede haber vacaciones, festivos, o días de descanso programados
+
+    3. **Todos los slots están ocupados**
+       - Prueba con otra fecha
+       - Prueba con otro proveedor (si seleccionaste uno específico)
+
+    4. **El proveedor seleccionado no trabaja ese día**
+       - Verifica en **Proveedores** > **Horarios del Proveedor**
+       - Prueba con "Sin proveedor específico" (asignación automática)
+
+    5. **Bug de alineación de slots (resuelto 2025-11-19)**
+       - Si estás consultando antes del horario de apertura, asegúrate de tener la versión más reciente del sistema
+
+    <Tip>
+    Usa el endpoint **GET /v1/operational-status** para verificar rápidamente si la clínica está abierta y por qué.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="El sistema no me deja agendar" icon="triangle-exclamation">
+    **Errores comunes:**
+
+    1. **"Límite de plan alcanzado"**
+       - Has alcanzado el límite de citas de tu plan de suscripción
+       - Solución: Haz upgrade a un plan superior en **Suscripción** > **Cambiar Plan**
+       - Alternativa: Activa overage (cargos por cita extra) si tu plan lo soporta
+
+    2. **"El horario solicitado no está disponible"**
+       - Alguien más agendó mientras completabas el formulario
+       - Solución: Refresca la página y selecciona otro slot
+
+    3. **"Recurso no disponible en ese horario"**
+       - El servicio requiere un recurso específico (ej: sala de operaciones) que está ocupado
+       - Solución: Selecciona otro horario o verifica disponibilidad del recurso
+
+    4. **"Paciente ya tiene una cita en ese horario"**
+       - El sistema previene dobles reservas para el mismo paciente
+       - Solución: Verifica las citas existentes del paciente en **Pacientes** > **Buscar**
+
+    <Warning>
+    Si el error persiste, contacta a soporte técnico. Incluye:
+    - Mensaje de error exacto
+    - Fecha/hora que intentaste agendar
+    - Servicio y proveedor seleccionados
+    </Warning>
+  </Accordion>
+
+  <Accordion title="El teléfono no es válido" icon="phone-xmark">
+    **Error: "Invalid phone format"**
+
+    El sistema requiere formato E.164: `+[código país][número]`
+
+    **Ejemplos correctos:**
+    - ✅ España: `+34612345678`
+    - ✅ México: `+525512345678`
+    - ✅ Argentina: `+5491123456789`
+    - ✅ Colombia: `+573001234567`
+
+    **Ejemplos incorrectos:**
+    - ❌ `612345678` (falta código país)
+    - ❌ `34612345678` (falta el `+`)
+    - ❌ `+34 612 34 56 78` (tiene espacios)
+    - ❌ `+34-612-345-678` (tiene guiones)
+
+    **Solución:**
+    1. Elimina espacios, guiones, paréntesis
+    2. Agrega `+` al inicio
+    3. Agrega código de país (España = 34)
+
+    <Tip>
+    Si no sabes el código de país, búscalo en [códigos de país](https://countrycode.org/).
+    </Tip>
+  </Accordion>
+
+  <Accordion title="El paciente no recibe notificación WhatsApp" icon="message-xmark">
+    **Posibles causas:**
+
+    1. **WhatsApp no está activado en tu clínica**
+       - Verifica en **Configuración** > **WhatsApp**
+       - Si está desactivado, actívalo siguiendo [Activar WhatsApp](/whatsapp/setup)
+
+    2. **El número no tiene WhatsApp**
+       - Verifica que el número tenga WhatsApp activo
+       - Prueba enviando un mensaje de prueba desde tu teléfono
+
+    3. **El número está en formato incorrecto**
+       - Verifica que usaste formato E.164 (`+34612345678`)
+
+    4. **Límite de mensajes excedido (Twilio)**
+       - Si enviaste muchos mensajes en poco tiempo, Twilio puede limitar temporalmente
+       - Espera 1 hora y prueba de nuevo
+
+    5. **Período de gracia expirado**
+       - Twilio requiere que el paciente haya iniciado conversación en las últimas 24 horas
+       - Solución: Pide al paciente que te envíe un mensaje primero ("Hola")
+
+    <Note>
+    Puedes verificar el estado de envío en **Logs** > **WhatsApp Messages** (si tienes acceso).
+    </Note>
+  </Accordion>
+
+  <Accordion title="La cita se creó duplicada" icon="copy">
+    **¿Hiciste doble-click en "Agendar Cita"?**
+
+    El sistema usa `idempotency_key` para prevenir duplicados, pero:
+    - Si hiciste click muy rápido, pueden crearse 2 citas
+    - Solución: Cancela la cita duplicada en **Citas** > **Todas las Citas**
+
+    <Tip>
+    Evita hacer doble-click en el botón "Agendar Cita". Haz click una sola vez y espera el mensaje de confirmación.
+    </Tip>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Próximos Pasos
+
+Ahora que sabes cómo agendar citas manualmente, explora estas funcionalidades:
+
+<CardGroup cols={2}>
+  <Card title="Modificar Cita" icon="pen-to-square" href="/appointments/modify-appointment">
+    Aprende a cambiar fecha, hora o servicio de una cita existente
+  </Card>
+  <Card title="Cancelar Cita" icon="circle-xmark" href="/appointments/cancel-appointment">
+    Paso a paso para cancelar una cita y liberar el horario
+  </Card>
+  <Card title="Ver Calendario" icon="calendar" href="/appointments/view-calendar">
+    Navega el calendario y filtra citas por proveedor, estado, etc.
+  </Card>
+  <Card title="Buscar por Paciente" icon="magnifying-glass" href="/appointments/search-patient">
+    Encuentra todas las citas de un paciente específico
+  </Card>
+</CardGroup>
+
+---
+
+## Mejores Prácticas
+
+<Tip>
+**Confirma siempre por teléfono**: Aunque el sistema envía notificación WhatsApp, es buena práctica llamar al paciente 24h antes para confirmar. Esto reduce el no-show (pacientes que no llegan).
+</Tip>
+
+<Warning>
+**No elimines citas**: En lugar de eliminar, usa "Cancelar Cita". Esto mantiene el historial para auditoría, reportes, y análisis de no-show.
+</Warning>
+
+<Note>
+**Horarios de alta demanda**: Si tienes horarios muy solicitados (ej: viernes tarde), considera aumentar el `slot_step_min` para tener más slots disponibles. Configúralo en **Servicios** > **Duración y Buffers**.
+</Note>
+
+<Info>
+**Reagendar vs Cancelar + Crear**: Si un paciente quiere cambiar de fecha:
+- Usa **Modificar Cita** (más rápido, mantiene historial)
+- NO canceles y crees una nueva (pierde el historial de cambios)
+</Info>

@@ -1,0 +1,345 @@
+---
+title: 'View Providers'
+description: 'How to view and filter your clinic providers list'
+icon: 'list'
+---
+
+## Overview
+
+The providers list shows all team members who are flagged as providers in your clinic. This view allows you to quickly identify who can deliver services and manage their status.
+
+<Info>
+  **Per-Clinic View**: The providers list is filtered by the currently selected clinic. Users who are providers in other clinics but not yours will NOT appear in this list.
+</Info>
+
+## Accessing Providers List
+
+<Steps>
+  <Step title="Navigate to Providers">
+    From the main menu, click **Providers** or navigate to `/providers`.
+  </Step>
+  <Step title="Select Clinic Context">
+    Ensure the correct clinic is selected in the clinic selector (top-right dropdown). The providers list is filtered by this selection.
+  </Step>
+  <Step title="View Provider Cards">
+    The system displays all users where `user_clinics.is_provider = true` for the selected clinic.
+  </Step>
+</Steps>
+
+## API Endpoint
+
+```http
+GET /v1/clinics/{clinic_id}/providers?clinic_id={clinic_id}
+```
+
+### Request
+
+```bash
+curl -X GET "https://api.clinic.example.com/v1/clinics/{clinic_id}/providers?clinic_id={clinic_id}" \
+  -H "Cookie: access_token={jwt_token}"
+```
+
+### Response
+
+```json
+{
+  "providers": [
+    {
+      "id": "abc-123-def-456",
+      "user_id": "user-789-xyz-012",
+      "full_name": "Dr. María García",
+      "email": "maria.garcia@clinic.com",
+      "phone_e164": "+34612345678",
+      "is_provider": true,
+      "clinic_role": "STAFF",
+      "status": "approved",
+      "created_at": "2025-12-01T10:30:00Z",
+      "updated_at": "2026-01-15T14:20:00Z"
+    },
+    {
+      "id": "def-456-ghi-789",
+      "user_id": "user-012-abc-345",
+      "full_name": "Dr. Juan López",
+      "email": "juan.lopez@clinic.com",
+      "phone_e164": "+34612345678",
+      "is_provider": true,
+      "clinic_role": "CLINIC_ADMIN",
+      "status": "approved",
+      "created_at": "2025-11-15T09:00:00Z",
+      "updated_at": "2026-01-10T16:45:00Z"
+    }
+  ]
+}
+```
+
+<Warning>
+  **Authentication Required**: This endpoint requires a valid JWT token in the `access_token` HttpOnly cookie. Unauthenticated requests will receive a 401 Unauthorized response.
+</Warning>
+
+## Provider Card Information
+
+Each provider card displays:
+
+<AccordionGroup>
+  <Accordion title="Basic Information">
+    - **Full Name**: From `user_clinic_profiles.full_name` (per-clinic name)
+    - **Email**: Global identifier from `users.email`
+    - **Phone**: E.164 formatted phone number (e.g., `+34612345678`)
+    - **Status**: `approved`, `pending`, `suspended`
+  </Accordion>
+
+  <Accordion title="Role Information">
+    - **Clinic Role**: `CLINIC_ADMIN`, `STAFF`, or custom role
+    - **Provider Flag**: Badge showing "Provider" status
+    - **Created Date**: When the user was added to this clinic
+  </Accordion>
+
+  <Accordion title="Quick Actions">
+    - **Edit Provider**: Modify provider details, schedule, or services
+    - **View Schedule**: See provider's work hours
+    - **View Services**: List services assigned to this provider
+    - **Suspend/Reactivate**: Change provider status
+  </Accordion>
+</AccordionGroup>
+
+## Filtering and Searching
+
+### By Status
+
+Filter providers by their current status:
+
+<CardGroup cols={3}>
+  <Card title="Active Providers" icon="circle-check">
+    `status = 'approved'` - Providers currently delivering services
+  </Card>
+  <Card title="Pending Providers" icon="clock">
+    `status = 'pending'` - Awaiting approval (new hires, pending verification)
+  </Card>
+  <Card title="Suspended Providers" icon="ban">
+    `status = 'suspended'` - Temporarily inactive (leave, suspension)
+  </Card>
+</CardGroup>
+
+### By Name or Email
+
+Use the search bar to filter providers by:
+- Full name (partial match, case-insensitive)
+- Email address
+
+**Example**:
+```
+Search: "garcía"
+Results: Dr. María García, Dr. Ana García López
+```
+
+### By Service
+
+Filter providers by the services they deliver:
+
+<Steps>
+  <Step title="Select Service Filter">
+    Choose a service from the dropdown (e.g., "Haircut", "Consultation").
+  </Step>
+  <Step title="View Assigned Providers">
+    Only providers assigned to this service are shown.
+  </Step>
+  <Step title="Clear Filter">
+    Click "Clear" to show all providers again.
+  </Step>
+</Steps>
+
+<Tip>
+  **Service Assignment**: If a provider doesn't appear when filtering by a specific service, they may not be assigned to that service yet. See [Assign Services](/providers/assign-services) to configure service assignments.
+</Tip>
+
+## Understanding Provider Status
+
+### Status Values
+
+<AccordionGroup>
+  <Accordion title="approved - Active Provider">
+    **Meaning**: Provider is active and can deliver services.
+
+    **Availability**: Appears in appointment booking, generates availability slots.
+
+    **Actions**: Can suspend or edit configuration.
+  </Accordion>
+
+  <Accordion title="pending - Awaiting Approval">
+    **Meaning**: Provider has been added but not yet approved (new hire, onboarding).
+
+    **Availability**: Does NOT appear in appointment booking, no slots generated.
+
+    **Actions**: Approve to activate, or reject to remove.
+
+    **Use Case**: Onboarding new team members before their start date.
+  </Accordion>
+
+  <Accordion title="suspended - Temporarily Inactive">
+    **Meaning**: Provider is temporarily inactive (leave, suspension, medical leave).
+
+    **Availability**: Does NOT appear in appointment booking, no slots generated.
+
+    **Actions**: Reactivate to restore access, or permanently remove.
+
+    **Use Case**: Maternity leave, vacation, disciplinary suspension.
+  </Accordion>
+</AccordionGroup>
+
+<Frame>
+  <img src="/images/screenshots/providers_status_toggle.png" alt="Toggle de estado del proveedor para activar, suspender o aprobar" />
+</Frame>
+
+<Warning>
+  **Suspended vs Closures**: Use `suspended` status for long-term inactivity (weeks/months). Use **provider-specific closures** for short-term absences (days/weeks) like vacation or sick leave. Closures preserve the provider's schedule and automatically restore availability when the closure ends.
+</Warning>
+
+## Multi-Clinic Providers
+
+When viewing providers, you may notice:
+
+<Info>
+  **Same User, Different Clinics**: A user can be a provider in Clinic A but NOT in Clinic B. The `is_provider` flag is stored per-clinic in `user_clinics`.
+</Info>
+
+**Example Scenario**:
+- **Dr. María García**:
+  - Clinic A (Dental Clinic): `is_provider = true` (delivers dental services)
+  - Clinic B (Physical Therapy): `is_provider = false` (administrative staff only)
+
+When viewing Clinic A's providers, Dr. García appears. When viewing Clinic B's providers, she does NOT appear (even though she's a user in both clinics).
+
+## Provider Details Modal
+
+Click on a provider card to open detailed information:
+
+<AccordionGroup>
+  <Accordion title="Profile Tab">
+    - Full name (per-clinic)
+    - Email (global)
+    - Phone (global)
+    - Clinic role
+    - Provider status
+    - Notes (per-clinic, from `user_clinic_profiles.notes`)
+  </Accordion>
+
+  <Accordion title="Schedule Tab">
+    - Work hours by weekday
+    - Multiple periods per day (if configured)
+    - Intersection with clinic hours (calculated)
+    - Upcoming closures (provider-specific)
+  </Accordion>
+
+  <Accordion title="Services Tab">
+    - List of services assigned to this provider
+    - Service details (name, duration, price)
+    - Quick assign/unassign actions
+  </Accordion>
+
+  <Accordion title="Appointments Tab">
+    - Recent appointments
+    - Upcoming appointments
+    - Appointment history
+    - Performance metrics (completion rate, cancellations)
+  </Accordion>
+</AccordionGroup>
+
+## Empty State
+
+If no providers are configured:
+
+<Warning>
+  **No Providers Found**: Your clinic doesn't have any providers configured yet. Without providers, patients cannot book appointments.
+
+  **Next Steps**:
+  1. [Create your first provider](/providers/create-provider)
+  2. [Configure their schedule](/providers/configure-schedule)
+  3. [Assign them to services](/providers/assign-services)
+</Warning>
+
+## Common Scenarios
+
+<CardGroup cols={2}>
+  <Card title="Provider Missing from List" icon="circle-question">
+    **Problem**: User exists but doesn't appear in providers list.
+
+    **Solution**: Check `user_clinics.is_provider` for this clinic. If `false`, the user is not flagged as a provider. Update via [Edit User](/users/edit-user) or create a new provider entry.
+  </Card>
+
+  <Card title="Provider Appears in Wrong Clinic" icon="building">
+    **Problem**: Provider should only work in Clinic A but appears in Clinic B.
+
+    **Solution**: Each clinic has independent provider flags. Verify you're viewing the correct clinic context (clinic selector, top-right). If the provider should NOT be in Clinic B, edit their `user_clinic` entry and set `is_provider = false` for Clinic B.
+  </Card>
+
+  <Card title="Provider Has No Schedule" icon="calendar-xmark">
+    **Problem**: Provider appears in list but has no availability.
+
+    **Solution**: Provider may not have work_hours configured. Navigate to [Configure Schedule](/providers/configure-schedule) to set up their working hours.
+  </Card>
+
+  <Card title="Provider Has No Services" icon="briefcase-blank">
+    **Problem**: Provider appears in list but isn't assigned to any services.
+
+    **Solution**: Navigate to [Assign Services](/providers/assign-services) to link the provider to the services they deliver.
+  </Card>
+</CardGroup>
+
+## Database Query (For Developers)
+
+```sql
+-- Get all providers for a clinic with profile data
+SELECT
+  uc.id AS user_clinic_id,
+  uc.user_id,
+  ucp.full_name,
+  u.email,
+  u.phone_e164,
+  uc.is_provider,
+  uc.status,
+  cr.name AS clinic_role
+FROM user_clinics uc
+JOIN users u ON uc.user_id = u.id
+LEFT JOIN user_clinic_profiles ucp ON uc.id = ucp.user_clinic_id
+LEFT JOIN clinic_roles cr ON uc.clinic_role_id = cr.id
+WHERE uc.clinic_id = '...'
+  AND uc.is_provider = true
+ORDER BY ucp.full_name ASC;
+```
+
+<Tip>
+  **Performance Optimization**: The query uses indexes on `user_clinics(clinic_id, is_provider)` and `user_clinic_profiles(user_clinic_id)` for fast retrieval.
+</Tip>
+
+## Access Control
+
+### Required Permissions
+
+| Action | Required Role | Notes |
+|--------|--------------|-------|
+| View providers list | `STAFF` | All staff can view providers |
+| View provider details | `STAFF` | Read-only access to profile, schedule, services |
+| Edit provider | `CLINIC_ADMIN` | Modify profile, schedule, services |
+| Suspend/Reactivate | `CLINIC_ADMIN` | Change provider status |
+| Delete provider | `CLINIC_ADMIN` | Remove provider flag (sets `is_provider = false`) |
+
+<Warning>
+  **Global ADMIN Role**: System administrators (role `ADMIN`) can view and manage providers across ALL clinics. Regular users can only manage providers in clinics where they have `CLINIC_ADMIN` role.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Create Provider" icon="user-plus" href="/providers/create-provider">
+    Add a new provider to your clinic
+  </Card>
+  <Card title="Configure Schedule" icon="calendar-days" href="/providers/configure-schedule">
+    Set up provider work hours and availability
+  </Card>
+  <Card title="Assign Services" icon="briefcase-medical" href="/providers/assign-services">
+    Link providers to the services they deliver
+  </Card>
+  <Card title="Manage Closures" icon="door-closed" href="/scheduling/closures">
+    Configure provider-specific closures (vacation, sick leave)
+  </Card>
+</CardGroup>

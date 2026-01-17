@@ -1,0 +1,424 @@
+---
+title: "Edit & Delete Work Hours"
+description: "Modify or remove existing work hour configurations with self-exclusion validation"
+icon: "pen-to-square"
+---
+
+## Overview
+
+Work hours can be **edited** or **deleted** after creation. The system includes safety mechanisms to prevent data loss and ensure schedule integrity.
+
+<Info>
+**Self-Exclusion**: When editing a work hour period, the system excludes it from overlap validation, so you can modify the same record without false overlap errors.
+</Info>
+
+## When to Edit vs Delete vs Create New
+
+<CardGroup cols={3}>
+  <Card title="Edit Existing" icon="pen-to-square">
+    **When to use**:
+    - Change opening/closing time
+    - Adjust period by a few hours
+    - Fix a mistake
+
+    **Example**:
+    Change 09:00-13:00 to 08:00-12:00
+  </Card>
+
+  <Card title="Delete Period" icon="trash">
+    **When to use**:
+    - Remove a specific time period
+    - Provider no longer works a shift
+    - Eliminate a split shift period
+
+    **Example**:
+    Delete afternoon period (15:00-19:00), keep morning period
+  </Card>
+
+  <Card title="Create New" icon="plus">
+    **When to use**:
+    - Add a new time period to an existing day
+    - Add multiple periods (split shifts)
+
+    **Example**:
+    Add afternoon period to existing morning period
+  </Card>
+</CardGroup>
+
+## Editing Work Hours
+
+### Step-by-Step: Edit Clinic Hours
+
+<Steps>
+  <Step title="Identify Work Hour ID">
+    Navigate to **Configuración > Horarios de Trabajo** and locate the work hour record you want to edit.
+
+    Each work hour has a unique `work_hour_id` (UUID).
+  </Step>
+
+  <Step title="Note the `updated_at` Timestamp">
+    The system uses **optimistic concurrency control** via the `if_updated_at` parameter.
+
+    Before editing, note the current `updated_at` timestamp from the record.
+
+    <Info>
+    This prevents race conditions where two users edit the same record simultaneously.
+    </Info>
+  </Step>
+
+  <Step title="Make Your Changes">
+    Update the opening or closing time.
+
+    **Example**: Change opening time from 09:00 to 08:00
+
+    - Old: 09:00-13:00
+    - New: 08:00-13:00
+  </Step>
+
+  <Step title="Submit with `if_updated_at`">
+    When submitting the PATCH request, include the `if_updated_at` parameter with the timestamp from Step 2.
+
+    ```bash
+    PATCH /v1/clinics/{clinic_id}/work_hours/{work_hour_id}?if_updated_at=2025-01-17T10:30:00Z
+    ```
+
+    <Warning>
+    If the `updated_at` timestamp doesn't match (another user modified the record), the request will fail with HTTP 409 Conflict.
+    </Warning>
+  </Step>
+
+  <Step title="Validation with Self-Exclusion">
+    The system validates the new time range:
+
+    - **Self-Exclusion**: The record being edited is excluded from overlap checks
+    - **Overlap Check**: Validates against OTHER work hours for the same clinic/provider/weekday
+
+    **Example**:
+    - Record A (being edited): 09:00-13:00 → 08:00-12:00
+    - Record B (existing): 15:00-19:00
+    - Check: 08:00-12:00 vs 15:00-19:00 → ✅ No overlap
+
+    <Info>
+    Without self-exclusion, the system would incorrectly detect overlap with the old version of Record A.
+    </Info>
+  </Step>
+
+  <Step title="Save and Cache Invalidation">
+    Once validated, the system:
+    - Updates the work hour record
+    - Updates `updated_at` timestamp
+    - Invalidates availability cache for the clinic/provider
+    - Recalculates available slots
+  </Step>
+</Steps>
+
+### Step-by-Step: Edit Provider Hours
+
+The process is identical to clinic hours, but uses the provider-specific endpoint:
+
+```bash
+PATCH /v1/providers/{provider_id}/work_hours/{work_hour_id}?if_updated_at=2025-01-17T10:30:00Z
+```
+
+All validation rules (self-exclusion, overlap checks) apply the same way.
+
+## Deleting Work Hours
+
+### Delete a Specific Period
+
+<Steps>
+  <Step title="Identify Work Hour ID">
+    Locate the work hour record you want to delete.
+  </Step>
+
+  <Step title="Understand Impact">
+    **Before deleting**, understand what will happen:
+
+    - **Availability**: Slots for this period will no longer be generated
+    - **Existing Appointments**: Appointments already booked in this period **remain valid** (not canceled)
+    - **Future Appointments**: Cannot be booked in this time period
+    - **Cache**: Availability cache is invalidated automatically
+
+    <Warning>
+    Deleting work hours affects future appointment availability **immediately**.
+    </Warning>
+  </Step>
+
+  <Step title="Delete the Record">
+    Send a DELETE request:
+
+    ```bash
+    DELETE /v1/clinics/{clinic_id}/work_hours/{work_hour_id}
+    ```
+
+    <Info>
+    No `if_updated_at` parameter is required for DELETE operations.
+    </Info>
+  </Step>
+
+  <Step title="Automatic Cache Invalidation">
+    The system:
+    - Deletes the work hour record from the database
+    - Invalidates availability cache for the clinic/provider
+    - Recalculates slots (excluding the deleted period)
+  </Step>
+</Steps>
+
+### Delete All Periods for a Day
+
+To **close the clinic** for a specific weekday, delete all work hour records for that day.
+
+**Example**: Close clinic on Sundays
+
+1. Identify all work hours for Sunday (weekday 7)
+2. Delete each record individually
+
+**Result**: Clinic is **closed** on Sundays (no appointments can be booked).
+
+<Warning>
+**Critical**: If you delete all clinic-level work hours for a day, the clinic is closed that day, regardless of provider availability.
+</Warning>
+
+## Common Errors and Solutions
+
+<AccordionGroup>
+  <Accordion title="Error: Overlap detected on edit">
+    **Problem**: The new time range overlaps with **another existing period** (not the one being edited).
+
+    **Example**:
+    - Record A (editing): 09:00-13:00 → 09:00-16:00
+    - Record B (existing): 15:00-19:00
+    - Overlap: 15:00-16:00 ❌
+
+    **Solution**: Adjust times to eliminate overlap:
+    - Option 1: Change to 09:00-15:00 (contiguous with Record B)
+    - Option 2: Change to 09:00-14:00 (gap before Record B)
+
+    See [Multiple Periods](/work-hours/multiple-periods) for overlap validation rules.
+  </Accordion>
+
+  <Accordion title="Error: if_updated_at mismatch (HTTP 409 Conflict)">
+    **Problem**: Another user modified the record since you loaded it.
+
+    **Example**:
+    - You loaded the record at 10:30:00 (`updated_at = 2025-01-17T10:30:00Z`)
+    - Another user edited it at 10:35:00 (`updated_at = 2025-01-17T10:35:00Z`)
+    - Your edit request uses `if_updated_at=2025-01-17T10:30:00Z` ❌ Mismatch
+
+    **Solution**:
+    1. **Refresh** the record to get the latest `updated_at` timestamp
+    2. **Review** the changes made by the other user
+    3. **Reapply** your edits with the new `if_updated_at` value
+
+    <Info>
+    This is a **safety feature** to prevent overwriting recent changes.
+    </Info>
+  </Accordion>
+
+  <Accordion title="Warning: Cannot delete - appointments exist in this period">
+    **Problem**: You're trying to delete a work hour period that has future appointments booked.
+
+    **Behavior**: The system allows deletion, but **does NOT cancel existing appointments**.
+
+    **Example**:
+    - Period: 09:00-13:00
+    - Existing appointment: January 20, 10:00
+    - Delete period → Appointment remains valid ✅
+
+    **Result**:
+    - **Existing appointments**: Remain valid (not canceled)
+    - **New appointments**: Cannot be booked in this period
+
+    <Warning>
+    If you want to prevent future bookings while preserving existing appointments, delete the work hour. If you want to cancel all appointments, use the **Closures** feature instead.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Error: Invalid time range">
+    **Problem**: Closing time is before or equal to opening time.
+
+    **Example (editing)**:
+    - Old: 09:00-13:00
+    - New: 09:00-09:00 ❌ (equal)
+    - New: 13:00-09:00 ❌ (reverse)
+
+    **Solution**: Ensure closing time > opening time.
+  </Accordion>
+</AccordionGroup>
+
+## Cache Invalidation
+
+When you edit or delete work hours, the system **automatically invalidates** availability caches:
+
+### What Gets Invalidated?
+
+- **Clinic-level edits/deletes**: All availability caches for the clinic
+- **Provider-level edits/deletes**: Availability caches for the specific provider
+
+### How Long Does It Take?
+
+**Immediate**. The cache invalidation happens as part of the same transaction:
+
+```
+1. Validate changes
+2. Update/delete database record
+3. Invalidate cache ← Happens here
+4. Commit transaction
+5. Return success response
+```
+
+<Info>
+You do **NOT** need to manually refresh availability. The system handles cache invalidation automatically.
+</Info>
+
+## Best Practices
+
+<Tip>
+**Use closures for one-time changes**: For holidays or exceptional days, use the **Closures** feature instead of deleting work hours. Work hours define your regular weekly schedule.
+</Tip>
+
+<Tip>
+**Review existing appointments before deleting**: Check if there are future appointments in the period you're deleting. Deleting work hours does NOT cancel appointments.
+</Tip>
+
+<Warning>
+**Always include `if_updated_at` when editing**: This prevents race conditions and accidental overwrites.
+</Warning>
+
+<Info>
+**Cache invalidation is automatic**: You don't need to manually clear caches or trigger recalculations.
+</Info>
+
+<Tip>
+**Delete one period at a time**: If you have multiple periods for a day, delete them individually to avoid accidentally closing the clinic for that day.
+</Tip>
+
+## Visual Examples
+
+### Example 1: Edit Opening Time
+
+**Before**:
+```
+Monday (1): 09:00 ━━━━━━━━━━━━━━━━ 13:00
+```
+
+**Edit**: Change opening time to 08:00
+
+**After**:
+```
+Monday (1): 08:00 ━━━━━━━━━━━━━━━━━━━━━━ 13:00
+```
+
+**Impact**: More slots available (one hour earlier).
+
+### Example 2: Delete Afternoon Period
+
+**Before** (split shift):
+```
+Monday (1): 09:00 ━━━━━━ 13:00  15:00 ━━━━━━ 19:00
+```
+
+**Delete**: Remove afternoon period (15:00-19:00)
+
+**After**:
+```
+Monday (1): 09:00 ━━━━━━ 13:00
+```
+
+**Impact**: Afternoon slots no longer available.
+
+### Example 3: Edit with Overlap Error
+
+**Existing Periods**:
+```
+Monday (1):
+  Period A: 09:00 ━━━━━━ 13:00
+  Period B: 15:00 ━━━━━━ 19:00
+```
+
+**Edit Attempt**: Change Period A to 09:00-16:00
+
+```
+Period A (new): 09:00 ━━━━━━━━━━━━━━━━ 16:00
+Period B:                   15:00 ━━━━━━ 19:00
+                               ↑
+                          Overlap: 15:00-16:00 ❌
+```
+
+**Error**: `"Overlap detected: Period 09:00-16:00 overlaps with existing period 15:00-19:00"`
+
+**Solution**: Change to 09:00-15:00 (contiguous) or 09:00-14:00 (gap).
+
+## Real-World Scenarios
+
+### Scenario 1: Adjust Morning Shift
+
+**Situation**: Hair salon wants to open one hour earlier.
+
+**Before**:
+- Monday: 09:00-13:00 + 15:00-19:00
+
+**Action**: Edit morning period
+- Change 09:00-13:00 to 08:00-13:00
+
+**After**:
+- Monday: 08:00-13:00 + 15:00-19:00
+
+**Impact**: Morning slots start at 08:00 instead of 09:00.
+
+### Scenario 2: Eliminate Split Shift
+
+**Situation**: Gym decides to stay open all day (no more gap).
+
+**Before**:
+- Monday: 06:00-10:00 + 18:00-22:00 (two shifts)
+
+**Action**:
+1. Edit Period 1: Change 06:00-10:00 to 06:00-22:00
+2. Delete Period 2: Remove 18:00-22:00
+
+**After**:
+- Monday: 06:00-22:00 (continuous)
+
+**Impact**: Slots available all day (no gap).
+
+### Scenario 3: Provider Reduces Hours
+
+**Situation**: Provider A wants to stop working afternoons.
+
+**Before**:
+- Provider A (Monday): 09:00-13:00 + 15:00-19:00
+
+**Action**: Delete afternoon period (15:00-19:00)
+
+**After**:
+- Provider A (Monday): 09:00-13:00
+
+**Impact**:
+- Provider A: Mornings only
+- Existing afternoon appointments: **Remain valid**
+- New afternoon appointments: **Cannot be booked** with Provider A
+
+<Warning>
+Existing appointments are **not canceled**. Only future availability is affected.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Multiple Periods" icon="calendar-days" href="/work-hours/multiple-periods">
+    Understand overlap validation and split shifts
+  </Card>
+
+  <Card title="Closures" icon="calendar-xmark" href="/closures/overview">
+    Use closures for one-time schedule changes
+  </Card>
+
+  <Card title="Provider Hours" icon="user-doctor" href="/work-hours/provider-hours">
+    Edit individual provider schedules
+  </Card>
+
+  <Card title="API Reference" icon="code" href="/api-reference/work-hours">
+    Work Hours API documentation
+  </Card>
+</CardGroup>

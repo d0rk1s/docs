@@ -1,0 +1,220 @@
+---
+title: "Configure Clinic Hours"
+description: "Set up your clinic's operational hours for each day of the week"
+icon: "building"
+---
+
+## Overview
+
+Clinic hours define when your establishment is **open for business**. These hours serve as the foundation for all appointment scheduling.
+
+<Warning>
+If no clinic hours are configured for a specific day, **NO appointments** can be booked that day, regardless of provider availability.
+</Warning>
+
+## Step-by-Step Configuration
+
+<Frame>
+  <img src="/images/screenshots/work_hours_create_01_form.png" alt="Formulario de creación de horarios de clínica con selección de día y horas" />
+</Frame>
+
+<Steps>
+  <Step title="Navigate to Settings">
+    Go to **Configuración > Horarios de Trabajo** (Settings > Work Hours) in the admin dashboard.
+  </Step>
+
+  <Step title="Select Weekday">
+    Choose the day of the week you want to configure:
+
+    | Number | Day |
+    |--------|-----|
+    | 1 | Monday (Lunes) |
+    | 2 | Tuesday (Martes) |
+    | 3 | Wednesday (Miércoles) |
+    | 4 | Thursday (Jueves) |
+    | 5 | Friday (Viernes) |
+    | 6 | Saturday (Sábado) |
+    | 7 | Sunday (Domingo) |
+  </Step>
+
+  <Step title="Enter Opening Time">
+    Input the clinic opening time in **24-hour format** (HH:MM).
+
+    **Examples**:
+    - `09:00` (9:00 AM)
+    - `08:30` (8:30 AM)
+    - `06:00` (6:00 AM)
+  </Step>
+
+  <Step title="Enter Closing Time">
+    Input the clinic closing time in **24-hour format** (HH:MM).
+
+    **Examples**:
+    - `20:00` (8:00 PM)
+    - `22:00` (10:00 PM)
+    - `13:00` (1:00 PM)
+
+    <Info>
+    Closing time must be **after** opening time. Cross-day periods (e.g., 22:00-02:00) are not supported. Use two separate days if needed.
+    </Info>
+  </Step>
+
+  <Step title="Save Configuration">
+    Click **Guardar** (Save) to apply the work hours.
+
+    The system will:
+    - Validate no overlaps with existing periods for this day
+    - Validate time range (close > open)
+    - Invalidate availability cache automatically
+  </Step>
+</Steps>
+
+## Result: Clinic-Wide Availability
+
+Once configured, the work hours apply to **all providers** in your clinic (unless individual provider hours further restrict availability).
+
+**Example**:
+
+```
+Clinic Hours (Monday): 08:00-20:00
+
+Provider A Hours (Monday): 09:00-17:00
+  → Available: 09:00-17:00 ✅ (intersection)
+
+Provider B Hours (Monday): Not configured
+  → Available: 08:00-20:00 ✅ (uses clinic hours)
+
+Provider C Hours (Monday): 07:00-10:00
+  → Available: 08:00-10:00 ✅ (intersection starts at clinic open)
+```
+
+## Example Weekly Schedule
+
+Here's a typical clinic schedule configuration:
+
+| Day | Weekday | Clinic Hours | Notes |
+|-----|---------|--------------|-------|
+| Monday | 1 | 09:00-20:00 | Full day |
+| Tuesday | 2 | 09:00-20:00 | Full day |
+| Wednesday | 3 | 09:00-13:00 | Half day (morning only) |
+| Thursday | 4 | 09:00-20:00 | Full day |
+| Friday | 5 | 09:00-20:00 | Full day |
+| Saturday | 6 | 10:00-14:00 | Weekend hours |
+| Sunday | 7 | *Not configured* | Closed |
+
+<Note>
+**Sunday (7)** has no work hours configured, so the clinic is **closed** that day. No appointments can be booked.
+</Note>
+
+## Common Errors
+
+<AccordionGroup>
+  <Accordion title="Error: Overlap detected">
+    **Problem**: The new work hours overlap with an existing period for the same day.
+
+    **Example**:
+    - Existing: 09:00-14:00
+    - New: 13:00-17:00
+    - Overlap: 13:00-14:00 ❌
+
+    **Solution**: Adjust times to create a gap or make periods contiguous:
+    - Option 1: 09:00-13:00 + 15:00-19:00 (gap)
+    - Option 2: 09:00-13:00 + 13:00-17:00 (contiguous)
+
+    See [Multiple Periods Per Day](/work-hours/multiple-periods) for details.
+  </Accordion>
+
+  <Accordion title="Error: Invalid time range">
+    **Problem**: Closing time is before or equal to opening time.
+
+    **Example**:
+    - Opening: 09:00
+    - Closing: 08:00 ❌
+
+    **Solution**: Ensure closing time > opening time. For overnight periods, split into two days:
+    - Day 1: 22:00-23:59
+    - Day 2: 00:00-02:00
+  </Accordion>
+
+  <Accordion title="Error: Invalid weekday number">
+    **Problem**: Weekday must be between 1-7.
+
+    **Solution**: Use the correct weekday number:
+    - 1 = Monday
+    - 7 = Sunday
+  </Accordion>
+
+  <Accordion title="Warning: No appointments can be booked">
+    **Problem**: No clinic hours configured for a specific day.
+
+    **Example**:
+    - Sunday (7): No work hours → Clinic closed ❌
+
+    **Solution**: Create clinic hours for that day, or use this intentionally for days off.
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Tip>
+**Configure all active days at once**: Set up your entire weekly schedule in one session to avoid missing days.
+</Tip>
+
+<Tip>
+**Use multiple periods for lunch breaks**: Instead of one long period (09:00-20:00) with manual blocking, use split shifts (09:00-13:00 + 15:00-19:00). See [Multiple Periods](/work-hours/multiple-periods).
+</Tip>
+
+<Warning>
+**Don't delete work hours for one-time closures**: For holidays or exceptional days, use the **Closures** feature instead. Work hours define your regular weekly schedule.
+</Warning>
+
+## What Happens When You Save?
+
+When you create clinic hours, the system:
+
+1. **Validates** no overlaps with existing periods
+2. **Validates** time range (close > open)
+3. **Saves** to database (`work_hours` table)
+4. **Invalidates** availability cache for the clinic
+5. **Recalculates** available slots for future dates
+
+<Info>
+Cache invalidation is **automatic**. You don't need to manually refresh availability.
+</Info>
+
+## Visual Example
+
+**Before Configuration** (Sunday - No Hours):
+
+```
+Sunday (7): [CLOSED - No appointments can be booked]
+```
+
+**After Configuration** (Sunday 10:00-14:00):
+
+```
+Sunday (7): 10:00 ━━━━━━━━━━━━━━━━ 14:00
+            ↓
+Available Slots (30-min service):
+  10:00, 10:30, 11:00, 11:30, 12:00, 12:30, 13:00, 13:30
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Multiple Periods Per Day" icon="calendar-days" href="/work-hours/multiple-periods">
+    Configure split shifts and lunch breaks
+  </Card>
+
+  <Card title="Provider Hours" icon="user-doctor" href="/work-hours/provider-hours">
+    Set individual provider availability
+  </Card>
+
+  <Card title="Edit Work Hours" icon="pen-to-square" href="/work-hours/edit-delete-hours">
+    Modify existing clinic hours
+  </Card>
+
+  <Card title="Closures" icon="calendar-xmark" href="/closures/overview">
+    Configure one-time closures for holidays
+  </Card>
+</CardGroup>

@@ -1,0 +1,430 @@
+---
+title: 'Create Provider'
+description: 'Step-by-step guide to adding a new provider to your clinic'
+icon: 'user-plus'
+---
+
+## Overview
+
+Creating a provider involves either flagging an existing user as a provider or creating a new user with the provider flag enabled. This guide covers both scenarios.
+
+<Info>
+  **Per-Clinic Providers**: When you create a provider, they are flagged as a provider ONLY in the current clinic. The same user can be a regular staff member in other clinics.
+</Info>
+
+## Prerequisites
+
+Before creating a provider:
+
+<Steps>
+  <Step title="Required Permissions">
+    You must have `CLINIC_ADMIN` role in the clinic where you're creating the provider.
+  </Step>
+  <Step title="Clinic Context">
+    Ensure the correct clinic is selected in the clinic selector (top-right dropdown).
+  </Step>
+  <Step title="User Information">
+    Prepare the provider's email, phone number, and full name.
+  </Step>
+</Steps>
+
+## Method 1: Flag Existing User as Provider
+
+Use this method when the user already exists in your clinic (e.g., administrative staff becoming a provider).
+
+<Steps>
+  <Step title="Navigate to Users">
+    Go to **Users** section from the main menu.
+  </Step>
+  <Step title="Find the User">
+    Use search to locate the user by name or email.
+  </Step>
+  <Step title="Open Edit Dialog">
+    Click the **Edit** icon on the user's card.
+  </Step>
+  <Step title="Enable Provider Flag">
+    Toggle **Is Provider** to `true`.
+  </Step>
+  <Step title="Save Changes">
+    Click **Save** to update the user's profile.
+  </Step>
+</Steps>
+
+### API Request (Method 1)
+
+```http
+PATCH /v1/users/{user_clinic_id}?clinic_id={clinic_id}
+```
+
+```bash
+curl -X PATCH "https://api.clinic.example.com/v1/users/{user_clinic_id}?clinic_id={clinic_id}" \
+  -H "Cookie: access_token={jwt_token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "is_provider": true
+  }'
+```
+
+### Response
+
+```json
+{
+  "id": "abc-123-def-456",
+  "user_id": "user-789-xyz-012",
+  "full_name": "Dr. María García",
+  "email": "maria.garcia@clinic.com",
+  "phone_e164": "+34612345678",
+  "is_provider": true,
+  "clinic_role": "STAFF",
+  "status": "approved",
+  "created_at": "2025-12-01T10:30:00Z",
+  "updated_at": "2026-01-17T09:15:00Z"
+}
+```
+
+<Warning>
+  **Existing Appointments**: If the user had existing appointments scheduled BEFORE being flagged as a provider, those appointments remain valid. Future appointments will now be calculated using this user's provider availability.
+</Warning>
+
+## Method 2: Create New User as Provider
+
+Use this method when hiring a new team member who will be a provider.
+
+<Frame>
+  <img src="/images/screenshots/providers_create_form.png" alt="Formulario de creación de proveedor con campos de información y flag de proveedor" />
+</Frame>
+
+<Steps>
+  <Step title="Navigate to Create User">
+    Go to **Users** → **Create User** or click the **Add User** button.
+  </Step>
+  <Step title="Fill User Information">
+    - **Full Name**: Provider's full name
+    - **Email**: Professional email address (must be unique globally)
+    - **Phone**: E.164 format (e.g., `+34612345678`)
+    - **Role**: Select clinic role (`STAFF` or `CLINIC_ADMIN`)
+  </Step>
+  <Step title="Enable Provider Flag">
+    Toggle **Is Provider** to `true`.
+  </Step>
+  <Step title="Set Initial Status">
+    Choose `approved` (active immediately) or `pending` (requires approval).
+  </Step>
+  <Step title="Submit Form">
+    Click **Create User** to save.
+  </Step>
+</Steps>
+
+### API Request (Method 2)
+
+```http
+POST /v1/users?clinic_id={clinic_id}
+```
+
+```bash
+curl -X POST "https://api.clinic.example.com/v1/users?clinic_id={clinic_id}" \
+  -H "Cookie: access_token={jwt_token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "juan.lopez@clinic.com",
+    "full_name": "Dr. Juan López",
+    "phone_e164": "+34612345678",
+    "clinic_role": "STAFF",
+    "is_provider": true,
+    "status": "approved",
+    "password": "SecurePassword123!"
+  }'
+```
+
+### Response
+
+```json
+{
+  "id": "def-456-ghi-789",
+  "user_id": "user-012-abc-345",
+  "full_name": "Dr. Juan López",
+  "email": "juan.lopez@clinic.com",
+  "phone_e164": "+34612345678",
+  "is_provider": true,
+  "clinic_role": "STAFF",
+  "status": "approved",
+  "created_at": "2026-01-17T09:20:00Z",
+  "updated_at": "2026-01-17T09:20:00Z"
+}
+```
+
+<Info>
+  **Audit Logging**: Provider creation is automatically logged in `audit_logs` with action `USER_CREATED` and details including `is_provider: true`.
+</Info>
+
+## Field Details
+
+### Email
+
+<AccordionGroup>
+  <Accordion title="Uniqueness Constraint">
+    Email must be unique **globally** (across all clinics). Two users cannot share the same email address.
+
+    **Error Example**:
+    ```json
+    {
+      "detail": "Email already in use"
+    }
+    ```
+
+    **Solution**: Use a different email or identify the existing user and flag them as a provider instead (Method 1).
+  </Accordion>
+
+  <Accordion title="Format Validation">
+    Email must be a valid email address format.
+
+    **Valid**: `maria.garcia@clinic.com`, `juan+provider@example.org`
+
+    **Invalid**: `maria.garcia`, `juan@`, `@clinic.com`
+  </Accordion>
+</AccordionGroup>
+
+### Phone Number
+
+<AccordionGroup>
+  <Accordion title="E.164 Format Required">
+    Phone numbers MUST be in E.164 format: `+[country code][number]`
+
+    **Examples**:
+    - Spain: `+34612345678`
+    - US: `+14155551234`
+    - Mexico: `+525512345678`
+
+    **Invalid**: `612345678`, `(415) 555-1234`, `+34 612 345 678`
+  </Accordion>
+
+  <Accordion title="Global Uniqueness">
+    Phone numbers must be unique **globally** (across all clinics), similar to email.
+
+    **Error Example**:
+    ```json
+    {
+      "detail": "Phone number already in use"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Normalization">
+    The system uses `normalize_phone_to_e164()` to convert various formats:
+
+    ```python
+    # Input: "612345678" (Spain, assuming +34 prefix)
+    # Output: "+34612345678"
+
+    # Input: "+34 612 345 678"
+    # Output: "+34612345678"
+    ```
+
+    **Best Practice**: Always provide phone numbers in E.164 format to avoid parsing issues.
+  </Accordion>
+</AccordionGroup>
+
+### Full Name
+
+<AccordionGroup>
+  <Accordion title="Per-Clinic Storage">
+    Full name is stored in `user_clinic_profiles.full_name`, meaning:
+    - The same user can have different names in different clinics
+    - Name is tied to the `user_clinic` relationship, not the global `users` table
+
+    **Example**:
+    - Clinic A: "Dr. María García Rodríguez"
+    - Clinic B: "María García" (same user, informal name)
+  </Accordion>
+
+  <Accordion title="Multi-Clinic Name Updates">
+    When a patient exists in Clinic A as "Manuel López" and books in Clinic B as "Eduardo Cassanovas", the system:
+    1. Associates the user to Clinic B (creates new `user_clinic`)
+    2. Updates the global name to "Eduardo Cassanovas" (respects most recent input)
+
+    See `docs/FIX_MULTI_CLINIC_PATIENT_NAME_UPDATE.md` for full details.
+  </Accordion>
+</AccordionGroup>
+
+### Clinic Role
+
+<CardGroup cols={3}>
+  <Card title="STAFF" icon="user">
+    Standard team member with access to their clinic's data.
+  </Card>
+  <Card title="CLINIC_ADMIN" icon="user-shield">
+    Can manage clinic configuration, users, providers, and services.
+  </Card>
+  <Card title="ADMIN" icon="crown">
+    System administrator with access to ALL clinics (global role).
+  </Card>
+</CardGroup>
+
+<Tip>
+  **Role Independence**: A user can be `CLINIC_ADMIN` in Clinic A and `STAFF` in Clinic B. Roles are per-clinic, stored in `user_clinics.clinic_role_id`.
+</Tip>
+
+### Status
+
+<CardGroup cols={3}>
+  <Card title="approved" icon="circle-check">
+    **Active Provider**: Can deliver services immediately. Availability slots are generated.
+  </Card>
+  <Card title="pending" icon="clock">
+    **Awaiting Approval**: Provider is not yet active. No availability slots generated. Use for onboarding.
+  </Card>
+  <Card title="suspended" icon="ban">
+    **Temporarily Inactive**: Provider is suspended (leave, disciplinary action). No availability slots.
+  </Card>
+</CardGroup>
+
+## Post-Creation Steps
+
+After creating a provider, complete their setup:
+
+<Steps>
+  <Step title="Configure Work Hours">
+    Navigate to [Configure Schedule](/providers/configure-schedule) to set the provider's working hours.
+
+    **Without work hours**: Provider will have NO availability (no slots generated).
+  </Step>
+  <Step title="Assign Services">
+    Navigate to [Assign Services](/providers/assign-services) to link the provider to services they deliver.
+
+    **Without service assignments**: Provider won't appear when patients book specific services.
+  </Step>
+  <Step title="Verify Availability">
+    Test availability by simulating an appointment booking for a service assigned to this provider.
+  </Step>
+  <Step title="Notify Provider">
+    Send login credentials and onboarding information to the new provider.
+  </Step>
+</Steps>
+
+## Common Errors
+
+<AccordionGroup>
+  <Accordion title="403 Forbidden - Cannot Manage Clinic">
+    **Cause**: You don't have `CLINIC_ADMIN` role in the selected clinic.
+
+    **Solution**: Contact your system administrator to grant you `CLINIC_ADMIN` permissions for this clinic.
+  </Accordion>
+
+  <Accordion title="400 Bad Request - Email Already in Use">
+    **Cause**: A user with this email already exists globally.
+
+    **Solution**:
+    1. Search for the existing user in the **Users** section
+    2. If they exist in your clinic, use Method 1 to flag them as a provider
+    3. If they exist in another clinic but not yours, add them to your clinic first (Create UserClinic association)
+  </Accordion>
+
+  <Accordion title="400 Bad Request - Phone Already in Use">
+    **Cause**: A user with this phone number already exists globally.
+
+    **Solution**: Similar to email conflict. Locate the existing user and either flag them as a provider or verify the phone number is correct.
+  </Accordion>
+
+  <Accordion title="400 Bad Request - Invalid Phone Format">
+    **Cause**: Phone number is not in E.164 format.
+
+    **Solution**: Reformat the phone number to E.164. Examples:
+    - Spain: `+34` + 9-digit number
+    - US: `+1` + 10-digit number
+    - Mexico: `+52` + 10-digit number
+  </Accordion>
+</AccordionGroup>
+
+## Validation Logic
+
+The system performs several validations when creating a provider:
+
+```python
+# From app/api/v1/users.py (simplified)
+
+# 1. Check email uniqueness (global)
+existing_user = await db.scalar(select(User).where(User.email == email))
+if existing_user:
+    raise HTTPException(status_code=400, detail="Email already in use")
+
+# 2. Check phone uniqueness (global)
+existing_phone = await db.scalar(select(User).where(User.phone_e164 == phone))
+if existing_phone:
+    raise HTTPException(status_code=400, detail="Phone already in use")
+
+# 3. Normalize phone to E.164
+normalized_phone = normalize_phone_to_e164(phone_e164)
+if not normalized_phone:
+    raise HTTPException(status_code=400, detail="Invalid phone format")
+
+# 4. Validate clinic access
+if not current_user.can_manage_clinic(clinic_id):
+    raise HTTPException(status_code=403, detail="Cannot manage this clinic")
+
+# 5. Create user + user_clinic + user_clinic_profile
+# ... (database operations)
+```
+
+## Database Changes
+
+Creating a provider modifies three tables:
+
+### 1. users Table (Global Identity)
+
+```sql
+INSERT INTO users (id, email, phone_e164, password_hash, is_active)
+VALUES (
+  'user-012-abc-345',
+  'juan.lopez@clinic.com',
+  '+34612345678',
+  '<bcrypt_hash>',
+  true
+);
+```
+
+### 2. user_clinics Table (Clinic Association + Provider Flag)
+
+```sql
+INSERT INTO user_clinics (id, user_id, clinic_id, is_provider, clinic_role_id, status)
+VALUES (
+  'def-456-ghi-789',
+  'user-012-abc-345',  -- FK to users
+  'clinic-abc-123',
+  true,  -- PROVIDER FLAG
+  'role-staff-uuid',
+  'approved'
+);
+```
+
+### 3. user_clinic_profiles Table (Per-Clinic PII)
+
+```sql
+INSERT INTO user_clinic_profiles (user_clinic_id, full_name, notes, preferences)
+VALUES (
+  'def-456-ghi-789',  -- FK to user_clinics (PK = FK, 1:1 relationship)
+  'Dr. Juan López',
+  NULL,
+  '{}'::jsonb
+);
+```
+
+<Info>
+  **GDPR Compliance**: PII (full_name, notes) is stored separately in `user_clinic_profiles` to enable GDPR-compliant deletion without losing access audit trail.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configure Schedule" icon="calendar-days" href="/providers/configure-schedule">
+    Set up the provider's work hours (REQUIRED for availability)
+  </Card>
+  <Card title="Assign Services" icon="briefcase-medical" href="/providers/assign-services">
+    Link the provider to services they deliver
+  </Card>
+  <Card title="View Providers" icon="list" href="/providers/view-providers">
+    See the updated providers list with your new provider
+  </Card>
+  <Card title="Test Availability" icon="calendar-check" href="/scheduling/test-availability">
+    Verify the provider appears in appointment booking
+  </Card>
+</CardGroup>

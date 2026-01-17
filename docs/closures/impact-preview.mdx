@@ -1,0 +1,458 @@
+---
+title: "Preview de Impacto"
+description: "Analiza el impacto de un cierre ANTES de crearlo con cálculos en tiempo real de slots bloqueados"
+---
+
+# Preview de Impacto
+
+El **Preview de Impacto** es una característica que te permite ver exactamente cuántos slots de citas se bloquearán con un cierre **ANTES** de crearlo. Esto te ayuda a tomar decisiones informadas y evitar bloquear disponibilidad por error.
+
+<Tip>
+**Feature destacada (2026-01-03)**: Esta funcionalidad fue agregada recientemente para mejorar la planificación y reducir errores al crear cierres.
+</Tip>
+
+## ¿Qué Muestra el Preview?
+
+El preview calcula y muestra en tiempo real:
+
+| Métrica | Descripción |
+|---------|-------------|
+| **Slots normales** | Total de slots disponibles en el período (SIN el cierre) |
+| **Slots bloqueados** | Slots que se bloquearán CON el cierre |
+| **% de impacto** | `(slots bloqueados / slots normales) × 100` |
+| **Nivel de impacto** | HIGH (100%), MEDIUM (50-99%), LOW (&lt;50%) |
+| **Email notification** | Sí ✅ si impacto HIGH, No ❌ si MEDIUM/LOW |
+
+### Niveles de Impacto
+
+<CardGroup cols={3}>
+  <Card title="HIGH (100%)" icon="triangle-exclamation" color="#DC2626">
+    **Todos los slots bloqueados**
+
+    Significa que NINGÚN paciente podrá agendar citas en ese período.
+
+    **Acciones sugeridas**:
+    - Verificar fechas son correctas
+    - Considerar notificar manualmente a clientes
+    - Evaluar si es necesario dividir el cierre
+
+    **Email**: Sí ✅ (automático)
+  </Card>
+
+  <Card title="MEDIUM (50-99%)" icon="circle-exclamation" color="#F59E0B">
+    **Mayoría de slots bloqueados**
+
+    La mayoría de citas se bloquearán, pero algunos slots siguen disponibles (otros proveedores).
+
+    **Acciones sugeridas**:
+    - Validar que otros proveedores cubren demanda
+    - Considerar ajustar fechas si es muy alto (>90%)
+
+    **Email**: No ❌
+  </Card>
+
+  <Card title="LOW (&lt;50%)" icon="circle-check" color="#0D9373">
+    **Impacto mínimo**
+
+    Menos de la mitad de slots se bloquean. Disponibilidad parcial garantizada.
+
+    **Acciones sugeridas**:
+    - Safe to proceed
+    - No requiere acciones adicionales
+
+    **Email**: No ❌
+  </Card>
+</CardGroup>
+
+## Cómo Usar el Preview
+
+<Steps>
+  <Step title="Completar formulario de cierre">
+    Antes de hacer preview, completa:
+    - Tipo de cierre (clinic-wide o provider-specific)
+    - Proveedor (si es provider-specific)
+    - Fecha y hora de inicio
+    - Fecha y hora de fin
+    - Razón (opcional)
+
+    <Note>
+    El preview requiere al menos las fechas (inicio/fin) para calcular. El tipo y proveedor afectan el resultado.
+    </Note>
+  </Step>
+
+  <Step title="Click en 'Preview Impacto'">
+    En el formulario de cierre, haz click en el botón **"Preview Impacto"**.
+
+    El sistema ejecutará en tiempo real:
+    1. Llamada a API: `POST /v1/closures/impact-preview`
+    2. Cálculo de disponibilidad normal (sin el cierre)
+    3. Simulación del cierre propuesto
+    4. Comparación de slots (antes vs después)
+    5. Cálculo de nivel de impacto
+  </Step>
+
+  <Step title="Revisar resultados">
+    El sistema mostrará una tabla con detalles del impacto:
+
+    **Información general**:
+    - Período: `2026-08-01 a 2026-08-15` (15 días)
+    - Tipo: Cierre de clínica (clinic-wide)
+    - Proveedor: Todos
+
+    **Métricas de impacto**:
+    - Slots normales: 300 slots
+    - Slots bloqueados: 300 slots
+    - % de impacto: **100%**
+    - Nivel: **HIGH**
+    - Email notification: **Sí ✅**
+
+    **Desglose por día** (opcional):
+    | Fecha | Slots normales | Slots bloqueados | % Impacto |
+    |-------|----------------|------------------|-----------|
+    | 2026-08-01 | 20 | 20 | 100% |
+    | 2026-08-02 | 20 | 20 | 100% |
+    | ... | ... | ... | ... |
+    | 2026-08-15 | 20 | 20 | 100% |
+  </Step>
+
+  <Step title="Interpretar resultados">
+    Usa la siguiente guía para interpretar:
+
+    **Si nivel es HIGH (100%)**:
+    - ⚠️ Reconsiderar: ¿Las fechas son correctas?
+    - ⚠️ Notificar: ¿Debo avisar manualmente a clientes?
+    - ⚠️ Alternativas: ¿Puedo dividir el cierre en períodos más pequeños?
+
+    **Si nivel es MEDIUM (50-99%)**:
+    - ✅ Validar: ¿Otros proveedores cubren la demanda?
+    - ✅ Ajustar: ¿Puedo cambiar fechas para reducir impacto?
+
+    **Si nivel es LOW (&lt;50%)**:
+    - ✅ Safe to proceed: Impacto mínimo, puedes crear el cierre sin preocupaciones
+  </Step>
+
+  <Step title="Decidir acción">
+    Basándote en los resultados, decide:
+
+    **Opción A: Crear el cierre** (si impacto es aceptable)
+    - Click en "Crear Cierre"
+    - El sistema procederá con la creación
+
+    **Opción B: Ajustar fechas** (si impacto es muy alto)
+    - Modifica inicio/fin en el formulario
+    - Ejecuta preview nuevamente
+    - Repite hasta encontrar impacto aceptable
+
+    **Opción C: Cancelar** (si el cierre no es necesario)
+    - Click en "Cancelar"
+    - No se crea el cierre
+  </Step>
+</Steps>
+
+## Ejemplos de Preview
+
+<AccordionGroup>
+  <Accordion title="Ejemplo 1: Vacaciones de verano (clinic-wide, 15 días)">
+    **Configuración propuesta**:
+    - Tipo: Cierre de clínica
+    - Inicio: `2026-08-01 00:00`
+    - Fin: `2026-08-15 23:59`
+    - Razón: "Vacaciones de verano"
+
+    **Resultado del Preview**:
+    ```
+    Período: 2026-08-01 a 2026-08-15 (15 días)
+    Tipo: Clinic-wide (toda la clínica)
+
+    Slots normales: 300 slots
+      - 20 slots/día × 15 días
+      - 3 proveedores × 20 slots/proveedor/día ÷ 3
+
+    Slots bloqueados: 300 slots (100%)
+
+    Nivel de impacto: HIGH
+    Email notification: Sí ✅
+    ```
+
+    **Interpretación**:
+    - ⚠️ Impacto HIGH: TODOS los slots bloqueados
+    - ⚠️ Acción sugerida: Verificar fechas, considerar notificar clientes manualmente
+    - ✅ Email enviado automáticamente a admins
+
+    **Decisión**: Si las fechas son correctas, proceder con creación. Email automático alertará a admins.
+  </Accordion>
+
+  <Accordion title="Ejemplo 2: Cierre parcial (solo 1 proveedor, 2 días)">
+    **Configuración propuesta**:
+    - Tipo: Cierre de proveedor
+    - Proveedor: Dr. García
+    - Inicio: `2026-02-03 00:00`
+    - Fin: `2026-02-04 23:59`
+    - Razón: "Permiso médico personal"
+
+    **Resultado del Preview**:
+    ```
+    Período: 2026-02-03 a 2026-02-04 (2 días)
+    Tipo: Provider-specific (Dr. García)
+
+    Slots normales (clínica completa): 120 slots
+      - 20 slots/día × 2 días × 3 proveedores
+
+    Slots Dr. García: 40 slots
+      - 20 slots/día × 2 días
+
+    Slots bloqueados: 40 slots
+    % de impacto total: 33% (40/120)
+
+    Nivel de impacto: MEDIUM
+    Email notification: No ❌
+    ```
+
+    **Interpretación**:
+    - ✅ Impacto MEDIUM: Solo 33% de slots bloqueados
+    - ✅ Otros proveedores (Dra. López, Dra. Fernández) disponibles
+    - ✅ NO se envía email (impacto no es HIGH)
+
+    **Decisión**: Safe to proceed. Impacto aceptable, disponibilidad parcial garantizada.
+  </Accordion>
+
+  <Accordion title="Ejemplo 3: Medio día (provider-specific, 5 horas)">
+    **Configuración propuesta**:
+    - Tipo: Cierre de proveedor
+    - Proveedor: Ana López
+    - Inicio: `2026-03-10 09:00`
+    - Fin: `2026-03-10 14:00`
+    - Razón: "Capacitación: Curso de técnicas avanzadas"
+
+    **Resultado del Preview**:
+    ```
+    Período: 2026-03-10 09:00 a 14:00 (5 horas)
+    Tipo: Provider-specific (Ana López)
+
+    Slots normales (clínica completa): 60 slots
+      - 20 slots/día × 3 proveedores
+
+    Slots Ana (día completo): 20 slots
+    Slots Ana (mañana 9-14): 10 slots
+
+    Slots bloqueados: 10 slots
+    % de impacto total: 17% (10/60)
+    % de impacto Ana: 50% (10/20)
+
+    Nivel de impacto: LOW (total), MEDIUM (Ana)
+    Email notification: No ❌
+    ```
+
+    **Interpretación**:
+    - ✅ Impacto LOW (total): Solo 17% de slots clínica bloqueados
+    - ⚠️ Impacto MEDIUM (Ana): 50% de slots de Ana bloqueados
+    - ✅ Ana sigue disponible 14:00-18:00 (tarde)
+    - ✅ Otros proveedores disponibles todo el día
+
+    **Decisión**: Safe to proceed. Impacto mínimo en disponibilidad general.
+  </Accordion>
+
+  <Accordion title="Ejemplo 4: Día festivo (clinic-wide, 1 día)">
+    **Configuración propuesta**:
+    - Tipo: Cierre de clínica
+    - Inicio: `2026-12-25 00:00`
+    - Fin: `2026-12-25 23:59`
+    - Razón: "Día festivo - Navidad"
+
+    **Resultado del Preview**:
+    ```
+    Período: 2026-12-25 (1 día)
+    Tipo: Clinic-wide
+
+    Slots normales: 20 slots
+    Slots bloqueados: 20 slots (100%)
+
+    Nivel de impacto: HIGH
+    Email notification: Sí ✅
+    ```
+
+    **Interpretación**:
+    - ⚠️ Impacto HIGH: Día completo bloqueado
+    - ✅ Esperado: Es un día festivo (normal que esté cerrado)
+    - ✅ Email enviado para alerta
+
+    **Decisión**: Proceder con creación. Es un cierre esperado.
+  </Accordion>
+</AccordionGroup>
+
+## Casos Especiales del Preview
+
+<AccordionGroup>
+  <Accordion title="Preview muestra 0 slots normales">
+    **Problema**: El preview indica `Slots normales: 0`.
+
+    **Causa probable**:
+    - La clínica ya está cerrada esos días (no hay work_hours configurados)
+    - El período seleccionado cae en días sin horarios de trabajo
+
+    **Ejemplo**:
+    - Clínica solo trabaja lunes-viernes (work_hours)
+    - Intentas crear cierre para sábado-domingo
+    - Preview muestra 0 slots normales (ya cerrado)
+
+    **Solución**:
+    - Verificar work_hours de la clínica
+    - Si es correcto, no es necesario crear el cierre (ya está cerrado por work_hours)
+    - Si quieres bloquear explícitamente, puedes crear el cierre de todos modos
+  </Accordion>
+
+  <Accordion title="Preview no coincide con realidad después de crear">
+    **Problema**: Preview mostraba 100 slots bloqueados, pero después de crear solo se bloquearon 80.
+
+    **Causa probable**:
+    - Citas ya agendadas reducen los slots disponibles
+    - El preview calcula slots TEÓRICOS (sin considerar citas existentes)
+
+    **Explicación**:
+    - **Preview**: Calcula disponibilidad basada en work_hours y duración de servicios
+    - **Realidad**: Citas ya agendadas consumen slots
+
+    **Ejemplo**:
+    - Preview: 100 slots disponibles teóricamente
+    - Realidad: 20 citas ya agendadas = 80 slots realmente disponibles
+    - Cierre bloquea solo los 80 slots libres
+
+    **Solución**:
+    - El preview es un **estimado**
+    - Para cálculo exacto, revisa el calendario y cuenta citas existentes manualmente
+    - El sistema NUNCA cancela citas existentes al crear cierre
+  </Accordion>
+
+  <Accordion title="Preview con múltiples proveedores">
+    **Problema**: Tengo 5 proveedores, ¿cómo interpreto el preview para cierre de 1 proveedor?
+
+    **Solución**:
+    El preview mostrará DOS porcentajes:
+
+    **1. % de impacto total (clínica completa)**:
+    - Considera todos los proveedores
+    - Ejemplo: 20% (1 de 5 proveedores)
+
+    **2. % de impacto del proveedor específico**:
+    - Solo para ese proveedor
+    - Ejemplo: 100% (todos los slots del proveedor bloqueados)
+
+    **Interpretación**:
+    - Si % total es LOW (&lt;50%): Disponibilidad parcial garantizada ✅
+    - Si % proveedor es HIGH (100%): Ese proveedor no estará disponible ⚠️
+
+    **Recomendación**:
+    - Usa % total para evaluar impacto en clínica
+    - Usa % proveedor para validar que las fechas son correctas para ese empleado
+  </Accordion>
+
+  <Accordion title="Preview con cierres solapados">
+    **Problema**: Ya tengo un cierre existente, creo otro solapado. ¿Cómo se calcula el preview?
+
+    **Solución**:
+    El preview calcula el impacto **ADICIONAL** del nuevo cierre:
+
+    **Escenario**:
+    - Cierre existente: Dr. García, 1-5 de agosto (40 slots bloqueados)
+    - Cierre nuevo: Dra. López, 3-7 de agosto (50 slots)
+
+    **Preview del cierre nuevo**:
+    - Slots normales: 100 slots (período 3-7 agosto)
+    - Slots ya bloqueados por Dr. García: 20 slots (solapamiento 3-5 agosto)
+    - Slots bloqueados por Dra. López: 50 slots
+    - **Total slots bloqueados después**: 70 slots (20 García + 50 López)
+    - **Impacto adicional del nuevo cierre**: 50 slots (solo López)
+
+    **Interpretación**:
+    - El preview muestra impacto del cierre que estás creando AHORA
+    - No suma cierres existentes (esos ya están en efecto)
+  </Accordion>
+</AccordionGroup>
+
+## Limitaciones del Preview
+
+<Warning>
+**Preview es un estimado**, NO un cálculo exacto. Razones:
+
+1. **No considera citas existentes**: Calcula slots teóricos basados en work_hours, pero citas ya agendadas reducen slots reales.
+
+2. **Asume disponibilidad uniforme**: No considera variaciones en demanda (ej: lunes puede tener más citas que viernes).
+
+3. **No considera recursos**: Si servicios requieren recursos específicos (salas, equipos), el preview no valida disponibilidad de recursos.
+
+4. **Cache puede estar desactualizada**: Si work_hours o servicios cambiaron recientemente, el preview puede usar datos en cache (hasta 5 min).
+
+**Recomendación**: Usa preview como guía, pero revisa el calendario manualmente para cierres críticos.
+</Warning>
+
+<Tip>
+**Para cálculo exacto**:
+
+1. Ejecuta preview (obtén estimado)
+2. Navega al calendario para el período del cierre
+3. Cuenta citas existentes manualmente
+4. Calcula: `Slots reales disponibles = Slots preview - Citas existentes`
+
+Esto te dará el número exacto de slots que se bloquearán.
+</Tip>
+
+## API Endpoint
+
+El preview utiliza el endpoint:
+
+```http
+POST /v1/closures/impact-preview
+Content-Type: application/json
+
+{
+  "clinic_id": "abc-123",
+  "provider_id": null,
+  "starts_at": "2026-08-01T00:00:00Z",
+  "ends_at": "2026-08-15T23:59:59Z"
+}
+```
+
+<Note>
+- `provider_id`: `null` para cierre clinic-wide, UUID para cierre provider-specific
+</Note>
+
+**Response**:
+```json
+{
+  "period_start": "2026-08-01T00:00:00Z",
+  "period_end": "2026-08-15T23:59:59Z",
+  "total_slots_available": 300,
+  "total_slots_blocked": 300,
+  "impact_percentage": 100.0,
+  "impact_level": "HIGH",
+  "will_send_email": true,
+  "breakdown_by_day": [
+    {
+      "date": "2026-08-01",
+      "slots_available": 20,
+      "slots_blocked": 20,
+      "impact_percentage": 100.0
+    }
+  ]
+}
+```
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Crear Cierre" icon="calendar-plus" href="/closures/create-closure">
+    Después de preview, crear el cierre
+  </Card>
+
+  <Card title="Ver Upcoming Closures" icon="calendar-clock" href="/closures/view-upcoming">
+    Revisa cierres próximos (14 días)
+  </Card>
+
+  <Card title="Cancelar Cierre" icon="trash-can" href="/closures/cancel-closure">
+    Cómo eliminar un cierre existente
+  </Card>
+
+  <Card title="Volver a Overview" icon="arrow-left" href="/closures/overview">
+    Conceptos generales de cierres
+  </Card>
+</CardGroup>

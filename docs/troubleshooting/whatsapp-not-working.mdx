@@ -1,0 +1,527 @@
+---
+title: 'WhatsApp Not Working'
+description: 'Complete diagnostic guide for WhatsApp integration issues'
+icon: 'message-exclamation'
+---
+
+<Warning>
+WhatsApp integration requires active subscription (FREE plan or higher) and valid Twilio + OpenAI credentials. If WhatsApp has been inactive for 30+ days (no appointments created), it will auto-disable.
+</Warning>
+
+<Frame>
+  <img src="/images/screenshots/troubleshooting_whatsapp_error.png" alt="Error de WhatsApp mostrando integración inactiva con pasos de diagnóstico" />
+</Frame>
+
+## Quick Checklist
+
+Before diving into detailed troubleshooting, verify these 6 critical requirements:
+
+<Steps>
+  <Step title="WhatsApp integration is ACTIVE">
+    Go to **Settings** → **WhatsApp** and check status is green (ACTIVE), not gray (INACTIVE).
+  </Step>
+  <Step title="WhatsApp Business number is configured">
+    Verify your Twilio WhatsApp number is showing: `+14155238886` (or your custom number).
+  </Step>
+  <Step title="Twilio credentials are valid">
+    Check `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN` are set correctly in backend environment.
+  </Step>
+  <Step title="Grace period has not expired">
+    If no appointments created in 30+ days, WhatsApp auto-disables. Create an appointment to reactivate.
+  </Step>
+  <Step title="OpenAI API key is valid">
+    Bot uses OpenAI GPT-4o-mini for conversations. Verify `OPENAI_API_KEY` is valid and has credits.
+  </Step>
+  <Step title="LangSmith tracing (optional)">
+    For debugging, verify `LANGCHAIN_TRACING_V2=true` and `LANGCHAIN_API_KEY` are set.
+  </Step>
+</Steps>
+
+## Common WhatsApp Issues
+
+<AccordionGroup>
+  <Accordion title="Bot does not respond at all" icon="robot-astromech">
+    **Symptom**: Patient sends message to WhatsApp number but receives no response (not even "...").
+
+    **Diagnosis**:
+    - WhatsApp integration disabled
+    - Twilio webhook not configured
+    - Backend server down
+    - OpenAI API key invalid
+
+    **Debugging Steps**:
+    <Steps>
+      <Step title="Verify WhatsApp is active">
+        ```bash
+        # In backend logs, search for:
+        grep "WhatsApp integration is ACTIVE" logs/app.log
+
+        # If you see "WhatsApp integration is INACTIVE", check grace period
+        ```
+      </Step>
+      <Step title="Check Twilio webhook configuration">
+        1. Log in to [Twilio Console](https://console.twilio.com)
+        2. Go to **Messaging** → **WhatsApp** → **Sandbox** (or your registered number)
+        3. Verify webhook URL: `https://your-domain.com/v1/whatsapp/webhook`
+        4. Verify method is `POST`
+      </Step>
+      <Step title="Test webhook manually">
+        ```bash
+        curl -X POST https://your-domain.com/v1/whatsapp/webhook \
+          -d "From=whatsapp:+34612345678" \
+          -d "Body=hola"
+
+        # Should return HTTP 200
+        ```
+      </Step>
+      <Step title="Check OpenAI API key">
+        ```bash
+        # In backend logs:
+        grep "OpenAI API error" logs/app.log
+
+        # If you see errors, verify API key has credits in OpenAI dashboard
+        ```
+      </Step>
+      <Step title="Restart backend server">
+        Sometimes environment variables don't reload. Restart the backend:
+        ```bash
+        systemctl restart clinic-backend
+        # or
+        docker-compose restart backend
+        ```
+      </Step>
+    </Steps>
+
+    <Warning>
+    If Twilio webhook is not configured, Twilio will NOT forward messages to your backend. This is the #1 cause of "bot not responding".
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Bot responds but with incorrect information (hallucinations)" icon="brain-circuit">
+    **Symptom**: Bot responds but provides wrong availability, wrong patient name, or invented appointment IDs.
+
+    **Diagnosis**:
+    - LLM hallucination (inventing data)
+    - Stale cache (showing old data)
+    - Tool not called (LLM bypassed database query)
+
+    **Debugging Steps**:
+    <Steps>
+      <Step title="Export conversation from LangSmith">
+        1. Go to [LangSmith](https://smith.langchain.com)
+        2. Find the conversation by phone number or timestamp
+        3. Export as JSON
+      </Step>
+      <Step title="Analyze with script">
+        ```bash
+        PYTHONPATH="C:\Users\Cate\Documents\clinic" python scripts/analyze_conversation.py conversation.json
+        ```
+
+        This will detect:
+        - Duplicate tool calls
+        - Tools NOT called (hallucination risk)
+        - Invented data (appointment_id, availability)
+      </Step>
+      <Step title="Check tool cache">
+        ```bash
+        # In backend logs:
+        grep "Tool cache HIT" logs/app.log
+
+        # If too many cache hits, invalidate:
+        # (This happens automatically, but can be forced via API)
+        ```
+      </Step>
+      <Step title="Review system prompt">
+        If hallucinations persist, the system prompt may need clarification. Check:
+        ```python
+        # In app/services/clinic_agent/core/agent.py
+        # Look for the section causing hallucination (e.g., "CREAR CITAS")
+        ```
+      </Step>
+    </Steps>
+
+    <Info>
+    The system uses `formatted_message` bypass for 75% of responses (pre-formatted replies). Hallucinations usually occur in the remaining 25% where LLM generates text freely.
+    </Info>
+  </Accordion>
+
+  <Accordion title="Voice messages not transcribed" icon="microphone-slash">
+    **Symptom**: Patient sends voice message but bot responds with "No pude procesar tu mensaje de voz".
+
+    **Diagnosis**:
+    - Audio too short (&lt;5 seconds)
+    - Low audio quality or background noise
+    - Whisper API error
+    - Hallucination detected (gibberish transcription)
+
+    **Debugging Steps**:
+    <Steps>
+      <Step title="Check audio duration">
+        ```bash
+        # In backend logs:
+        grep "Voice message received" logs/app.log
+
+        # Example: "Voice message received: 3.2s, format: audio/ogg"
+        ```
+
+        If &lt;5 seconds, transcription quality is poor. Ask user to record longer message.
+      </Step>
+      <Step title="Check for hallucination detection">
+        ```bash
+        grep "Hallucination detected" logs/app.log
+
+        # Example: "Hallucination detected in transcription: 'Por no haberse hecho ninguna aportación juega en un 7 media'"
+        ```
+
+        If detected, the system rejected gibberish transcription. This is EXPECTED behavior for noisy audio.
+      </Step>
+      <Step title="Verify Whisper API is working">
+        ```bash
+        # In backend logs:
+        grep "OpenAI Whisper API error" logs/app.log
+
+        # If errors, check OpenAI API key and credits
+        ```
+      </Step>
+      <Step title="Review transcription quality">
+        Enable verbose logging to see actual transcriptions:
+        ```python
+        # In app/services/voice_transcription_service.py
+        logging.info(f"Transcribed text: {text}")
+        ```
+      </Step>
+    </Steps>
+
+    <Tip>
+    Voice transcription works best with:
+    - Audio &gt;5 seconds
+    - Clear speech without background noise
+    - Spanish language (bot is optimized for Spanish)
+    - Appointment-related vocabulary
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Patient receives no confirmation after booking" icon="envelope-open-text">
+    **Symptom**: Appointment created successfully but patient doesn't receive WhatsApp confirmation message.
+
+    **Diagnosis**:
+    - Patient number not in E.164 format
+    - Twilio send failed (number not WhatsApp-enabled)
+    - Rate limit reached (Twilio free tier)
+
+    **Debugging Steps**:
+    <Steps>
+      <Step title="Check phone format">
+        Verify patient phone is in E.164 format:
+        ```bash
+        # In database:
+        SELECT phone_e164 FROM users WHERE id = 'patient_id';
+
+        # Should return: +34612345678 (not 612345678)
+        ```
+      </Step>
+      <Step title="Check Twilio send logs">
+        ```bash
+        # In backend logs:
+        grep "Twilio send error" logs/app.log
+
+        # Example error: "Number +34612345678 is not WhatsApp-enabled"
+        ```
+      </Step>
+      <Step title="Verify number is WhatsApp-enabled">
+        The patient's phone must have WhatsApp installed and registered. Test by sending a manual message via WhatsApp app.
+      </Step>
+      <Step title="Check Twilio rate limits">
+        Free tier has limits:
+        - 1 message/second
+        - 500 messages/month
+
+        If exceeded, upgrade Twilio account.
+      </Step>
+    </Steps>
+
+    <Warning>
+    If patient's number is NOT WhatsApp-enabled, Twilio will reject the message. There's no workaround - patient must install WhatsApp.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Grace period expired - WhatsApp auto-disabled" icon="clock">
+    **Symptom**: WhatsApp was working but now shows INACTIVE status. No appointments created in 30+ days.
+
+    **Diagnosis**:
+    - Automatic deactivation after 30 days of inactivity (no appointments created)
+    - Background job `check_grace_periods` ran and detected expiration
+
+    **Solution**:
+    <Steps>
+      <Step title="Create an appointment manually">
+        Go to **Appointments** → **Create** and book any appointment (even for yourself).
+      </Step>
+      <Step title="Verify WhatsApp reactivates">
+        Creating an appointment should auto-reactivate WhatsApp:
+        ```bash
+        # In backend logs:
+        grep "WhatsApp reactivated for clinic" logs/app.log
+        ```
+      </Step>
+      <Step title="Test with WhatsApp message">
+        Send "Hola" to your WhatsApp Business number to verify bot responds.
+      </Step>
+    </Steps>
+
+    <Info>
+    Grace period exists to prevent inactive clinics from consuming OpenAI API credits. Once you create an appointment, the 30-day timer resets.
+    </Info>
+  </Accordion>
+
+  <Accordion title="Bot responds in wrong language" icon="language">
+    **Symptom**: Bot responds in English instead of Spanish (or vice versa).
+
+    **Diagnosis**:
+    - System prompt language mismatch
+    - LLM defaulting to English
+    - Patient sent message in English
+
+    **Solution**:
+    <Steps>
+      <Step title="Verify system prompt language">
+        ```python
+        # In app/services/clinic_agent/core/agent.py
+        # System prompt should start with:
+        "Eres un asistente virtual de la clínica {clinic_name}..."
+        ```
+      </Step>
+      <Step title="Check patient message language">
+        If patient sends "Hello", LLM may respond in English. Ask patient to use Spanish: "Hola".
+      </Step>
+      <Step title="Review LLM model">
+        Ensure using `gpt-4o-mini` (supports multilingual):
+        ```bash
+        echo $OPENAI_MODEL
+        # Should output: gpt-4o-mini
+        ```
+      </Step>
+    </Steps>
+
+    <Tip>
+    The bot is optimized for Spanish. For other languages, you'll need to modify the system prompt in `app/services/clinic_agent/core/agent.py`.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Bot asks for information already provided" icon="message-question">
+    **Symptom**: Patient provides name/phone but bot asks again in next message.
+
+    **Diagnosis**:
+    - Conversation memory not persisting
+    - PostgreSQL chat history issue
+    - Session timeout
+
+    **Debugging Steps**:
+    <Steps>
+      <Step title="Check conversation history">
+        ```bash
+        # In database:
+        SELECT * FROM conversations
+        WHERE sender_phone = 'whatsapp:+34612345678'
+        ORDER BY created_at DESC
+        LIMIT 1;
+
+        # Should show recent messages
+        ```
+      </Step>
+      <Step title="Verify PostgreSQL memory">
+        ```python
+        # In app/services/clinic_agent/infrastructure/memory.py
+        # Check get_messages_for_conversation() returns history
+        ```
+      </Step>
+      <Step title="Check session timeout">
+        Conversations timeout after 24 hours of inactivity. If &gt;24h, bot starts fresh conversation.
+      </Step>
+    </Steps>
+  </Accordion>
+
+  <Accordion title="LangSmith traces not showing" icon="chart-network">
+    **Symptom**: Can't find conversation traces in LangSmith dashboard for debugging.
+
+    **Diagnosis**:
+    - LangSmith tracing disabled
+    - Invalid LANGCHAIN_API_KEY
+    - Wrong project name
+
+    **Solution**:
+    <Steps>
+      <Step title="Enable tracing">
+        ```bash
+        # In .env file:
+        LANGCHAIN_TRACING_V2=true
+        LANGCHAIN_API_KEY=ls__your-api-key
+        LANGCHAIN_PROJECT=clinic-agent-prod
+        ```
+      </Step>
+      <Step title="Verify in backend logs">
+        ```bash
+        grep "LangSmith tracing enabled" logs/app.log
+        ```
+      </Step>
+      <Step title="Check LangSmith dashboard">
+        Go to [LangSmith Projects](https://smith.langchain.com) and select your project name.
+      </Step>
+      <Step title="Restart backend">
+        Environment variables require restart:
+        ```bash
+        systemctl restart clinic-backend
+        ```
+      </Step>
+    </Steps>
+
+    <Info>
+    LangSmith is optional but highly recommended for debugging. It provides detailed traces of tool calls, LLM reasoning, and latency analysis.
+    </Info>
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Debugging
+
+### Export and Analyze Conversation
+
+For complex issues, export the full conversation from LangSmith:
+
+<Steps>
+  <Step title="Find conversation in LangSmith">
+    1. Go to [LangSmith](https://smith.langchain.com)
+    2. Select your project (e.g., `clinic-agent-prod`)
+    3. Filter by phone number or timestamp
+  </Step>
+  <Step title="Export as JSON">
+    Click **Export** → **JSON** and save file as `conversation.json`
+  </Step>
+  <Step title="Run analysis script">
+    ```bash
+    PYTHONPATH="C:\Users\Cate\Documents\clinic" python scripts/analyze_conversation.py conversation.json
+    ```
+
+    This generates `analysis.md` with:
+    - Message-by-message breakdown
+    - Tool call timing and parameters
+    - Automatic problem detection (duplicates, hallucinations)
+    - Recommendations
+  </Step>
+  <Step title="Review analysis.md">
+    Look for sections:
+    - **Issues Detected**: Automatic detection of problems
+    - **Tool Call Analysis**: Which tools were called and why
+    - **Latency Analysis**: Message processing time
+  </Step>
+</Steps>
+
+### Manual Testing with Test Script
+
+Test specific scenarios without sending WhatsApp messages:
+
+```bash
+# Test availability query
+PYTHONPATH="C:\Users\Cate\Documents\clinic" python scripts/test_timezone_fix.py <clinic_id>
+
+# Test appointment creation
+PYTHONPATH="C:\Users\Cate\Documents\clinic" python scripts/debug_appointment_creation.py <clinic_id> <phone>
+
+# Test tool cache
+PYTHONPATH="C:\Users\Cate\Documents\clinic" python scripts/test_tool_cache.py
+```
+
+### Check Backend Logs
+
+Real-time monitoring of WhatsApp activity:
+
+```bash
+# Tail logs for WhatsApp messages
+tail -f logs/app.log | grep "WhatsApp"
+
+# Search for specific phone number
+grep "whatsapp:+34612345678" logs/app.log
+
+# Find errors in last hour
+grep "ERROR" logs/app.log | tail -n 50
+```
+
+## Known Limitations
+
+<Warning>
+These are current limitations of the WhatsApp integration:
+</Warning>
+
+1. **Language**: Optimized for Spanish only. Other languages may have lower accuracy.
+2. **Voice messages**: Short audio (&lt;5s) has poor transcription quality.
+3. **Hallucinations**: LLM may invent data if tools fail. System uses bypass for 75% of responses to minimize this.
+4. **Grace period**: 30 days without appointments auto-disables WhatsApp (prevents API costs for inactive clinics).
+5. **Rate limits**: Twilio free tier allows 1 msg/second, 500 msgs/month.
+6. **Temperature**: Set to 0.3 for consistency (production medical system), but may feel less "creative" than higher temperatures.
+
+## Historical Fixes
+
+These bugs were fixed in November 2025 but may help diagnose similar issues:
+
+<AccordionGroup>
+  <Accordion title="Fix: Timezone conversion bug (2025-11-05)" icon="clock">
+    **Problem**: LLM received slots in UTC format (`19:10:00+00:00`) but interpreted as local time, causing 1-hour offset.
+
+    **Fix**: `get_availability()` now converts to local timezone (`20:10:00+01:00`) before sending to LLM.
+
+    **Validation**:
+    ```bash
+    python scripts/test_timezone_fix.py <clinic_id>
+    # Should show slots with +01:00 offset (Madrid)
+    ```
+  </Accordion>
+
+  <Accordion title="Fix: Multi-clinic patient name update (2025-11-05)" icon="user-pen">
+    **Problem**: Patient exists in Clinic A as "Manuel López" but books in Clinic B as "Eduardo Cassanovas" → appointment created with old name.
+
+    **Fix**: `create_patient()` now updates patient name when associating to new clinic.
+
+    **Validation**:
+    ```bash
+    python scripts/verify_name_update_fix.py
+    # Should show name update logic exists in users_service.py
+    ```
+  </Accordion>
+
+  <Accordion title="Fix: LLM parallel date calculation (2025-11-04)" icon="calendar-clock">
+    **Problem**: User said "El jueves a las 20:00" but bot showed Friday availability (parallel tool calls calculated wrong date).
+
+    **Fix**: System prompt now prohibits parallel calls for date-dependent operations.
+
+    **Validation**: Check LangSmith traces for sequential tool calls (no parallel).
+  </Accordion>
+
+  <Accordion title="Fix: Stale availability context (2025-11-17)" icon="rotate">
+    **Problem**: User asks for "morning slots", then "morning AND afternoon" → bot showed stale cached slots.
+
+    **Fix**: Simplified slot selection heuristic to clear stale context when no deterministic pattern matches.
+
+    **Validation**: Send "dame disponibilidad por la mañana", then "dame también por la tarde" → should fetch fresh availability.
+  </Accordion>
+</AccordionGroup>
+
+## Still Not Working?
+
+If you've tried all debugging steps and WhatsApp still doesn't work:
+
+<Card title="Contact Support" icon="headset" href="/troubleshooting/contact-support">
+  Include this information in your support request:
+  - Clinic ID
+  - Phone number of patient (for testing)
+  - Exact error message or symptom
+  - Screenshots of Settings → WhatsApp page
+  - LangSmith conversation export (JSON)
+  - Backend logs (last 100 lines with WhatsApp activity)
+</Card>
+
+<Tip>
+Before contacting support, try these quick fixes:
+1. Create an appointment manually (reactivates grace period)
+2. Restart backend server (reloads environment variables)
+3. Test with incognito browser (clears cached state)
+4. Send "Hola" from a different phone number (isolates patient-specific issues)
+</Tip>

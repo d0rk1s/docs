@@ -1,0 +1,587 @@
+---
+title: "Cancelar Cierre"
+description: "Guía paso a paso para eliminar cierres existentes y liberar disponibilidad"
+---
+
+# Cancelar Cierre
+
+Esta guía te enseñará a cancelar (eliminar) un cierre existente cuando ya no sea necesario. Al cancelar un cierre, los slots bloqueados se liberan inmediatamente y vuelven a estar disponibles para agendar citas.
+
+<Warning>
+**Cancelación es irreversible**: Una vez cancelado, el cierre se elimina permanentemente de la base de datos. No podrás recuperarlo. Si necesitas modificar fechas, considera cancelar y crear uno nuevo.
+</Warning>
+
+## Cuándo Cancelar un Cierre
+
+Cancela un cierre en estas situaciones:
+
+### 1. Cambio de Planes
+
+**Escenario**: Planificaste vacaciones pero se cancelaron.
+
+**Ejemplo**:
+- Cierre creado: Vacaciones 1-15 agosto
+- Situación nueva: Viaje cancelado, clínica abrirá normalmente
+- Acción: Cancelar cierre para liberar disponibilidad
+
+### 2. Error al Crear
+
+**Escenario**: Creaste cierre con fechas incorrectas.
+
+**Ejemplo**:
+- Cierre creado: 1-15 agosto (15 días)
+- Error: Debía ser 1-7 agosto (7 días)
+- Acción: Cancelar cierre incorrecto, crear nuevo con fechas correctas
+
+### 3. Proveedor Regresa Antes
+
+**Escenario**: Proveedor planeó permiso de 5 días pero regresa antes.
+
+**Ejemplo**:
+- Cierre creado: Dr. García, 3-7 febrero (5 días)
+- Situación nueva: Dr. García regresa el 5 febrero
+- Acción: Cancelar cierre original, crear nuevo 3-4 febrero (2 días)
+
+### 4. Cierre Ya No Necesario
+
+**Escenario**: Cambios en la clínica hacen el cierre obsoleto.
+
+**Ejemplo**:
+- Cierre creado: Mantenimiento general, 10 febrero
+- Situación nueva: Mantenimiento pospuesto indefinidamente
+- Acción: Cancelar cierre
+
+## Pasos para Cancelar un Cierre
+
+<Steps>
+  <Step title="Navegar a lista de cierres">
+    Desde el menú principal, ve a:
+    - **Gestión** → **Cierres** → **Todos los Cierres**
+
+    O desde el Dashboard:
+    - Click en widget "Próximos Cierres" → Ver cierre específico
+
+    O desde Upcoming Closures:
+    - Dashboard → Sección "Próximos Cierres" → Click en cierre
+  </Step>
+
+  <Step title="Buscar el cierre a cancelar">
+    Usa los filtros disponibles para encontrar el cierre:
+
+    **Filtro por fecha**:
+    - Rango de fechas de inicio
+    - Ejemplo: Mostrar cierres que empiezan en agosto
+
+    **Filtro por tipo**:
+    - Clinic-wide (toda la clínica)
+    - Provider-specific (proveedor individual)
+
+    **Filtro por proveedor**:
+    - Selecciona proveedor del dropdown
+    - Solo se muestran cierres de ese proveedor
+
+    **Búsqueda por razón**:
+    - Busca por palabra clave en razón
+    - Ejemplo: "Vacaciones"
+
+    <Tip>
+    Si el cierre está en los próximos 14 días, aparecerá en "Upcoming Closures" (más fácil de encontrar).
+    </Tip>
+  </Step>
+
+  <Step title="Click en 'Cancelar' o icono de eliminar">
+    Una vez encontrado el cierre, tienes dos opciones:
+
+    **Opción A: Desde la lista**:
+    - Busca la columna "Acciones"
+    - Click en icono de eliminar (🗑️)
+
+    **Opción B: Desde detalles del cierre**:
+    - Click en el cierre para ver detalles
+    - Botón "Cancelar Cierre" (rojo)
+  </Step>
+
+  <Step title="Confirmar cancelación (modal)">
+    El sistema mostrará un modal de confirmación:
+
+    **Mensaje**:
+    ```
+    ¿Estás seguro de cancelar este cierre?
+
+    Tipo: Clinic-wide
+    Inicio: 2026-08-01 00:00
+    Fin: 2026-08-15 23:59
+    Razón: Vacaciones de verano
+
+    ADVERTENCIA: Esta acción es irreversible.
+    Los slots bloqueados se liberarán inmediatamente.
+    ```
+
+    **Opciones**:
+    - **Cancelar Cierre** (rojo): Proceder con eliminación
+    - **Volver** (gris): Abortar, no cancelar
+
+    <Warning>
+    Lee cuidadosamente los detalles antes de confirmar. Una vez cancelado, NO se puede recuperar.
+    </Warning>
+  </Step>
+
+  <Step title="Cierre se elimina">
+    Al confirmar, el sistema ejecutará:
+
+    1. Validación de permisos (solo ADMIN/CLINIC_ADMIN pueden cancelar)
+    2. Eliminación del cierre de la base de datos (DELETE, no soft delete)
+    3. Cancelación de jobs dinámicos (`scheduler.remove_job()`)
+    4. Invalidación de cache de disponibilidad
+    5. **Si cierre estaba activo**: Emisión de evento WebSocket `clinic_status_changed`
+    6. Slots liberados inmediatamente
+
+    **Mensaje de confirmación**:
+    ```
+    Cierre cancelado exitosamente.
+    Disponibilidad actualizada.
+    ```
+  </Step>
+</Steps>
+
+## Resultado de Cancelar un Cierre
+
+Después de cancelar, el sistema habrá realizado:
+
+### 1. Cierre Eliminado de Base de Datos
+
+El cierre se elimina completamente (hard delete):
+
+**Antes**:
+```sql
+SELECT * FROM closures WHERE id = 'abc-123';
+-- Resultado: 1 row
+```
+
+**Después**:
+```sql
+SELECT * FROM closures WHERE id = 'abc-123';
+-- Resultado: 0 rows (eliminado)
+```
+
+<Note>
+**Hard delete vs Soft delete**: A diferencia de las citas (que usan soft delete con status), los cierres se eliminan permanentemente. Esto es intencional para simplificar la gestión y evitar confusiones.
+</Note>
+
+### 2. Jobs Dinámicos Cancelados
+
+APScheduler elimina automáticamente los 2 jobs asociados:
+
+**Jobs eliminados**:
+- `closure_abc_start` (DateTrigger para inicio)
+- `closure_abc_end` (DateTrigger para fin)
+
+**Verificación**:
+```python
+# Endpoint: GET /system/scheduler/status
+# Resultado: Los jobs closure_abc_* ya NO aparecen en la lista
+```
+
+<Tip>
+Puedes verificar que los jobs fueron cancelados en el endpoint de administración `/system/scheduler/status` (requiere permisos admin).
+</Tip>
+
+### 3. Availability Cache Invalidated
+
+El sistema invalida toda la cache de disponibilidad:
+
+**Caches afectadas**:
+- `get_availability` (TTL 3 min) → Invalidada ✅
+- `OperationalStatusService` (TTL 30 seg) → Invalidada ✅
+- `ConfigurationStatusService` (TTL 5 min) → Invalidada ✅
+
+**Resultado**: Las próximas consultas de disponibilidad NO considerarán el cierre cancelado.
+
+### 4. WebSocket Event Emitido (si cierre estaba activo)
+
+**Solo si el cierre YA había empezado** (cuando `starts_at` es menor o igual a la hora actual):
+
+El sistema emite evento WebSocket inmediatamente:
+
+```json
+{
+  "event": "clinic_status_changed",
+  "data": {
+    "status": "open",
+    "clinic_id": "abc-123",
+    "reason": "Cierre cancelado: Vacaciones de verano"
+  }
+}
+```
+
+**Impacto**:
+- Frontends conectados actualizan interfaces automáticamente
+- Widget de status cambia de "Cerrado" a "Abierto"
+- No requiere refresh manual
+
+<Note>
+Si el cierre NO había empezado aún (starts_at > now), NO se emite evento WebSocket porque el status operacional no cambia (la clínica ya estaba abierta).
+</Note>
+
+### 5. Slots Liberados Inmediatamente
+
+Los slots bloqueados por el cierre vuelven a estar disponibles:
+
+**Ejemplo**:
+
+**Antes de cancelar**:
+```
+Período: 1-15 agosto
+Slots bloqueados: 300 slots
+Slots disponibles: 0 slots
+```
+
+**Después de cancelar**:
+```
+Período: 1-15 agosto
+Slots bloqueados: 0 slots
+Slots disponibles: 300 slots ✅
+```
+
+**Validación**:
+- Llama a `GET /v1/availability?date=2026-08-01`
+- Resultado: Slots aparecen disponibles inmediatamente
+
+### 6. Upcoming Closure Eliminado (si aplicaba)
+
+Si el cierre estaba en upcoming closures (próximos 14 días):
+
+**Antes**:
+```json
+{
+  "upcoming_closures": [
+    {
+      "id": "abc-123",
+      "starts_at": "2026-08-01T00:00:00Z",
+      "days_until_start": 7
+    }
+  ]
+}
+```
+
+**Después**:
+```json
+{
+  "upcoming_closures": []
+}
+```
+
+## Ejemplos de Cancelación
+
+<AccordionGroup>
+  <Accordion title="Ejemplo 1: Vacaciones canceladas (clinic-wide)">
+    **Escenario**: Vacaciones planificadas fueron canceladas.
+
+    **Cierre original**:
+    - Tipo: Clinic-wide
+    - Inicio: `2026-08-01 00:00`
+    - Fin: `2026-08-15 23:59`
+    - Razón: "Vacaciones de verano"
+    - Slots bloqueados: 300 slots (100% - impacto HIGH)
+
+    **Situación nueva**: Viaje cancelado, clínica abrirá normalmente.
+
+    **Proceso de cancelación**:
+    1. Navegar a Upcoming Closures (cierre aparece con countdown "7 días")
+    2. Click en icono eliminar (🗑️)
+    3. Confirmar cancelación en modal
+    4. Sistema elimina cierre
+    5. Jobs cancelados: `closure_abc_start`, `closure_abc_end`
+    6. Cache invalidada ✅
+    7. 300 slots liberados ✅
+
+    **Resultado**:
+    - Disponibilidad 1-15 agosto restaurada
+    - Clientes pueden agendar citas para esas fechas
+    - Upcoming closure ya NO aparece
+  </Accordion>
+
+  <Accordion title="Ejemplo 2: Fechas incorrectas (provider-specific)">
+    **Escenario**: Creaste cierre con fechas incorrectas.
+
+    **Cierre original** (ERROR):
+    - Tipo: Provider-specific (Dr. García)
+    - Inicio: `2026-02-01 00:00`
+    - Fin: `2026-02-15 23:59` (15 días - INCORRECTO)
+    - Razón: "Permiso médico"
+
+    **Correcto**: Debía ser 1-7 febrero (7 días).
+
+    **Proceso de corrección**:
+    1. Cancelar cierre incorrecto (1-15 febrero)
+       - Navegar a lista de cierres
+       - Buscar cierre del Dr. García
+       - Click en eliminar
+       - Confirmar
+    2. Crear nuevo cierre correcto (1-7 febrero)
+       - Tipo: Provider-specific (Dr. García)
+       - Inicio: `2026-02-01 00:00`
+       - Fin: `2026-02-07 23:59` (7 días - CORRECTO)
+       - Razón: "Permiso médico"
+
+    **Resultado**:
+    - Cierre incorrecto eliminado ✅
+    - Cierre correcto creado ✅
+    - Disponibilidad 8-15 febrero restaurada (Dr. García disponible) ✅
+  </Accordion>
+
+  <Accordion title="Ejemplo 3: Proveedor regresa antes (ajuste de fechas)">
+    **Escenario**: Proveedor planeó 5 días de permiso pero regresa antes.
+
+    **Cierre original**:
+    - Tipo: Provider-specific (Dra. López)
+    - Inicio: `2026-03-10 00:00`
+    - Fin: `2026-03-14 23:59` (5 días)
+    - Razón: "Capacitación externa"
+
+    **Situación nueva**: Dra. López regresa el 12 de marzo (solo 2 días).
+
+    **Proceso de ajuste**:
+    1. Cancelar cierre original (10-14 marzo)
+    2. Crear nuevo cierre (10-11 marzo)
+       - Tipo: Provider-specific (Dra. López)
+       - Inicio: `2026-03-10 00:00`
+       - Fin: `2026-03-11 23:59` (2 días)
+       - Razón: "Capacitación externa (ajustado)"
+
+    **Resultado**:
+    - Dra. López bloqueada solo 10-11 marzo ✅
+    - Disponible 12-14 marzo (liberado) ✅
+    - Clientes pueden agendar con ella 12-14 marzo
+  </Accordion>
+
+  <Accordion title="Ejemplo 4: Cierre activo (ya empezó)">
+    **Escenario**: Cierre ya empezó pero se cancela prematuramente.
+
+    **Cierre original**:
+    - Tipo: Clinic-wide
+    - Inicio: `2026-07-01 00:00` (hace 2 días)
+    - Fin: `2026-07-05 23:59` (faltan 3 días)
+    - Razón: "Mantenimiento eléctrico"
+
+    **Situación nueva**: Mantenimiento se completó antes de lo esperado.
+
+    **Proceso de cancelación**:
+    1. Navegar a lista de cierres → Filtrar "Cierres activos"
+    2. Buscar cierre de mantenimiento
+    3. Click en eliminar
+    4. Confirmar cancelación
+
+    **Resultado**:
+    1. Cierre eliminado ✅
+    2. Jobs cancelados ✅
+    3. **WebSocket emitido** ✅ (porque cierre estaba activo):
+       ```json
+       {
+         "event": "clinic_status_changed",
+         "data": {
+           "status": "open",
+           "clinic_id": "abc-123",
+           "reason": "Mantenimiento completado antes de lo esperado"
+         }
+       }
+       ```
+    4. Frontend actualiza status: "Cerrado" → "Abierto" (sin refresh)
+    5. Disponibilidad 3-5 julio liberada ✅
+
+    **Impacto**: Clínica puede empezar a atender pacientes inmediatamente (3-5 julio).
+  </Accordion>
+</AccordionGroup>
+
+## Validaciones y Errores Comunes
+
+<AccordionGroup>
+  <Accordion title="Error 403: Cannot manage this clinic">
+    **Problema**: No tienes permisos para cancelar cierres.
+
+    **Causa**: Solo usuarios con rol ADMIN o CLINIC_ADMIN pueden cancelar cierres.
+
+    **Solución**:
+    - Verifica tu rol en la sección de perfil
+    - Solicita permisos de administrador a un admin existente
+    - Si eres admin, verifica que estás autenticado correctamente
+
+    **Verificación de permisos**:
+
+    Endpoint: `GET /v1/users/me`
+
+    Respuesta:
+    ```json
+    {
+      "role": "CLINIC_ADMIN",
+      "clinic_id": "abc-123"
+    }
+    ```
+
+    <Note>
+    El role debe ser ADMIN o CLINIC_ADMIN para poder cancelar cierres.
+    </Note>
+  </Accordion>
+
+  <Accordion title="Error 404: Closure not found">
+    **Problema**: El cierre que intentas cancelar no existe.
+
+    **Causas posibles**:
+
+    **1. Cierre ya fue cancelado**:
+    - Otro usuario canceló el cierre antes que tú
+    - Solución: Refrescar la lista de cierres
+
+    **2. ID incorrecto**:
+    - Copiaste mal el ID del cierre
+    - Solución: Verificar ID en la URL o lista
+
+    **3. Cierre pertenece a otra clínica**:
+    - Estás intentando cancelar un cierre de otra clínica
+    - Solución: Verificar clinic_id en los filtros
+  </Accordion>
+
+  <Accordion title="Error 500: Failed to cancel jobs">
+    **Problema**: Error al cancelar los jobs dinámicos en APScheduler.
+
+    **Causa**: Problema con APScheduler (poco común).
+
+    **Impacto**:
+    - El cierre SE elimina de la base de datos ✅
+    - Los jobs PUEDEN seguir en el scheduler ❌
+
+    **Solución**:
+    1. Reportar a soporte con detalles:
+       - ID del cierre
+       - Timestamp del error
+       - Logs del servidor
+    2. Temporary workaround: Admin puede cancelar jobs manualmente:
+       ```
+       POST /system/scheduler/jobs/closure_abc_start/cancel
+       POST /system/scheduler/jobs/closure_abc_end/cancel
+       ```
+  </Accordion>
+
+  <Accordion title="No puedo cancelar cierre (botón deshabilitado)">
+    **Problema**: El botón "Cancelar" está deshabilitado o no aparece.
+
+    **Causas posibles**:
+
+    **1. Cierre ya pasó**:
+    - Si `ends_at < now`, el cierre ya finalizó
+    - No tiene sentido cancelarlo (ya no está activo)
+    - Solución: Los cierres pasados no se pueden cancelar
+
+    **2. Permisos insuficientes**:
+    - Solo ADMIN/CLINIC_ADMIN ven el botón
+    - Solución: Solicitar permisos
+
+    **3. Cierre está en proceso de eliminación**:
+    - Otro usuario está cancelándolo en este momento
+    - Solución: Esperar unos segundos, refrescar
+  </Accordion>
+</AccordionGroup>
+
+## Advertencias Importantes
+
+<Warning>
+**Cancelación es irreversible**:
+
+Una vez cancelado, el cierre se elimina permanentemente. NO existe funcionalidad de "recuperar cierre cancelado".
+
+Si cancelas por error:
+- Debes crear un nuevo cierre con los mismos datos
+- No hay forma de recuperar el ID original
+- Los jobs se registrarán con nuevos IDs
+</Warning>
+
+<Warning>
+**Citas existentes NO se afectan**:
+
+Cancelar un cierre NO cancela automáticamente citas que ya fueron agendadas en ese período.
+
+**Escenario**:
+1. Creas cierre 1-15 agosto
+2. Sistema bloquea nuevas citas
+3. Cancelas cierre el 25 de julio
+4. Slots se liberan PARA NUEVAS CITAS ✅
+5. Citas ya existentes (si las hay) NO se cancelan ❌
+
+**Implicación**: Si quieres liberar disponibilidad completa, debes cancelar manualmente citas existentes en ese período.
+</Warning>
+
+<Tip>
+**Usa preview de impacto antes de cancelar**:
+
+Antes de cancelar un cierre:
+1. Click en "Ver Impacto" en detalles del cierre
+2. Revisa cuántos slots se liberarán
+3. Valida que la cancelación es correcta
+
+Esto previene cancelaciones accidentales.
+</Tip>
+
+<Note>
+**Cancelar vs Modificar fechas**:
+
+El sistema NO soporta modificar fechas de un cierre existente. Si necesitas cambiar fechas:
+1. Cancelar cierre original
+2. Crear nuevo cierre con fechas correctas
+
+Esto es intencional para simplificar la lógica y evitar bugs con jobs dinámicos.
+</Note>
+
+## Diferencia: Cancelar Cierre vs Crear Cierre Nuevo
+
+### Cancelar Cierre (DELETE)
+
+**Objetivo**: Eliminar un cierre existente que ya no es necesario.
+
+**Resultado**:
+- Cierre eliminado de DB ✅
+- Jobs cancelados ✅
+- Slots liberados ✅
+- NO requiere crear nuevo
+
+**Cuándo usar**:
+- Cambio de planes (vacaciones canceladas)
+- Error al crear
+- Cierre ya no necesario
+
+### Crear Cierre Nuevo con Fechas Diferentes
+
+**Objetivo**: Reemplazar un cierre con fechas ajustadas.
+
+**Resultado**:
+- Cierre original sigue existiendo ❌
+- Cierre nuevo creado ✅
+- **Problema**: Dos cierres solapados pueden causar confusión
+
+**Cuándo NO usar**:
+- NO uses para "modificar" un cierre
+- Primero cancela, LUEGO crea nuevo
+
+**Flujo correcto**:
+1. Cancelar cierre original
+2. Crear nuevo cierre con fechas correctas
+3. Evitas duplicación y confusión
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Crear Cierre" icon="calendar-plus" href="/closures/create-closure">
+    Crear nuevo cierre después de cancelar
+  </Card>
+
+  <Card title="Preview de Impacto" icon="chart-mixed" href="/closures/impact-preview">
+    Verificar impacto antes de cancelar
+  </Card>
+
+  <Card title="Ver Upcoming Closures" icon="calendar-clock" href="/closures/view-upcoming">
+    Revisar cierres próximos a cancelar
+  </Card>
+
+  <Card title="Volver a Overview" icon="arrow-left" href="/closures/overview">
+    Conceptos generales de cierres
+  </Card>
+</CardGroup>

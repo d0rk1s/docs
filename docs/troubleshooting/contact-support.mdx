@@ -1,0 +1,587 @@
+---
+title: 'Contact Support'
+description: 'How to report issues and get help from the support team'
+icon: 'headset'
+---
+
+<Note>
+Before contacting support, please check the [Common Issues](/troubleshooting/common-issues) guide and [FAQs](/faqs). Most problems can be resolved quickly with self-service troubleshooting.
+</Note>
+
+## When to Contact Support
+
+Contact support if you encounter:
+
+<CardGroup cols={2}>
+  <Card title="Critical Issues" icon="triangle-exclamation">
+    - System completely down
+    - Data loss or corruption
+    - Security concerns
+    - Payment/billing errors
+  </Card>
+  <Card title="Persistent Problems" icon="rotate">
+    - Issue persists after troubleshooting
+    - Same error occurs repeatedly
+    - Unclear error messages
+    - Performance degradation
+  </Card>
+  <Card title="Feature Requests" icon="lightbulb">
+    - Missing functionality
+    - Integration needs
+    - Custom requirements
+    - Workflow improvements
+  </Card>
+  <Card title="Questions" icon="circle-question">
+    - How to configure features
+    - Best practices
+    - API usage questions
+    - Training requests
+  </Card>
+</CardGroup>
+
+## Information to Include
+
+The more information you provide, the faster we can resolve your issue.
+
+### Required Information
+
+<AccordionGroup>
+  <Accordion title="Basic Information" icon="circle-info">
+    <Steps>
+      <Step title="Clinic ID">
+        Found in **Settings** → **General** → **Clinic ID** (UUID format)
+
+        Example: `a1b2c3d4-e5f6-7890-abcd-ef1234567890`
+      </Step>
+      <Step title="User email">
+        Your registered email address for account verification.
+      </Step>
+      <Step title="Browser and OS">
+        - Browser: Chrome 120, Firefox 121, Safari 17, etc.
+        - OS: Windows 11, macOS 14, Ubuntu 22.04, etc.
+
+        You can find this in browser → Help → About
+      </Step>
+      <Step title="Timestamp">
+        When did the issue occur? Include timezone.
+
+        Example: `2025-11-20 14:30:00 CET`
+      </Step>
+    </Steps>
+  </Accordion>
+
+  <Accordion title="Problem Description" icon="file-lines">
+    <Steps>
+      <Step title="Clear title">
+        Concise summary of the issue (1 sentence)
+
+        Good: "WhatsApp bot not responding to patient messages"
+        Bad: "Bot issue"
+      </Step>
+      <Step title="Expected behavior">
+        What SHOULD happen?
+
+        Example: "Bot should respond within 5 seconds with available slots"
+      </Step>
+      <Step title="Actual behavior">
+        What ACTUALLY happened?
+
+        Example: "Bot does not respond at all. Patient receives no message."
+      </Step>
+      <Step title="Impact">
+        How does this affect your clinic?
+
+        - Severity: Critical / High / Medium / Low
+        - Affected users: All / Specific role / Single user
+        - Workaround available: Yes / No
+      </Step>
+    </Steps>
+  </Accordion>
+
+  <Accordion title="Steps to Reproduce" icon="list-ol">
+    Provide exact steps to reproduce the issue:
+
+    <Steps>
+      <Step title="Starting point">
+        Example: "Login as clinic admin"
+      </Step>
+      <Step title="Action sequence">
+        Example:
+        1. Go to **Appointments** → **Create**
+        2. Select service "Corte de pelo"
+        3. Select date 2025-11-20
+        4. Click **Search availability**
+      </Step>
+      <Step title="Result">
+        Example: "Error appears: 'No available slots' (but slots should exist)"
+      </Step>
+    </Steps>
+
+    <Tip>
+    If issue is intermittent, note how often it occurs (e.g., "happens 3 out of 5 times").
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Screenshots and Logs" icon="camera">
+    Visual evidence helps diagnose faster:
+
+    <Steps>
+      <Step title="Screenshots">
+        - Error messages (full screen, including browser address bar)
+        - Configuration pages (e.g., Work Hours, Services)
+        - Network errors (browser DevTools → Network tab)
+
+        **How to capture**:
+        - Windows: `Win + Shift + S`
+        - Mac: `Cmd + Shift + 4`
+        - Chrome DevTools: `F12` → Console/Network → Screenshot
+      </Step>
+      <Step title="Browser Console Logs">
+        1. Press `F12` (Chrome DevTools)
+        2. Go to **Console** tab
+        3. Right-click → **Save as...**
+
+        Include last 50 lines around the error timestamp.
+      </Step>
+      <Step title="Network Requests (if API error)">
+        1. Press `F12` → **Network** tab
+        2. Reproduce the issue
+        3. Find failed request (red status)
+        4. Right-click → **Copy** → **Copy as cURL**
+
+        Paste into support ticket (redact sensitive data).
+      </Step>
+    </Steps>
+
+    <Warning>
+    Redact sensitive information before sharing:
+    - API keys, tokens, passwords
+    - Patient names, phone numbers, emails
+    - Payment information
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+### Issue-Specific Information
+
+Depending on the issue type, include additional context:
+
+<Tabs>
+  <Tab title="WhatsApp Issues">
+    **Required**:
+    - Phone number of patient (for testing): `+34612345678`
+    - Exact message sent by patient: "Hola, quiero una cita"
+    - WhatsApp integration status (Settings → WhatsApp): ACTIVE / INACTIVE
+    - Last appointment creation date (to check grace period)
+
+    **Helpful**:
+    - LangSmith conversation export (JSON) - see [WhatsApp Troubleshooting](/troubleshooting/whatsapp-not-working)
+    - Backend logs: `grep "WhatsApp" logs/app.log | tail -n 100`
+    - Twilio webhook configuration screenshot
+  </Tab>
+
+  <Tab title="Availability Issues">
+    **Required**:
+    - Target date and time: `2025-11-20 14:00`
+    - Service ID or name: "Corte de pelo"
+    - Provider ID or name: "Juan Pérez"
+    - Expected slots vs actual slots
+
+    **Helpful**:
+    - Work hours configuration (screenshot)
+    - Active closures for date (screenshot)
+    - Database export:
+      ```sql
+      SELECT * FROM work_hours WHERE clinic_id = 'your-id';
+      SELECT * FROM closures WHERE clinic_id = 'your-id' AND starts_at <= '2025-11-20';
+      ```
+    - Backend logs: `grep "calculate_availability" logs/app.log`
+  </Tab>
+
+  <Tab title="Appointment Issues">
+    **Required**:
+    - Appointment ID: `abc123def456`
+    - Patient phone: `+34612345678`
+    - Service name: "Corte de pelo"
+    - Scheduled datetime: `2025-11-20 14:00:00+01:00`
+
+    **Helpful**:
+    - Appointment status: CONFIRMED / CANCELLED / COMPLETED
+    - Error message (if creation/update failed)
+    - Conflicts (overlapping appointments, resource conflicts)
+  </Tab>
+
+  <Tab title="Subscription/Billing">
+    **Required**:
+    - Current plan: FREE / STARTER / PRO / BUSINESS
+    - Subscription status: ACTIVE / PAST_DUE / CANCELLED
+    - Appointments used this month: 32 / 50
+    - Stripe customer ID (if applicable): `cus_...`
+
+    **Helpful**:
+    - Payment intent ID (if payment failed): `pi_...`
+    - Invoice ID (if billing issue): `in_...`
+    - Stripe checkout session ID: `cs_...`
+    - Expected vs actual billing amount
+  </Tab>
+
+  <Tab title="Performance Issues">
+    **Required**:
+    - Affected page/endpoint: `/v1/appointments`
+    - Response time: `5000ms` (should be &lt;500ms)
+    - Browser network speed: Fast 3G / 4G / Fiber
+    - Time of day: `14:00-15:00 CET` (peak hours?)
+
+    **Helpful**:
+    - Browser DevTools → Performance recording
+    - Backend logs with timestamps
+    - Database slow query log (if admin access)
+    - Number of concurrent users (if known)
+  </Tab>
+
+  <Tab title="Data Issues">
+    **Required**:
+    - Affected entity: Appointment / Patient / Service
+    - Entity ID: `abc123def456`
+    - Field with incorrect data: `patient_name`
+    - Expected value: "Juan Pérez"
+    - Actual value: "Juan"
+
+    **Helpful**:
+    - When was entity created: `2025-11-15 10:30:00`
+    - Last modification: `2025-11-18 14:20:00`
+    - Audit logs (if available):
+      ```sql
+      SELECT * FROM audit_logs WHERE resource_id = 'abc123def456' ORDER BY created_at DESC;
+      ```
+  </Tab>
+</Tabs>
+
+## Support Channels
+
+### Email Support
+
+<Card title="support@clinic.com" icon="envelope">
+  **Primary support channel** for most issues.
+
+  **Response times**:
+  - Critical issues: 2-4 hours
+  - High priority: 1 business day
+  - Medium/Low: 2-3 business days
+
+  **Business hours**: Monday-Friday, 9:00-18:00 CET
+</Card>
+
+**Email Template**:
+
+```
+Subject: [URGENT/HIGH/NORMAL] Brief description of issue
+
+Clinic ID: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+User Email: admin@clinic.com
+Issue Category: WhatsApp / Availability / Appointments / Billing / Other
+
+DESCRIPTION:
+Expected: Bot should respond within 5 seconds
+Actual: Bot does not respond at all
+Impact: High - All patients cannot book appointments via WhatsApp
+
+STEPS TO REPRODUCE:
+1. Send "Hola" to +14155238886 from +34612345678
+2. Wait 30 seconds
+3. No response received
+
+ENVIRONMENT:
+- Browser: Chrome 120 on Windows 11
+- Timestamp: 2025-11-20 14:30:00 CET
+- WhatsApp status: ACTIVE
+
+ATTACHMENTS:
+- screenshot_whatsapp_settings.png
+- console_logs.txt
+- langsmith_conversation.json
+
+ATTEMPTED TROUBLESHOOTING:
+- Checked Common Issues guide: Yes
+- Verified Twilio webhook: Yes (configured correctly)
+- Tested with different phone: Yes (same issue)
+- Checked backend logs: Yes (no errors visible)
+
+Please advise.
+
+Best regards,
+[Your Name]
+```
+
+### Live Chat (Enterprise only)
+
+<Card title="In-app chat" icon="messages">
+  Available for **BUSINESS** and **ENTERPRISE** plans.
+
+  Click the chat icon (bottom right) in the dashboard.
+
+  **Availability**: Monday-Friday, 9:00-18:00 CET
+
+  **Best for**: Quick questions, urgent issues, real-time troubleshooting
+</Card>
+
+### Phone Support (Enterprise only)
+
+<Card title="+34 900 123 456" icon="phone">
+  Available for **ENTERPRISE** plans only.
+
+  **Availability**: Monday-Friday, 9:00-18:00 CET
+
+  **Best for**: Critical production issues, security incidents
+</Card>
+
+<Warning>
+Phone support is for emergencies only. For non-urgent issues, use email to ensure proper tracking and documentation.
+</Warning>
+
+## Escalation Process
+
+If your issue is not resolved within expected timeframe:
+
+<Steps>
+  <Step title="Wait for initial response">
+    - Critical: 4 hours
+    - High: 1 business day
+    - Normal: 3 business days
+  </Step>
+  <Step title="Follow up on ticket">
+    Reply to support email with "FOLLOW-UP" in subject line.
+
+    Include:
+    - Original ticket number (if provided)
+    - Days since initial report
+    - Any new information
+  </Step>
+  <Step title="Escalate to management">
+    If no response after 2 follow-ups, email:
+
+    **escalation@clinic.com**
+
+    Subject: `ESCALATION: Ticket #12345 - [Brief description]`
+  </Step>
+  <Step title="Executive escalation (Enterprise only)">
+    For critical production issues on Enterprise plans:
+
+    Contact your Account Manager directly.
+  </Step>
+</Steps>
+
+## What to Expect
+
+### Response Timeline
+
+<CardGroup cols={2}>
+  <Card title="Critical Issues" icon="siren-on">
+    **Definition**: System down, data loss, security breach
+
+    - Initial response: 2-4 hours
+    - Resolution target: 1 business day
+    - Updates: Every 4 hours
+  </Card>
+  <Card title="High Priority" icon="triangle-exclamation">
+    **Definition**: Feature not working, affecting multiple users
+
+    - Initial response: 1 business day
+    - Resolution target: 3-5 business days
+    - Updates: Every 2 days
+  </Card>
+  <Card title="Medium Priority" icon="circle-exclamation">
+    **Definition**: Minor bugs, workaround available
+
+    - Initial response: 2-3 business days
+    - Resolution target: 1-2 weeks
+    - Updates: Weekly
+  </Card>
+  <Card title="Low Priority" icon="circle-info">
+    **Definition**: Enhancement requests, questions
+
+    - Initial response: 3-5 business days
+    - Resolution target: Next release
+    - Updates: When status changes
+  </Card>
+</CardGroup>
+
+### Resolution Process
+
+<Steps>
+  <Step title="Acknowledgment">
+    You'll receive confirmation that we received your ticket, including:
+    - Ticket number (for tracking)
+    - Priority level (based on impact)
+    - Expected response time
+  </Step>
+  <Step title="Investigation">
+    Support engineer will:
+    - Reproduce the issue (if possible)
+    - Check logs and database
+    - Test workarounds
+    - May ask for additional information
+  </Step>
+  <Step title="Resolution">
+    Depending on issue type:
+    - **Configuration**: Support will guide you through fix
+    - **Bug**: Engineering will create fix, deploy in next release
+    - **Feature request**: Product team will evaluate for roadmap
+    - **Question**: Detailed answer + documentation link
+  </Step>
+  <Step title="Verification">
+    You'll be asked to verify the fix works in your environment.
+  </Step>
+  <Step title="Closure">
+    Once verified, ticket is closed. You'll receive summary email.
+  </Step>
+</Steps>
+
+## Temporary Workarounds
+
+While waiting for support response, try these common workarounds:
+
+<AccordionGroup>
+  <Accordion title="WhatsApp not working">
+    **Workaround**: Create appointments manually via dashboard.
+
+    Go to **Appointments** → **Create** and book on behalf of patient.
+
+    Notify patient via SMS/call.
+  </Accordion>
+
+  <Accordion title="No availability showing">
+    **Workaround**: Book outside normal hours temporarily.
+
+    1. Add temporary work hours (e.g., extend closing time by 1 hour)
+    2. Book appointment
+    3. Revert work hours after booking
+  </Accordion>
+
+  <Accordion title="Subscription limit reached">
+    **Workaround**: Enable overage temporarily.
+
+    Go to **Settings** → **Subscription** → **Allow Overage** (toggle ON).
+
+    Note: You'll be charged €0.35 per appointment over limit.
+  </Accordion>
+
+  <Accordion title="Performance slow">
+    **Workaround**: Use filters to reduce data loaded.
+
+    - Dashboard: Select shorter date range (last 7 days instead of 30)
+    - Appointments: Filter by status (CONFIRMED only)
+    - Clear browser cache: `Ctrl+Shift+Delete`
+  </Accordion>
+</AccordionGroup>
+
+## Self-Service Resources
+
+Before and while waiting for support:
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/">
+    Complete user manual with guides, tutorials, and API reference.
+  </Card>
+  <Card title="FAQs" icon="circle-question" href="/faqs">
+    Answers to 30+ most common questions.
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/troubleshooting/common-issues">
+    Step-by-step debugging for frequent issues.
+  </Card>
+  <Card title="Video Tutorials" icon="video">
+    Coming soon - Visual guides for key workflows.
+  </Card>
+</CardGroup>
+
+## Feedback and Feature Requests
+
+<Info>
+We welcome feedback and feature requests even if not an "issue".
+</Info>
+
+**How to submit**:
+
+1. **In-app feedback**: Click **Feedback** button (top right) in dashboard
+2. **Email**: feedback@clinic.com
+3. **Community forum**: Coming soon
+
+**What to include**:
+- Use case: What are you trying to achieve?
+- Current limitation: What prevents you from doing it?
+- Proposed solution: How would you like it to work?
+- Impact: How many users/clinics would benefit?
+- Workaround: Are you using a temporary workaround?
+
+**Example**:
+
+```
+Feature Request: Bulk appointment creation
+
+USE CASE:
+We run group classes (yoga, pilates) with 10-20 people.
+Currently, I have to create 20 individual appointments manually.
+
+CURRENT LIMITATION:
+No way to create multiple appointments at once.
+Takes 5-10 minutes to book a single class.
+
+PROPOSED SOLUTION:
+- Add "Group Appointment" feature
+- Select multiple patients from list
+- Create all appointments with one click
+- Send bulk WhatsApp notifications
+
+IMPACT:
+- Would save 1 hour per day for our clinic
+- Fitness centers, language schools would benefit
+- Estimated 30% of clinics run group activities
+
+WORKAROUND:
+Currently creating appointments one by one.
+No good workaround available.
+```
+
+<Tip>
+Feature requests are prioritized by:
+1. Number of clinics requesting it
+2. Impact on workflow efficiency
+3. Technical feasibility
+4. Alignment with product roadmap
+
+Vote on existing requests in the community forum (coming soon).
+</Tip>
+
+## Privacy and Data Security
+
+<Warning>
+When sharing information with support, ensure compliance with GDPR and data protection laws.
+</Warning>
+
+**Best practices**:
+- Anonymize patient data: Use "Patient A", "Patient B" instead of real names
+- Redact phone numbers: `+34612****` instead of full number
+- Blur sensitive info in screenshots (use annotation tool)
+- Don't share passwords or API keys (we'll never ask for these)
+
+**What support CAN access**:
+- Your clinic configuration (services, work hours, resources)
+- System logs (backend errors, API calls)
+- Anonymized usage statistics
+- Stripe subscription status (with your consent)
+
+**What support CANNOT access**:
+- Patient personal data (names, phones, emails) without explicit authorization
+- Your password or login credentials
+- Payment methods (we only see last 4 digits)
+- WhatsApp conversation content (only metadata like timestamps, tool calls)
+
+If support needs to access patient data for debugging, we'll:
+1. Ask for explicit written consent
+2. Limit access to minimum necessary data
+3. Delete/anonymize data after issue resolution
+4. Provide audit trail of access
+
+<Card title="Data Protection Policy" icon="shield-check">
+  Read our full privacy and data handling policy: [privacy@clinic.com](mailto:privacy@clinic.com)
+</Card>

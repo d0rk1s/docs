@@ -1,0 +1,167 @@
+---
+title: 'Servicios - Visión General'
+description: 'Gestiona los servicios que ofrece tu clínica: cortes, tratamientos, consultas y más'
+icon: 'list-check'
+---
+
+## ¿Qué es un Servicio?
+
+Un **servicio** representa cualquier prestación que tu clínica ofrece a los pacientes: corte de pelo, manicura, consulta médica, tratamiento facial, etc. Cada servicio tiene configuraciones específicas que determinan cómo se agenda y cuánto cuesta.
+
+## Campos de un Servicio
+
+<ParamField path="nombre" type="string" required>
+  Nombre descriptivo del servicio (ej: "Corte de Pelo Caballero", "Consulta General")
+</ParamField>
+
+<ParamField path="duration_min" type="integer" required>
+  Duración del servicio en minutos (ej: 30, 45, 60). Determina los slots disponibles en la agenda.
+</ParamField>
+
+<ParamField path="precio" type="decimal" optional>
+  Precio del servicio en la moneda configurada. Puede dejarse vacío si el precio varía según el caso.
+</ParamField>
+
+<ParamField path="categoría" type="string" optional>
+  Categoría para organizar servicios (ej: "Peluquería", "Estética", "Salud")
+</ParamField>
+
+<ParamField path="proveedor" type="uuid" optional>
+  Proveedor específico asignado a este servicio. Si se asigna, solo ese proveedor puede realizarlo.
+</ParamField>
+
+<ParamField path="recursos" type="array" optional>
+  Recursos físicos requeridos (ej: sala de operaciones, equipo especial). Sistema verifica disponibilidad.
+</ParamField>
+
+<ParamField path="buffer_before_min" type="integer" optional>
+  Tiempo de preparación antes del servicio en minutos (ej: 15 min para desinfectar sala)
+</ParamField>
+
+## Estados de Servicio
+
+| Estado | Descripción | Visibilidad |
+|--------|-------------|-------------|
+| **Activo** | Servicio disponible para agendar citas | Visible en formulario de citas |
+| **Inactivo** | Servicio desactivado temporalmente | No visible, citas existentes se mantienen |
+| **Eliminado** | Servicio eliminado permanentemente | No visible, no se puede recuperar |
+
+<Info>
+  **Tip**: Es mejor **desactivar** un servicio que eliminarlo si quieres preservar el historial de citas pasadas.
+</Info>
+
+## Flujos Principales
+
+<CardGroup cols={2}>
+  <Card
+    title="Ver Servicios"
+    icon="eye"
+    href="/services/view-services"
+  >
+    Explora, busca y filtra todos los servicios de tu clínica
+  </Card>
+  <Card
+    title="Crear Servicio"
+    icon="plus"
+    href="/services/create-service"
+  >
+    Crea un nuevo servicio desde cero con configuración personalizada
+  </Card>
+  <Card
+    title="Importar desde Catálogo"
+    icon="book"
+    href="/services/create-from-catalog"
+  >
+    Importa servicios pre-configurados desde el catálogo oficial (más rápido)
+  </Card>
+  <Card
+    title="Editar Servicio"
+    icon="pen"
+    href="/services/edit-service"
+  >
+    Modifica duración, precio, proveedor o recursos de un servicio existente
+  </Card>
+</CardGroup>
+
+## Mejores Prácticas
+
+<AccordionGroup>
+  <Accordion title="Usa duraciones realistas">
+    Configura duraciones que incluyan tiempo de preparación y limpieza. Ejemplo: si un corte toma 25 minutos pero necesitas 5 min para limpiar, usa **30 minutos** de duración total.
+  </Accordion>
+
+  <Accordion title="Aprovecha el catálogo oficial">
+    Si tu servicio es común (corte de pelo, manicura, etc.), **importa desde el catálogo** en lugar de crear desde cero. Ahorrarás tiempo y tendrás configuraciones estándar.
+  </Accordion>
+
+  <Accordion title="Asigna proveedores específicos solo cuando sea necesario">
+    Si **cualquier proveedor** puede realizar el servicio, déjalo sin asignar. Esto maximiza la disponibilidad de slots.
+  </Accordion>
+
+  <Accordion title="Usa categorías para organizar">
+    Agrupa servicios similares en categorías (ej: "Peluquería", "Barbería", "Estética"). Facilita búsquedas y reportes.
+  </Accordion>
+
+  <Accordion title="Configura buffers para servicios que requieren preparación">
+    Si necesitas tiempo entre citas para desinfectar o preparar equipos, usa `buffer_before_min`. Ejemplo: 15 min antes de una cirugía menor.
+  </Accordion>
+</AccordionGroup>
+
+## Integración con el Sistema
+
+### ServiceMapper (Búsqueda Inteligente)
+
+El sistema usa **fuzzy matching** para buscar servicios cuando un usuario agenda por WhatsApp. Ejemplo:
+
+- Usuario dice: "Quiero un corte"
+- Sistema busca servicios con nombres similares: "Corte de Pelo", "Corte Caballero", "Corte y Barba"
+- Muestra el servicio más similar (threshold: 0.05)
+
+<Tip>
+  Usa nombres descriptivos y consistentes para que el bot encuentre servicios correctamente. Evita abreviaciones extrañas.
+</Tip>
+
+### Disponibilidad de Slots
+
+La duración del servicio (`duration_min`) determina:
+
+1. **Cuántos slots caben** en el horario del proveedor
+2. **A qué hora empiezan** los slots (ej: servicio de 30 min → slots cada 30 min: 10:00, 10:30, 11:00)
+3. **Cuándo termina** la cita (ej: cita a las 10:00 + 30 min → termina a las 10:30)
+
+<Warning>
+  Si cambias la duración de un servicio, **afecta la disponibilidad futura** pero NO modifica citas ya agendadas.
+</Warning>
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card
+    title="Ver todos los servicios"
+    icon="list"
+    href="/services/view-services"
+  >
+    Explora los servicios actuales de tu clínica
+  </Card>
+  <Card
+    title="Crear tu primer servicio"
+    icon="rocket"
+    href="/services/create-service"
+  >
+    Configura un servicio desde cero
+  </Card>
+  <Card
+    title="Importar desde catálogo"
+    icon="download"
+    href="/services/create-from-catalog"
+  >
+    Importa servicios pre-configurados
+  </Card>
+  <Card
+    title="Asignar servicios a proveedores"
+    icon="user-tie"
+    href="/providers/assign-services"
+  >
+    Vincula servicios con proveedores específicos
+  </Card>
+</CardGroup>

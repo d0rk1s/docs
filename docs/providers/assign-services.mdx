@@ -1,0 +1,536 @@
+---
+title: 'Assign Services to Providers'
+description: 'Link providers to the services they deliver for specialized scheduling'
+icon: 'briefcase-medical'
+---
+
+## Overview
+
+Service assignment links providers to the services they can deliver. This enables:
+- **Specialized scheduling**: Only show availability for providers who offer the requested service
+- **Provider filtering**: Patients can select specific providers when booking
+- **Service-based availability**: System calculates availability based on provider's schedule AND service assignment
+
+<Info>
+  **Per-Service Assignment**: Each service can have ONE assigned provider. If multiple providers offer the same service (e.g., "General Consultation"), create separate service entries for each provider.
+</Info>
+
+## Prerequisites
+
+<Steps>
+  <Step title="Services Created">
+    Services must exist before assignment. See [Create Service](/services/create-service).
+  </Step>
+  <Step title="Provider Configured">
+    Provider must have `is_provider = true` and work hours configured.
+  </Step>
+  <Step title="Required Permissions">
+    You must have `CLINIC_ADMIN` role to assign services.
+  </Step>
+</Steps>
+
+## Service Assignment Architecture
+
+### Database Schema
+
+```sql
+CREATE TABLE services (
+    id UUID PRIMARY KEY,
+    clinic_id UUID REFERENCES clinics(id),
+    name VARCHAR NOT NULL,
+    duration_min INTEGER NOT NULL,
+    price DECIMAL(10,2),
+    provider_id UUID REFERENCES users(id) NULL,  -- NULL = any provider can deliver
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ
+);
+
+-- Index for provider lookups
+CREATE INDEX idx_services_provider
+ON services(clinic_id, provider_id)
+WHERE is_active = true;
+```
+
+<Warning>
+  **One Provider Per Service**: The `provider_id` column is a single foreign key, NOT a many-to-many relationship. If multiple providers offer the same service, create separate service entries.
+</Warning>
+
+## Method 1: Assign During Service Creation
+
+When creating a new service, you can immediately assign it to a provider.
+
+<Steps>
+  <Step title="Navigate to Services">
+    Go to **Services** from the main menu.
+  </Step>
+  <Step title="Click Create Service">
+    Click the **Create Service** button.
+  </Step>
+  <Step title="Fill Service Details">
+    - **Name**: Service name (e.g., "Haircut", "Dental Cleaning")
+    - **Duration**: Service duration in minutes (e.g., 30, 60)
+    - **Price**: Service price (optional)
+  </Step>
+  <Step title="Select Provider">
+    In the **Provider** dropdown, select the provider who will deliver this service.
+  </Step>
+  <Step title="Save Service">
+    Click **Create** to save the service with provider assignment.
+  </Step>
+</Steps>
+
+### API Request
+
+```http
+POST /v1/services?clinic_id={clinic_id}
+```
+
+```bash
+curl -X POST "https://api.clinic.example.com/v1/services?clinic_id={clinic_id}" \
+  -H "Cookie: access_token={jwt_token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Haircut - Dr. García",
+    "duration_min": 30,
+    "price": 25.00,
+    "provider_id": "user-789-xyz-012",
+    "is_active": true
+  }'
+```
+
+### Response
+
+```json
+{
+  "id": "svc-abc-123-def-456",
+  "clinic_id": "clinic-abc-123",
+  "name": "Haircut - Dr. García",
+  "duration_min": 30,
+  "price": 25.00,
+  "provider_id": "user-789-xyz-012",
+  "provider_name": "Dr. María García",
+  "is_active": true,
+  "created_at": "2026-01-17T11:00:00Z",
+  "updated_at": "2026-01-17T11:00:00Z"
+}
+```
+
+<Tip>
+  **Naming Convention**: Include provider name in service name when multiple providers offer the same service (e.g., "Haircut - Dr. García", "Haircut - Dr. López"). This helps patients distinguish between options.
+</Tip>
+
+## Method 2: Assign to Existing Service
+
+To assign a provider to an existing service:
+
+<Steps>
+  <Step title="Navigate to Services">
+    Go to **Services** from the main menu.
+  </Step>
+  <Step title="Find the Service">
+    Locate the service in the list (use search if needed).
+  </Step>
+  <Step title="Click Edit">
+    Click the edit icon on the service card.
+  </Step>
+  <Step title="Select Provider">
+    In the **Provider** dropdown, select the provider to assign.
+  </Step>
+  <Step title="Save Changes">
+    Click **Save** to update the service.
+  </Step>
+</Steps>
+
+### API Request
+
+```http
+PATCH /v1/services/{service_id}?clinic_id={clinic_id}
+```
+
+```bash
+curl -X PATCH "https://api.clinic.example.com/v1/services/{service_id}?clinic_id={clinic_id}" \
+  -H "Cookie: access_token={jwt_token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider_id": "user-789-xyz-012"
+  }'
+```
+
+## Method 3: Bulk Assign from Provider View
+
+Assign multiple services to a provider from the provider's detail view.
+
+<Steps>
+  <Step title="Navigate to Providers">
+    Go to **Providers** from the main menu.
+  </Step>
+  <Step title="Open Provider Details">
+    Click on the provider card to open their details modal.
+  </Step>
+  <Step title="Go to Services Tab">
+    Click the **Services** tab.
+  </Step>
+  <Step title="Click Assign Services">
+    Click **Assign Services** button.
+  </Step>
+  <Step title="Select Services">
+    Check the services to assign to this provider (multi-select).
+  </Step>
+  <Step title="Save Assignments">
+    Click **Save** to update all selected services.
+  </Step>
+</Steps>
+
+<Frame>
+  <img src="/images/screenshots/providers_assign_services.png" alt="Interfaz de asignación de servicios a proveedor con selección múltiple" />
+</Frame>
+
+<Info>
+  **Bulk Assignment**: This method updates the `provider_id` field for all selected services in a single transaction.
+</Info>
+
+## Unassigning Services
+
+To remove a provider from a service:
+
+<Steps>
+  <Step title="Open Service Edit Dialog">
+    Navigate to the service and click **Edit**.
+  </Step>
+  <Step title="Clear Provider Selection">
+    In the **Provider** dropdown, select **"None"** or **"Any Provider"**.
+  </Step>
+  <Step title="Save Changes">
+    Click **Save** to remove the assignment.
+  </Step>
+</Steps>
+
+### API Request
+
+```bash
+curl -X PATCH "https://api.clinic.example.com/v1/services/{service_id}?clinic_id={clinic_id}" \
+  -H "Cookie: access_token={jwt_token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider_id": null
+  }'
+```
+
+<Warning>
+  **Impact on Availability**: Removing provider assignment changes availability calculation. If the service had provider-specific slots, they will now be calculated using clinic-level availability (any provider).
+</Warning>
+
+## How Service Assignment Affects Availability
+
+### Scenario 1: Service with Assigned Provider
+
+**Configuration**:
+- Service: "Dental Cleaning" (30 min, assigned to Dr. García)
+- Dr. García work hours: Monday 09:00-17:00
+- Clinic hours: Monday 08:00-20:00
+
+**Availability Calculation**:
+1. System fetches Dr. García's work hours (09:00-17:00)
+2. Intersects with clinic hours (08:00-20:00)
+3. Effective availability: 09:00-17:00
+4. Generates slots: 09:00, 09:30, 10:00, ..., 16:30
+
+**Result**: Only Dr. García's availability is shown. Other providers are ignored.
+
+### Scenario 2: Service Without Assigned Provider
+
+**Configuration**:
+- Service: "General Consultation" (30 min, NO assigned provider)
+- Multiple providers available
+
+**Availability Calculation**:
+1. System fetches ALL providers with work hours
+2. Generates availability across all providers
+3. Patient can book with any available provider
+
+**Result**: Maximum availability (union of all provider schedules).
+
+<Tip>
+  **When to Use Unassigned Services**: Use unassigned services for general services where any provider can deliver (e.g., "Reception Appointment", "Document Pickup"). Use assigned services for specialized services (e.g., "Orthodontic Consultation - Dr. Specialist").
+</Tip>
+
+### Scenario 3: Multiple Services, Same Provider
+
+**Configuration**:
+- Service A: "Haircut" (30 min, assigned to Dr. García)
+- Service B: "Hair Coloring" (60 min, assigned to Dr. García)
+- Dr. García work hours: Monday 09:00-17:00
+
+**Availability Calculation**:
+- **For Haircut**: Slots at 09:00, 09:30, 10:00, ..., 16:30 (30-min duration)
+- **For Hair Coloring**: Slots at 09:00, 10:00, 11:00, ..., 16:00 (60-min duration, needs continuous 60-min window)
+
+**Result**: Same provider, different slot patterns based on service duration.
+
+## Service Assignment Best Practices
+
+<AccordionGroup>
+  <Accordion title="Specialized Providers">
+    **Use Case**: Dental clinic with general dentists and orthodontists.
+
+    **Pattern**:
+    - Service: "Dental Cleaning" → Assigned to general dentists (create separate services per dentist)
+    - Service: "Orthodontic Consultation" → Assigned to orthodontist specialist
+    - Service: "Emergency Visit" → NO assignment (any provider can handle)
+
+    **Benefit**: Patients automatically get the right specialist without manual filtering.
+  </Accordion>
+
+  <Accordion title="Part-Time Providers">
+    **Use Case**: Provider works mornings only (09:00-13:00).
+
+    **Pattern**:
+    - Assign specialized services to this provider
+    - System automatically limits availability to morning slots
+    - No need to manually filter by time of day
+
+    **Benefit**: Availability is calculated based on provider's actual schedule.
+  </Accordion>
+
+  <Accordion title="Multi-Provider Services">
+    **Use Case**: Multiple providers offer the same service (e.g., "Haircut").
+
+    **Pattern**:
+    - Create separate services: "Haircut - Dr. García", "Haircut - Dr. López"
+    - Assign each to the respective provider
+    - Patients can choose their preferred provider
+
+    **Alternative**: Create ONE unassigned service "Haircut" and let patients book with any available provider (no provider preference).
+  </Accordion>
+
+  <Accordion title="Provider on Leave">
+    **Use Case**: Provider is on vacation for 2 weeks.
+
+    **Pattern**:
+    - Do NOT unassign services
+    - Create a **provider-specific closure** for the vacation period
+    - System automatically excludes this provider's availability during closure
+    - Services remain assigned, availability resumes after closure ends
+
+    **Benefit**: No manual reassignment needed.
+  </Accordion>
+</AccordionGroup>
+
+## Viewing Service Assignments
+
+### From Services List
+
+Each service card shows the assigned provider (if any):
+
+```
+┌─────────────────────────────────────┐
+│ Haircut - Dr. García                │
+│ Duration: 30 min | Price: €25       │
+│ Provider: Dr. María García          │
+│ [Edit] [Delete]                     │
+└─────────────────────────────────────┘
+```
+
+### From Provider View
+
+The provider's Services tab lists all services assigned to them:
+
+```
+┌─────────────────────────────────────┐
+│ Dr. María García - Services         │
+├─────────────────────────────────────┤
+│ ✓ Haircut (30 min)                  │
+│ ✓ Hair Coloring (60 min)            │
+│ ✓ Hair Treatment (45 min)           │
+│                                     │
+│ [Assign More Services]              │
+└─────────────────────────────────────┘
+```
+
+### API: List Services by Provider
+
+```http
+GET /v1/services?clinic_id={clinic_id}&provider_id={provider_id}
+```
+
+```bash
+curl -X GET "https://api.clinic.example.com/v1/services?clinic_id={clinic_id}&provider_id={provider_id}" \
+  -H "Cookie: access_token={jwt_token}"
+```
+
+Response:
+```json
+{
+  "services": [
+    {
+      "id": "svc-abc-123",
+      "name": "Haircut - Dr. García",
+      "duration_min": 30,
+      "price": 25.00,
+      "provider_id": "user-789-xyz-012",
+      "provider_name": "Dr. María García"
+    },
+    {
+      "id": "svc-def-456",
+      "name": "Hair Coloring - Dr. García",
+      "duration_min": 60,
+      "price": 50.00,
+      "provider_id": "user-789-xyz-012",
+      "provider_name": "Dr. María García"
+    }
+  ]
+}
+```
+
+## Common Errors
+
+<AccordionGroup>
+  <Accordion title="403 Forbidden - Cannot Manage Clinic">
+    **Cause**: You don't have `CLINIC_ADMIN` role in the selected clinic.
+
+    **Solution**: Contact your system administrator to grant you `CLINIC_ADMIN` permissions.
+  </Accordion>
+
+  <Accordion title="404 Not Found - Provider Not Found">
+    **Cause**: The `provider_id` doesn't exist or the user is not a provider in this clinic.
+
+    **Solution**:
+    1. Verify the provider ID is correct
+    2. Check `user_clinics` table: `is_provider = true` for this clinic?
+    3. Ensure you're using the `user_id`, not the `user_clinic_id`
+  </Accordion>
+
+  <Accordion title="400 Bad Request - Service Already Assigned">
+    **Cause**: Attempting to assign a service that's already assigned to another provider.
+
+    **Solution**:
+    1. If you want to reassign: Use PATCH to update the existing service's `provider_id`
+    2. If you want multiple providers: Create separate service entries (e.g., "Haircut - Dr. A", "Haircut - Dr. B")
+  </Accordion>
+
+  <Accordion title="Provider Has Services But No Availability">
+    **Cause**: Provider has services assigned but no work hours configured.
+
+    **Solution**: Navigate to [Configure Schedule](/providers/configure-schedule) to add work hours for the provider.
+  </Accordion>
+</AccordionGroup>
+
+## Database Query Examples
+
+### Get All Services for a Provider
+
+```sql
+SELECT
+  s.id,
+  s.name,
+  s.duration_min,
+  s.price,
+  s.is_active
+FROM services s
+WHERE s.clinic_id = '...'
+  AND s.provider_id = '...'
+  AND s.is_active = true
+ORDER BY s.name ASC;
+```
+
+### Get All Providers for a Service (Alternative Architecture)
+
+**Note**: Current schema supports ONE provider per service. For many-to-many relationship, you would need a junction table:
+
+```sql
+-- Hypothetical junction table (NOT in current schema)
+CREATE TABLE service_providers (
+    service_id UUID REFERENCES services(id),
+    provider_id UUID REFERENCES users(id),
+    PRIMARY KEY (service_id, provider_id)
+);
+
+-- Query providers for a service
+SELECT
+  u.id AS user_id,
+  ucp.full_name AS provider_name,
+  uc.is_provider
+FROM service_providers sp
+JOIN users u ON sp.provider_id = u.id
+JOIN user_clinics uc ON u.id = uc.user_id
+LEFT JOIN user_clinic_profiles ucp ON uc.id = ucp.user_clinic_id
+WHERE sp.service_id = '...'
+  AND uc.clinic_id = '...'
+  AND uc.is_provider = true;
+```
+
+<Warning>
+  **Current Architecture**: The current schema does NOT support many-to-many relationships between services and providers. Each service can have ONE assigned provider. To support multiple providers per service, create separate service entries.
+</Warning>
+
+## Impact on Appointment Booking
+
+### Patient-Facing Booking Flow
+
+1. **Patient selects service**: "Haircut - Dr. García"
+2. **System fetches provider**: `provider_id = user-789-xyz-012`
+3. **Availability calculated**: Only Dr. García's schedule is considered
+4. **Patient selects time slot**: From Dr. García's available slots
+5. **Appointment created**: Linked to service AND provider
+
+### WhatsApp Agent Booking Flow
+
+1. **Patient says**: "Quiero una cita para corte de pelo"
+2. **Agent uses ServiceMapper**: Fuzzy match "corte de pelo" → "Haircut - Dr. García"
+3. **Agent calls get_availability**: Filtered by `provider_id` from service
+4. **Agent shows slots**: Only Dr. García's available times
+5. **Patient confirms**: Appointment created with service + provider
+
+<Tip>
+  **ServiceMapper**: The WhatsApp agent uses fuzzy string matching to map patient's natural language (e.g., "corte") to service names (e.g., "Haircut"). For best results, use clear, descriptive service names.
+</Tip>
+
+## Audit Logging
+
+Service assignments are tracked in `audit_logs`:
+
+```sql
+SELECT
+  al.action,
+  al.user_email,
+  al.details,
+  al.created_at
+FROM audit_logs al
+WHERE al.resource_type = 'service'
+  AND al.resource_id = '...'
+  AND al.action IN ('SERVICE_CREATED', 'SERVICE_UPDATED')
+ORDER BY al.created_at DESC;
+```
+
+**Example Log Entry**:
+```json
+{
+  "action": "SERVICE_UPDATED",
+  "user_email": "admin@clinic.com",
+  "resource_id": "svc-abc-123",
+  "details": {
+    "old_provider_id": null,
+    "new_provider_id": "user-789-xyz-012",
+    "provider_name": "Dr. María García"
+  },
+  "created_at": "2026-01-17T11:00:00Z"
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Test Availability" icon="calendar-check" href="/scheduling/test-availability">
+    Verify provider's availability appears correctly for assigned services
+  </Card>
+  <Card title="Create Appointment" icon="calendar-plus" href="/appointments/create-appointment">
+    Book a test appointment with the assigned provider
+  </Card>
+  <Card title="Manage Closures" icon="door-closed" href="/scheduling/closures">
+    Configure provider-specific closures for vacation or leave
+  </Card>
+  <Card title="View Services" icon="list" href="/services/view-services">
+    Return to services list to view all assignments
+  </Card>
+</CardGroup>

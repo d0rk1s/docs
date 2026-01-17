@@ -1,0 +1,118 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Clinic Management System",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373",
+    "anchors": {
+      "from": "#0D9373",
+      "to": "#07C983"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "Support",
+      "url": "mailto:support@clinic.com"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Dashboard",
+    "url": "https://app.clinic.com"
+  },
+  "navigation": [
+    {
+      "group": "Primeros Pasos",
+      "pages": [
+        "getting-started/introduction",
+        "getting-started/first-login",
+        "getting-started/dashboard-overview"
+      ]
+    },
+    {
+      "group": "Gestión de Citas",
+      "pages": [
+        "appointments/overview",
+        "appointments/view-calendar",
+        "appointments/create-appointment",
+        "appointments/modify-appointment",
+        "appointments/cancel-appointment",
+        "appointments/search-patient",
+        "appointments/appointment-statuses"
+      ]
+    },
+    {
+      "group": "Servicios",
+      "pages": [
+        "services/overview",
+        "services/view-services",
+        "services/create-service",
+        "services/create-from-catalog",
+        "services/edit-service",
+        "services/delete-service"
+      ]
+    },
+    {
+      "group": "Catálogo de Servicios",
+      "pages": [
+        "catalog/overview",
+        "catalog/search-catalog",
+        "catalog/filter-by-category",
+        "catalog/import-service"
+      ]
+    },
+    {
+      "group": "Horarios de Trabajo",
+      "pages": [
+        "work-hours/overview",
+        "work-hours/clinic-hours",
+        "work-hours/provider-hours",
+        "work-hours/multiple-periods",
+        "work-hours/edit-delete-hours"
+      ]
+    },
+    {
+      "group": "Cierres y Vacaciones",
+      "pages": [
+        "closures/overview",
+        "closures/create-closure",
+        "closures/impact-preview",
+        "closures/view-upcoming",
+        "closures/cancel-closure"
+      ]
+    },
+    {
+      "group": "Conversaciones WhatsApp",
+      "pages": [
+        "whatsapp/overview",
+        "whatsapp/view-conversations",
+        "whatsapp/message-history",
+        "whatsapp/pause-bot",
+        "whatsapp/send-manual-message"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/introduction"
+      ]
+    },
+    {
+      "group": "Endpoints",
+      "pages": [
+        "api-reference/endpoint/get",
+        "api-reference/endpoint/create",
+        "api-reference/endpoint/delete",
+        "api-reference/endpoint/webhook"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/clinic"
+  }
+}

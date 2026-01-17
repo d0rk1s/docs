@@ -1,0 +1,629 @@
+---
+title: "Uso del Plan de Suscripción"
+description: "Monitorea tu consumo y optimiza tu plan de facturación"
+icon: "chart-pie"
+---
+
+## ¿Qué es el uso del plan?
+
+El Dashboard muestra cuántas citas has consumido de tu límite mensual de suscripción.
+
+**Fórmula**:
+```
+Uso del Plan = (Citas creadas en período actual / Límite del plan) × 100%
+```
+
+**Ejemplo**:
+```
+Plan: STARTER (50 citas/mes)
+Período: 01/01/2026 - 31/01/2026
+Citas creadas: 35
+Uso del Plan: 35 / 50 = 70%
+```
+
+<Note>
+El porcentaje se actualiza cada 5 minutos junto con las estadísticas del Dashboard.
+</Note>
+
+<Frame>
+  <img src="/images/screenshots/dashboard_plan_usage_widget.png" alt="Widget de uso del plan mostrando porcentaje consumido y límite mensual" />
+</Frame>
+
+---
+
+## Planes disponibles
+
+### Tabla de planes estándar
+
+| Plan | Citas/mes | Precio/mes | Overage | Descripción |
+|------|-----------|------------|---------|-------------|
+| **FREE** | 10 | €0 | NO | Plan de prueba gratuito |
+| **STARTER** | 50 | €29 | €0.35/cita | Para clínicas pequeñas |
+| **PRO** | 200 | €99 | €0.30/cita | Para clínicas medianas |
+| **BUSINESS** | 500 | €199 | €0.25/cita | Para clínicas grandes |
+| **ENTERPRISE** | Ilimitado | €499 | NO | Plan ilimitado |
+
+<Info>
+Los precios son orientativos. Consulta tu configuración específica en "Configuración → Suscripción".
+</Info>
+
+---
+
+### Planes personalizados (ENTERPRISE_CUSTOM)
+
+Para empresas con necesidades específicas, puedes crear planes customizados:
+
+**Ejemplo**:
+```
+Plan: ENTERPRISE_CUSTOM_HOSPITAL_X
+Citas/mes: 300
+Precio/mes: €350
+Overage: €0.20/cita
+```
+
+**Cuándo usarlo**:
+- Necesitas límite específico (ej: 300 citas, ni 200 ni 500)
+- Negociaste tarifa especial con ventas
+- Tienes contrato enterprise con SLA personalizado
+
+<Tip>
+Solo administradores del sistema pueden crear planes customizados. Contacta a soporte si necesitas uno.
+</Tip>
+
+---
+
+## ¿Qué cuenta como cita facturada?
+
+### Regla principal
+
+**Solo citas CREADAS en el período actual**:
+- ✅ Citas creadas entre `billing_period_start` y `billing_period_end`
+- ❌ Citas creadas ANTES del período (aunque se atiendan hoy)
+
+**Ejemplo**:
+```
+Período actual: 01/02/2026 - 28/02/2026
+
+Cita A:
+- Creada: 28/01/2026 (enero)
+- Atendida: 03/02/2026 (febrero)
+- ¿Cuenta? ❌ NO (creada en enero)
+
+Cita B:
+- Creada: 05/02/2026 (febrero)
+- Atendida: 10/02/2026 (febrero)
+- ¿Cuenta? ✅ SÍ (creada en febrero)
+```
+
+---
+
+### Estados de citas
+
+| Estado | ¿Cuenta para facturación? | Razón |
+|--------|--------------------------|-------|
+| `CONFIRMED` | ✅ SÍ | Cita agendada, consumió un slot |
+| `COMPLETED` | ✅ SÍ | Cita atendida, servicio prestado |
+| `CANCELLED` | ✅ SÍ | Cita consumió slot aunque se canceló |
+
+<Warning>
+**IMPORTANTE**: Las citas canceladas SÍ cuentan para facturación. Esto evita que usuarios abusen cancelando/creando citas repetidamente.
+</Warning>
+
+**Ejemplo**:
+```
+Citas del período:
+1. Cita A → CONFIRMED (cuenta)
+2. Cita B → COMPLETED (cuenta)
+3. Cita C → CANCELLED (cuenta)
+
+Total facturado: 3 citas
+```
+
+---
+
+## Período de facturación
+
+### ¿Cuándo inicia y termina?
+
+**Para planes pagados** (STARTER, PRO, BUSINESS):
+- Inicio: Fecha de contratación en Stripe
+- Fin: Inicio + 1 mes (billing_cycle_anchor)
+- Renovación: Automática cada mes
+
+**Ejemplo**:
+```
+Contrataste STARTER el 15/01/2026 a las 14:30
+
+Período 1: 15/01/2026 14:30 - 15/02/2026 14:30
+Período 2: 15/02/2026 14:30 - 15/03/2026 14:30
+Período 3: 15/03/2026 14:30 - 15/04/2026 14:30
+```
+
+**Para plan FREE**:
+- Inicio: Cuando asignamos el plan FREE
+- Fin: Inicio + 30 días
+- Renovación: Automática (sin cobro)
+
+---
+
+### Reset del contador
+
+Al inicio de cada período:
+1. `appointments_billed` se resetea a 0
+2. `billing_period_start` avanza 1 mes
+3. `billing_period_end` avanza 1 mes
+4. Uso del Plan = 0%
+
+**Ejemplo**:
+```
+Período anterior (enero):
+- Citas creadas: 45 / 50 (90%)
+- Factura: €29 (plan STARTER)
+
+Período nuevo (febrero):
+- 01/02/2026 00:00 → Reset automático
+- Citas creadas: 0 / 50 (0%)
+- Contador vuelve a cero ✅
+```
+
+<Note>
+El reset NO lo hace el backend de la clínica. Stripe envía un webhook `invoice.paid` que actualiza el período.
+</Note>
+
+---
+
+## Overage (exceso de citas)
+
+### ¿Qué es?
+
+Cuando superas el límite del plan, tienes dos opciones:
+1. **Sin overage**: No puedes crear más citas (bloqueado)
+2. **Con overage**: Puedes seguir creando citas (se cobra el excedente)
+
+**Configuración**:
+- **Campo**: `clinic_subscriptions.allow_overage` (TRUE o FALSE)
+- **Control**: Administrador de la clínica (página de suscripción)
+
+---
+
+### Cálculo del cargo por overage
+
+**Fórmula**:
+```
+Cargo por overage = (Citas creadas - Límite) × Tarifa overage
+```
+
+**Ejemplo**:
+```
+Plan: STARTER (50 citas/mes, tarifa overage €0.35/cita)
+Citas creadas en enero: 55
+Excedente: 55 - 50 = 5 citas
+Cargo por overage: 5 × €0.35 = €1.75
+
+Factura de enero:
+- Plan STARTER: €29.00
+- Overage (5 citas): €1.75
+- TOTAL: €30.75
+```
+
+---
+
+### Tarifas de overage por plan
+
+| Plan | Límite | Tarifa overage | Ejemplo (10 citas extra) |
+|------|--------|---------------|--------------------------|
+| FREE | 10 | NO disponible | ❌ Bloqueado |
+| STARTER | 50 | €0.35/cita | €3.50 |
+| PRO | 200 | €0.30/cita | €3.00 |
+| BUSINESS | 500 | €0.25/cita | €2.50 |
+| ENTERPRISE | ∞ | NO aplica | €0 (ilimitado) |
+
+<Warning>
+El plan FREE NO permite overage. Si llegas a 10 citas, el sistema bloquea creación de nuevas citas.
+</Warning>
+
+---
+
+### Activar/desactivar overage
+
+**Desde el panel**:
+1. Ve a "Configuración → Suscripción"
+2. Busca la opción "Permitir exceso de citas (overage)"
+3. Activa/desactiva el toggle
+4. Guarda cambios
+
+**Desde la API**:
+```bash
+curl -X PATCH "https://api.clinica.com/v1/subscription/overage" \
+  -H "Authorization: Bearer {token}" \
+  -d '{"allow_overage": true}'
+```
+
+**Efecto inmediato**:
+- Si activas overage → Puedes crear citas aunque superes el límite
+- Si desactivas overage → Sistema bloquea creación de citas al llegar al límite
+
+<Tip>
+Recomendación: Activa overage si no estás seguro de cuántas citas tendrás al mes. Es mejor pagar €2-3 extra que perder clientes por bloqueo.
+</Tip>
+
+---
+
+## Estados visuales en el Dashboard
+
+### Código de colores
+
+El Dashboard muestra el porcentaje de uso con colores:
+
+| Rango | Color | Badge | Significado |
+|-------|-------|-------|-------------|
+| 0% - 70% | Verde | `✅ Uso normal` | Lejos del límite, sin riesgo |
+| 70% - 90% | Amarillo | `⚠️ Acercándose` | Planifica upgrade o activa overage |
+| 90% - 100% | Naranja | `⚠️ Límite cercano` | Quedan pocas citas disponibles |
+| > 100% | Rojo | `❌ Límite excedido` | En overage (solo si está habilitado) |
+
+**Ejemplo visual**:
+
+```
+Plan STARTER (50 citas):
+
+35 / 50 (70%) → Badge verde ✅ "Uso normal"
+45 / 50 (90%) → Badge amarillo ⚠️ "Acercándose al límite"
+50 / 50 (100%) → Badge naranja ⚠️ "Límite alcanzado"
+55 / 50 (110%) → Badge rojo ❌ "Límite excedido (+5 overage)"
+```
+
+---
+
+### Alertas automáticas (en desarrollo)
+
+**Funcionalidades planificadas**:
+- 📧 **Email al 80% de uso**: "Has consumido 40 de 50 citas este mes"
+- 📱 **WhatsApp al 90% de uso**: "Te quedan 5 citas disponibles"
+- 🔔 **Notificación in-app al 100%**: "Límite alcanzado, activa overage o haz upgrade"
+
+<Info>
+Actualmente las alertas NO están implementadas. Debes revisar el Dashboard manualmente.
+</Info>
+
+---
+
+## Casos de uso comunes
+
+### Escenario 1: Plan FREE (10 citas) - Control estricto
+
+**Objetivo**: No superar el límite del plan gratuito.
+
+**Pasos**:
+1. Inicias el mes: 0 / 10 (0%)
+2. Primera semana: 3 / 10 (30%)
+3. Segunda semana: 6 / 10 (60%)
+4. Tercera semana: 9 / 10 (90%) ⚠️ Badge amarillo
+5. **Acción**: Decides no agendar más citas este mes
+6. Cuarta semana: Esperas al próximo período (reset el día 1)
+
+**Alternativa**:
+- Hacer upgrade a STARTER (€29/mes, 50 citas)
+- Beneficio: 40 citas más + capacidad de crecer
+
+---
+
+### Escenario 2: Plan STARTER (50 citas) - Overage activado
+
+**Objetivo**: Aceptar todas las citas aunque superes el límite.
+
+**Pasos**:
+1. Inicias enero: 0 / 50 (0%)
+2. Mitad de mes: 30 / 50 (60%)
+3. Semana 3: 45 / 50 (90%) ⚠️
+4. Semana 4: 52 / 50 (104%) ❌ Overage activado
+5. **Sistema**: Permite crear citas extras (no bloquea)
+6. Fin de mes: 55 / 50 (110%)
+7. **Factura**:
+   - Plan STARTER: €29.00
+   - Overage (5 citas): €1.75
+   - TOTAL: €30.75
+
+**Ventaja**:
+- No pierdes clientes por límite
+- Solo pagas €1.75 extra por 5 citas (€0.35/cita)
+
+---
+
+### Escenario 3: Plan PRO (200 citas) - Subutilización
+
+**Objetivo**: Optimizar costos si no usas todas las citas.
+
+**Pasos**:
+1. Enero: 80 / 200 (40%)
+2. Febrero: 75 / 200 (37.5%)
+3. Marzo: 85 / 200 (42.5%)
+4. **Análisis**: Promedio de 80 citas/mes
+5. **Problema**: Pagas €99/mes por un plan de 200, solo usas 80 (40%)
+6. **Acción**: Downgrade a STARTER (50 citas/mes, €29/mes)
+7. **Nuevo escenario con overage**:
+   - Plan STARTER: €29.00
+   - Overage (30 citas): €10.50 (30 × €0.35)
+   - TOTAL: €39.50/mes (ahorro de €59.50/mes)
+
+<Tip>
+**Regla de oro**: Si usas &lt;70% del plan durante 3 meses consecutivos, considera hacer downgrade + activar overage.
+</Tip>
+
+---
+
+### Escenario 4: Plan BUSINESS (500 citas) - Expansión rápida
+
+**Objetivo**: Escalar sin preocuparte por límites.
+
+**Pasos**:
+1. Enero: 150 / 500 (30%)
+2. Contratas un segundo peluquero
+3. Febrero: 280 / 500 (56%)
+4. Contratas un tercer peluquero
+5. Marzo: 420 / 500 (84%)
+6. Abril: 490 / 500 (98%) ⚠️ Acercándose al límite
+7. **Acción**: Upgrade a ENTERPRISE (ilimitado, €499/mes)
+8. **Beneficio**: Escalas sin riesgo de bloqueo
+
+**Análisis financiero**:
+```
+Plan BUSINESS (€199/mes):
+- 500 citas → €0.40/cita
+
+Plan ENTERPRISE (€499/mes):
+- 600 citas → €0.83/cita
+- 800 citas → €0.62/cita
+- 1000 citas → €0.50/cita
+
+Break-even: 500 citas
+Conclusión: Upgrade rentable si superas 500 citas/mes
+```
+
+---
+
+## Gestión de plan
+
+### Ver detalles del plan actual
+
+**Desde el Dashboard**:
+- Widget "Uso del Plan" muestra: `45 / 50 (90%)`
+- Tooltip: "Plan STARTER - €29/mes - Overage: €0.35/cita"
+
+**Desde Configuración**:
+1. Ve a "Configuración → Suscripción"
+2. Verás:
+   - Plan actual: STARTER
+   - Límite: 50 citas/mes
+   - Precio: €29/mes
+   - Período: 15/01/2026 - 15/02/2026
+   - Citas consumidas: 45
+   - Overage activado: ✅ SÍ
+
+---
+
+### Hacer upgrade
+
+**Proceso**:
+1. Ve a "Configuración → Suscripción"
+2. Haz clic en "Cambiar plan"
+3. Selecciona plan superior (ej: PRO)
+4. Sistema muestra preview:
+   ```
+   Plan actual: STARTER (€29/mes, 50 citas)
+   Plan nuevo: PRO (€99/mes, 200 citas)
+
+   Cambio efectivo: INMEDIATO
+   Cargo prorrateado: €XX (días restantes del período)
+   Próxima factura: €99 (01/02/2026)
+   ```
+5. Confirmas el upgrade
+6. **Efecto**:
+   - Límite cambia de 50 → 200 citas inmediatamente
+   - Citas consumidas NO se resetean (mantienes 45)
+   - Uso del Plan: 45 / 200 (22.5%) ✅
+
+<Note>
+El upgrade es **inmediato**. No necesitas esperar al próximo período.
+</Note>
+
+---
+
+### Hacer downgrade
+
+**Proceso**:
+1. Ve a "Configuración → Suscripción"
+2. Haz clic en "Cambiar plan"
+3. Selecciona plan inferior (ej: STARTER)
+4. Sistema muestra preview:
+   ```
+   Plan actual: PRO (€99/mes, 200 citas)
+   Plan nuevo: STARTER (€29/mes, 50 citas)
+
+   Cambio efectivo: FIN del período actual (15/02/2026)
+   Próxima factura: €29 (15/02/2026)
+   ```
+5. Confirmas el downgrade
+6. **Efecto**:
+   - Downgrade se AGENDA (Stripe Subscription Schedule)
+   - Sigues usando PRO hasta fin de período
+   - El 15/02/2026, el sistema cambia automáticamente a STARTER
+
+<Warning>
+**IMPORTANTE**: El downgrade NO es inmediato. Se aplica al final del período actual para evitar pérdida de servicio.
+</Warning>
+
+---
+
+### Cancelar suscripción
+
+**Proceso**:
+1. Ve a "Configuración → Suscripción"
+2. Haz clic en "Cancelar suscripción"
+3. Sistema muestra advertencia:
+   ```
+   ⚠️ Al cancelar:
+   - Tu plan cambiará a FREE (10 citas/mes)
+   - Pierdes acceso a funcionalidades premium
+   - Historial y datos se conservan
+   ```
+4. Confirmas la cancelación
+5. **Efecto**:
+   - Plan cambia a FREE inmediatamente
+   - Límite: 200 → 10 citas
+   - Citas consumidas: Se mantienen (ej: 45)
+   - Uso del Plan: 45 / 10 (450%) ❌ Excedido
+
+<Warning>
+Si cancelas y tienes más citas consumidas que el límite del plan FREE, NO puedes crear nuevas citas hasta el próximo período.
+</Warning>
+
+---
+
+## Integración con Stripe
+
+### Webhooks de facturación
+
+El sistema recibe eventos de Stripe:
+
+**1. `checkout.session.completed`** (nueva suscripción o upgrade):
+```python
+# Backend actualiza:
+subscription.plan_id = nuevo_plan_id
+subscription.stripe_subscription_id = stripe_sub_id
+subscription.billing_period_start = stripe_sub.current_period_start
+subscription.billing_period_end = stripe_sub.current_period_end
+subscription.appointments_billed = 0  # Reset
+```
+
+---
+
+**2. `invoice.paid`** (renovación mensual):
+```python
+# Backend actualiza:
+subscription.billing_period_start = stripe_sub.current_period_start
+subscription.billing_period_end = stripe_sub.current_period_end
+subscription.appointments_billed = 0  # Reset automático
+subscription.status = 'ACTIVE'
+```
+
+---
+
+**3. `subscription_schedule.completed`** (downgrade aplicado):
+```python
+# Backend actualiza:
+subscription.plan_id = nuevo_plan_id_downgraded
+subscription.billing_period_start = stripe_sub.current_period_start
+subscription.billing_period_end = stripe_sub.current_period_end
+subscription.appointments_billed = 0  # Reset
+```
+
+---
+
+**4. `customer.subscription.deleted`** (cancelación):
+```python
+# Backend actualiza:
+subscription.plan_id = FREE_PLAN_ID
+subscription.stripe_subscription_id = None  # Desvincula Stripe
+subscription.status = 'ACTIVE'  # Sigue activo con FREE
+# NO resetea billing_period_end (sirve de "anchor" para FREE)
+```
+
+<Info>
+Los webhooks son automáticos. No necesitas intervenir manualmente. Si falla un webhook, Stripe reintenta hasta 3 días.
+</Info>
+
+---
+
+## Solución de problemas
+
+### "Uso del Plan" muestra más de 100% pero no tengo overage
+
+**Diagnóstico**:
+1. Verifica configuración de overage:
+   ```sql
+   SELECT allow_overage FROM clinic_subscriptions WHERE clinic_id = 'abc-123';
+   ```
+2. Si `allow_overage = FALSE`, es un error
+3. **Causas posibles**:
+   - Webhook de Stripe falló (no actualizó configuración)
+   - Configuración manual incorrecta
+
+**Solución**:
+1. Activa overage manualmente en "Configuración → Suscripción"
+2. O downgrade a FREE (si quieres bloquear citas)
+
+---
+
+### El contador no se resetea al inicio del mes
+
+**Diagnóstico**:
+1. Verifica webhooks de Stripe:
+   ```bash
+   curl -H "Authorization: Bearer {stripe_key}" \
+     "https://api.stripe.com/v1/events?type=invoice.paid&limit=10"
+   ```
+2. Busca evento reciente con `subscription_id` de tu clínica
+3. Si NO existe, Stripe no envió el webhook
+
+**Causas**:
+- Pago falló (tarjeta expirada, fondos insuficientes)
+- Webhook endpoint caído (verifica logs del servidor)
+
+**Solución temporal**:
+```bash
+# Reset manual via script
+python scripts/verify_and_clean_subscriptions.py --clinic-id abc-123 --reset-billing-period
+```
+
+---
+
+### Factura de Stripe no coincide con el Dashboard
+
+**Ejemplo**:
+```
+Dashboard: 55 citas (110% de 50)
+Factura Stripe: €29 (sin overage)
+```
+
+**Diagnóstico**:
+1. Verifica fecha de factura vs período actual
+2. El Dashboard muestra período actual, Stripe factura período ANTERIOR
+
+**Ejemplo de timeline**:
+```
+15/01/2026 - 15/02/2026 (Período 1):
+- Citas creadas: 55
+- Factura generada el 15/02/2026: €29 + €1.75 overage = €30.75
+
+15/02/2026 - 15/03/2026 (Período 2):
+- Citas creadas hasta hoy (20/02): 10
+- Dashboard muestra: 10 / 50 (20%)
+- Stripe AÚN NO factura (facturará el 15/03)
+```
+
+<Tip>
+El Dashboard siempre muestra el **período ACTUAL**. Stripe factura el **período ANTERIOR** al renovar.
+</Tip>
+
+---
+
+## Próximos pasos
+
+<CardGroup cols={2}>
+  <Card title="Estadísticas Generales" icon="chart-line" href="/dashboard/stats-overview">
+    Volver a la vista general del Dashboard
+  </Card>
+
+  <Card title="Gestión de Suscripción" icon="credit-card" href="/subscription/overview">
+    Ver detalles completos de tu plan
+  </Card>
+
+  <Card title="Stripe Integration" icon="stripe" href="/integrations/stripe">
+    Entender la integración con Stripe
+  </Card>
+
+  <Card title="API de Suscripción" icon="code" href="/api-reference/subscription/get-subscription">
+    Integrar datos de suscripción en tu sistema
+  </Card>
+</CardGroup>

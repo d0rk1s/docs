@@ -1,0 +1,627 @@
+---
+title: "Enviar Mensaje Manual por WhatsApp"
+description: "Envía mensajes como staff cuando el bot está pausado o para comunicación proactiva"
+---
+
+# Enviar Mensaje Manual por WhatsApp
+
+Cuando el bot está pausado o necesitas enviar comunicación proactiva, puedes enviar mensajes manuales como staff de la clínica. Esto te permite:
+
+- Responder consultas complejas con toque humano
+- Resolver quejas o situaciones delicadas
+- Enviar recordatorios personalizados
+- Hacer seguimiento post-servicio
+- Contactar proactivamente a pacientes
+
+## Prerrequisitos
+
+<Warning>
+**El bot DEBE estar pausado** para enviar mensajes manuales en conversaciones activas. Si intentas enviar mensaje con bot activo, el sistema te advertirá que pausar primero.
+</Warning>
+
+**Dos escenarios para mensajes manuales**:
+
+1. **Conversación existente pausada**: Paciente ya conversó con bot, ahora necesitas intervenir
+2. **Mensaje proactivo nuevo**: Contactas al paciente tú mismo (sin conversación previa)
+
+<Frame>
+  <img src="/images/screenshots/whatsapp_send_manual_message.png" alt="Interfaz para enviar mensajes manuales de WhatsApp con campo de texto y botón de envío" />
+</Frame>
+
+## Enviar Mensaje en Conversación Existente
+
+### Paso 1: Pausar el Bot (Si Está Activo)
+
+<Steps>
+  <Step title="Abre el historial">
+    Ve a **WhatsApp → Conversaciones** → Haz clic en **"Ver"** para la conversación deseada.
+  </Step>
+
+  <Step title="Verifica el estado">
+    Si el estado es "Activa" (verde), haz clic en **"Pausar Bot"**.
+
+    Si ya está "Pausada" (naranja), continúa al siguiente paso.
+  </Step>
+
+  <Step title="Confirma la pausa">
+    Confirma en el modal que aparece.
+  </Step>
+</Steps>
+
+**Tutorial**: [Pausar el Bot](/whatsapp/pause-bot)
+
+### Paso 2: Escribir el Mensaje
+
+<Steps>
+  <Step title="Usa el campo de texto">
+    En la parte inferior del historial, verás un campo de texto con placeholder:
+    ```
+    Escribe tu mensaje... (enviando como [Tu Nombre])
+    ```
+  </Step>
+
+  <Step title="Identifícate como staff">
+    **IMPORTANTE**: Siempre inicia tu primer mensaje identificándote:
+
+    ```
+    Hola [Nombre del Paciente], soy [Tu Nombre] del equipo de [Clínica].
+    ```
+
+    Esto genera confianza y evita confusión con el bot.
+  </Step>
+
+  <Step title="Escribe el contenido">
+    Escribe tu mensaje de forma clara y profesional.
+
+    **Ejemplo**:
+    ```
+    Hola María, soy Laura del equipo de Peluquería Estilo.
+
+    He visto que necesitas cita para mañana por la tarde. Tenemos disponible a las 15:00 con Ana (especialista en cortes modernos) o a las 17:30 con Pedro.
+
+    ¿Cuál prefieres?
+    ```
+  </Step>
+
+  <Step title="Revisa antes de enviar">
+    Verifica:
+    - Ortografía correcta
+    - Tono profesional pero amigable
+    - Información completa (no requiere clarificación adicional)
+    - Llamada a acción clara (pregunta o instrucción)
+  </Step>
+</Steps>
+
+### Paso 3: Enviar el Mensaje
+
+<Steps>
+  <Step title="Haz clic en 'Enviar'">
+    Haz clic en el botón **"Enviar"** (icono de avión de papel 📤) o presiona `Enter`.
+  </Step>
+
+  <Step title="Confirma el envío">
+    El sistema muestra un toast de confirmación:
+    ```
+    ✓ Mensaje enviado como [Tu Nombre]
+    ```
+  </Step>
+
+  <Step title="Verifica en el historial">
+    El mensaje aparece inmediatamente en el historial con:
+    - Tu nombre como remitente
+    - Timestamp preciso
+    - Estado de entrega (✓ enviado, ✓✓ entregado, ✓✓ leído)
+  </Step>
+</Steps>
+
+### Paso 4: Esperar Respuesta o Continuar
+
+<Tabs>
+  <Tab title="Esperas respuesta del paciente">
+    **Mantén el bot pausado** hasta que el paciente responda y resuelvas completamente la consulta.
+
+    Cuando el paciente responda:
+    1. Verás la respuesta en el historial (actualización en tiempo real)
+    2. Responde manualmente de nuevo
+    3. Continúa la conversación hasta resolver
+    4. Reactiva el bot cuando termines
+  </Tab>
+
+  <Tab title="No esperas respuesta (mensaje informativo)">
+    **Reactiva el bot** si enviaste un mensaje informativo que no requiere respuesta (ej: confirmación de cita).
+
+    Pasos:
+    1. Haz clic en **"Reactivar Bot"**
+    2. El bot volverá a responder automáticamente si el paciente escribe
+  </Tab>
+</Tabs>
+
+## Enviar Mensaje Proactivo Nuevo
+
+Para contactar a un paciente SIN conversación previa (mensaje proactivo):
+
+### Paso 1: Acceder a "Nuevo Mensaje"
+
+<Steps>
+  <Step title="Ve a WhatsApp → Nuevo Mensaje">
+    En el menú lateral, haz clic en **WhatsApp** → **Nuevo Mensaje**.
+  </Step>
+
+  <Step title="Busca el paciente">
+    Usa el campo de búsqueda para encontrar al paciente por:
+    - Nombre
+    - Apellido
+    - Número de teléfono
+  </Step>
+
+  <Step title="Selecciona el paciente">
+    Haz clic en el paciente deseado de la lista de resultados.
+  </Step>
+</Steps>
+
+### Paso 2: Escribir el Mensaje Proactivo
+
+<Note>
+**Mensaje proactivo 24 horas**: WhatsApp tiene restricciones para mensajes proactivos. Solo puedes enviar mensajes proactivos en las primeras 24 horas después de que el paciente te contactó. Después de 24h, necesitas un **template aprobado por WhatsApp**.
+</Note>
+
+<Steps>
+  <Step title="Verifica restricción 24h">
+    El sistema muestra un banner si han pasado &gt;24h desde el último mensaje:
+    ```
+    ⚠️ Restricción de WhatsApp: No puedes enviar mensajes proactivos después de 24h sin conversación.
+
+    Opciones:
+    - Espera a que el paciente te contacte
+    - Usa un template aprobado (contacta a tu administrador)
+    - Llámalo por teléfono
+    ```
+  </Step>
+
+  <Step title="Escribe el mensaje">
+    Si estás dentro de la ventana de 24h, escribe tu mensaje.
+
+    **Ejemplos de mensajes proactivos válidos**:
+
+    **Recordatorio personalizado**:
+    ```
+    Hola [Nombre], te recordamos tu cita de mañana a las 10:00 para corte de pelo.
+
+    Si necesitas reprogramar, avísanos por aquí.
+
+    ¡Te esperamos!
+    - Equipo de [Clínica]
+    ```
+
+    **Seguimiento post-servicio**:
+    ```
+    Hola [Nombre], gracias por visitarnos hoy.
+
+    ¿Cómo quedaste con tu corte? Nos encantaría saber tu opinión.
+
+    Si necesitas algún ajuste, ven en las próximas 48h sin costo adicional.
+
+    ¡Saludos!
+    - Equipo de [Clínica]
+    ```
+
+    **Promoción especial**:
+    ```
+    Hola [Nombre], tenemos una promoción especial este fin de semana:
+
+    20% de descuento en tintes 🎨
+
+    ¿Te gustaría agendar? Escríbenos "sí" y el asistente te muestra horarios disponibles.
+
+    - Equipo de [Clínica]
+    ```
+  </Step>
+
+  <Step title="Decide si pausar el bot">
+    **Opción A (recomendado)**: Dejar bot activo
+    - El bot responderá automáticamente si el paciente pregunta algo
+    - Útil para mensajes informativos simples
+
+    **Opción B**: Pausar el bot DESPUÉS de enviar
+    - Si esperas respuestas complejas que requieren atención manual
+    - Pausa DESPUÉS de enviar, no antes
+  </Step>
+
+  <Step title="Envía el mensaje">
+    Haz clic en **"Enviar"**.
+  </Step>
+</Steps>
+
+## Formatear Mensajes
+
+### Texto con Formato
+
+WhatsApp soporta formato básico con símbolos:
+
+<CardGroup cols={2}>
+  <Card title="Negrita" icon="bold">
+    Rodea el texto con asteriscos:
+    ```
+    *texto en negrita*
+    ```
+    Resultado: **texto en negrita**
+  </Card>
+
+  <Card title="Cursiva" icon="italic">
+    Rodea el texto con guiones bajos:
+    ```
+    _texto en cursiva_
+    ```
+    Resultado: *texto en cursiva*
+  </Card>
+
+  <Card title="Tachado" icon="strikethrough">
+    Rodea el texto con tildes:
+    ```
+    ~texto tachado~
+    ```
+    Resultado: ~~texto tachado~~
+  </Card>
+
+  <Card title="Monoespaciado" icon="code">
+    Rodea el texto con acentos graves:
+    ```
+    `código o monoespaciado`
+    ```
+    Resultado: `código o monoespaciado`
+  </Card>
+</CardGroup>
+
+### Saltos de Línea
+
+Para crear párrafos o listas, usa saltos de línea:
+
+```
+Hola [Nombre],
+
+Te confirmo tu cita:
+
+📅 Fecha: 17/01/2026
+🕐 Hora: 10:00
+✂️ Servicio: Corte de pelo
+
+¡Te esperamos!
+```
+
+### Emojis
+
+Usa emojis para hacer mensajes más amigables (pero no abuses):
+
+**Emojis recomendados**:
+- 📅 Fecha
+- 🕐 Hora
+- ✂️ Servicio (peluquería)
+- 💉 Servicio (médico)
+- ✅ Confirmación
+- ❌ Cancelación
+- 🎉 Promoción
+- 💬 Contacto
+
+**Ejemplo con emojis**:
+```
+Hola María 👋
+
+✅ Cita confirmada:
+📅 Mañana a las 10:00
+✂️ Corte de pelo
+
+¡Te esperamos! 😊
+```
+
+<Warning>
+**No abuses de emojis**: Usar demasiados emojis puede verse poco profesional. Máximo 3-4 por mensaje.
+</Warning>
+
+## Plantillas de Mensajes Comunes
+
+### Confirmación de Cita
+
+```
+Hola [Nombre],
+
+Te confirmamos tu cita:
+
+📅 Fecha: [Fecha]
+🕐 Hora: [Hora]
+✂️ Servicio: [Servicio]
+
+Si necesitas reprogramar, avísanos con al menos 2 horas de anticipación.
+
+¡Te esperamos!
+- Equipo de [Clínica]
+```
+
+### Recordatorio de Cita
+
+```
+Hola [Nombre],
+
+Te recordamos tu cita de mañana:
+
+🕐 [Hora]
+✂️ [Servicio]
+
+Si necesitas cancelar o reprogramar, avísanos cuanto antes.
+
+¡Hasta mañana!
+- Equipo de [Clínica]
+```
+
+### Cancelación de Cita (por la clínica)
+
+```
+Hola [Nombre],
+
+Lamentamos informarte que necesitamos cancelar tu cita del [Fecha] a las [Hora] por [razón: ej. cierre imprevisto].
+
+¿Te gustaría reagendar? Tenemos disponibilidad:
+
+🗓️ [Fecha 1] a las [Hora 1]
+🗓️ [Fecha 2] a las [Hora 2]
+
+Disculpa las molestias.
+- Equipo de [Clínica]
+```
+
+### Respuesta a Queja
+
+```
+Hola [Nombre],
+
+Lamento mucho lo sucedido. Entiendo tu frustración y quiero resolverlo personalmente.
+
+¿Podrías darme más detalles sobre [situación]? Así puedo tomar las medidas necesarias.
+
+Tu satisfacción es nuestra prioridad.
+
+Gracias por tu paciencia.
+- [Tu Nombre], [Rol]
+```
+
+### Seguimiento Post-Servicio
+
+```
+Hola [Nombre],
+
+Gracias por visitarnos hoy. ¿Cómo quedaste con tu [servicio]?
+
+Nos encantaría saber tu opinión para seguir mejorando.
+
+Si necesitas algún ajuste, ven en las próximas 48h sin costo adicional.
+
+¡Saludos!
+- Equipo de [Clínica]
+```
+
+### Promoción o Descuento
+
+```
+Hola [Nombre],
+
+🎉 Tenemos una promoción especial para ti:
+
+[Descripción de la promoción]
+
+Válido hasta el [Fecha].
+
+¿Te gustaría agendar? Responde "sí" y el asistente te muestra horarios.
+
+- Equipo de [Clínica]
+```
+
+## Mejores Prácticas
+
+### Identificación
+
+<Tip>
+**Siempre identifícate**: En tu primer mensaje manual, di tu nombre y rol. Esto genera confianza y evita confusión con el bot.
+</Tip>
+
+Ejemplo:
+```
+✅ CORRECTO:
+"Hola María, soy Laura del equipo de Peluquería Estilo. He visto que..."
+
+❌ INCORRECTO:
+"Hola, te contacto porque..."
+```
+
+### Tono Profesional pero Amigable
+
+<Tip>
+**Balance**: Sé profesional pero cálido. Usa el nombre del paciente, saluda, y firma con tu nombre o el de la clínica.
+</Tip>
+
+Ejemplo:
+```
+✅ CORRECTO:
+"Hola Juan, soy Carlos de Clínica Salud. Disculpa la demora en responder. ¿En qué puedo ayudarte?"
+
+❌ MUY FORMAL:
+"Estimado Sr. Juan: Por medio de la presente..."
+
+❌ MUY CASUAL:
+"Holaaa! Q tal? Dime q necesitas jaja"
+```
+
+### Claridad y Concisión
+
+<Tip>
+**Sé breve**: WhatsApp es para mensajes cortos. Evita párrafos largos. Usa saltos de línea y listas.
+</Tip>
+
+Ejemplo:
+```
+✅ CORRECTO:
+"Hola María,
+
+Tenemos disponibles:
+- Mañana a las 10:00
+- Pasado mañana a las 15:00
+
+¿Cuál prefieres?"
+
+❌ MUY LARGO:
+"Hola María, gracias por contactarnos. Hemos revisado nuestra agenda y tenemos disponibilidad para el servicio que solicitaste en los siguientes horarios: mañana a las diez de la mañana o pasado mañana a las tres de la tarde. Por favor, indícanos cuál de estos horarios te viene mejor para que podamos proceder a realizar la reserva correspondiente en nuestro sistema. Quedamos a la espera de tu respuesta. Saludos cordiales, Equipo de Clínica."
+```
+
+### Llamada a Acción Clara
+
+<Tip>
+**CTA explícito**: Termina con una pregunta o instrucción clara para que el paciente sepa qué hacer.
+</Tip>
+
+Ejemplo:
+```
+✅ CORRECTO:
+"¿Cuál horario prefieres?"
+"¿Te gustaría agendar?"
+"Responde 'sí' si te interesa"
+
+❌ SIN CTA:
+"Tenemos esos horarios disponibles."
+"Bueno, eso era todo."
+```
+
+### Respuesta Rápida
+
+<Warning>
+**Tiempo de respuesta**: Si pausas el bot para tomar control, DEBES responder en &lt;5 minutos. Dejar al paciente esperando es peor que dejar el bot activo.
+</Warning>
+
+**Si necesitas más tiempo**:
+```
+"Hola [Nombre], déjame consultar eso con el equipo y te respondo en 10 minutos. ¡Gracias por tu paciencia!"
+```
+
+## Indicadores de Entrega
+
+El sistema muestra el estado de entrega de tus mensajes:
+
+| Icono | Estado | Descripción |
+|-------|--------|-------------|
+| ⏳ | Enviando | Mensaje en proceso de envío a Twilio |
+| ✓ | Enviado | Mensaje enviado a Twilio, pendiente entrega a WhatsApp |
+| ✓✓ | Entregado | Mensaje entregado a WhatsApp del paciente |
+| ✓✓ (azul) | Leído | Paciente abrió y leyó el mensaje |
+| ❌ | Error | Fallo en el envío (ver detalle en tooltip) |
+
+**Latencia típica**:
+- Enviando → Enviado: &lt;1 segundo
+- Enviado → Entregado: 1-3 segundos
+- Entregado → Leído: Variable (depende del paciente)
+
+## Troubleshooting
+
+### No puedo enviar mensaje (botón deshabilitado)
+
+**Causa 1**: El bot está activo.
+
+**Solución**: Pausa el bot primero.
+
+---
+
+**Causa 2**: Campo de texto vacío.
+
+**Solución**: Escribe algo antes de enviar.
+
+---
+
+**Causa 3**: Permisos insuficientes.
+
+**Solución**: Solo usuarios con rol `staff` o `admin` pueden enviar. Contacta a tu administrador.
+
+### Mensaje muestra ❌ Error
+
+**Causa 1**: Número de WhatsApp inválido.
+
+**Solución**: Verifica que el número esté en formato E.164 correcto (+34612345678).
+
+---
+
+**Causa 2**: Restricción de 24 horas.
+
+**Solución**: Espera a que el paciente te contacte, o usa un template aprobado por WhatsApp.
+
+---
+
+**Causa 3**: Problema con Twilio.
+
+**Solución**: Verifica configuración de Twilio en **Configuración → WhatsApp**. Contacta a equipo técnico si persiste.
+
+### Mensaje nunca llega a ✓✓ Entregado
+
+**Posibles causas**:
+- Paciente bloqueó el número de la clínica
+- Paciente eliminó WhatsApp o cambió de número
+- Problemas de conectividad del paciente
+
+**Qué hacer**:
+1. Espera 5-10 minutos (puede haber demora)
+2. Si sigue sin entregar, contacta al paciente por otro medio (teléfono, email)
+
+### ¿Puedo enviar imágenes, videos o archivos?
+
+<Warning>
+**Funcionalidad en desarrollo**: El envío de multimedia (imágenes, videos, documentos) estará disponible en una futura versión.
+</Warning>
+
+**Actualmente solo puedes enviar**:
+- Texto plano
+- Texto con formato (negrita, cursiva, etc.)
+- Emojis
+
+## Casos de Uso Avanzados
+
+### Envío Masivo de Mensajes (Broadcast)
+
+<Warning>
+**Funcionalidad en desarrollo**: El envío masivo (broadcast) estará disponible en una futura versión.
+</Warning>
+
+**Workaround actual**: Enviar uno por uno desde "Nuevo Mensaje".
+
+**Uso recomendado para broadcast** (cuando esté disponible):
+- Recordatorios de cierre por festivo
+- Cambio de horarios de la clínica
+- Promociones generales
+- Encuestas de satisfacción
+
+### Templates de WhatsApp Business
+
+Para mensajes proactivos después de 24h, necesitas **templates aprobados por WhatsApp**.
+
+**Proceso** (requiere configuración técnica):
+1. Crear template en Twilio con placeholders
+2. Enviar a WhatsApp para aprobación (1-2 días)
+3. Usar template desde el sistema (dropdown en "Nuevo Mensaje")
+
+**Ejemplos de templates útiles**:
+```
+Recordatorio de Cita:
+"Hola {{1}}, te recordamos tu cita del {{2}} a las {{3}}. Si necesitas reprogramar, responde a este mensaje."
+
+Promoción:
+"Hola {{1}}, tenemos {{2}} con {{3}}% de descuento hasta el {{4}}. ¿Te interesa agendar?"
+```
+
+**Contacta a tu administrador** para configurar templates.
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Pausar el Bot" icon="pause" href="/whatsapp/pause-bot">
+    Aprende cuándo y cómo pausar el bot para tomar control
+  </Card>
+  <Card title="Ver Historial" icon="clock-rotate-left" href="/whatsapp/message-history">
+    Revisa conversaciones completas para entender contexto
+  </Card>
+  <Card title="Ver Conversaciones" icon="messages" href="/whatsapp/view-conversations">
+    Consulta todas las conversaciones de pacientes
+  </Card>
+</CardGroup>

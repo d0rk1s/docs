@@ -1,0 +1,303 @@
+---
+title: 'Ver Servicios'
+description: 'Explora, busca y filtra todos los servicios de tu clínica'
+icon: 'eye'
+---
+
+## Acceder a la Lista de Servicios
+
+<Frame>
+  <img src="/images/screenshots/services_list_overview.png" alt="Vista general de la lista de servicios con filtros y acciones" />
+</Frame>
+
+<Steps>
+  <Step title="Navega a la sección Servicios">
+    En el menú lateral de la aplicación, haz clic en **"Servicios"** o **"Services"**
+  </Step>
+
+  <Step title="Visualiza la tabla de servicios">
+    Verás una tabla con todos los servicios configurados, mostrando:
+    - **Nombre** del servicio
+    - **Duración** (en minutos)
+    - **Precio** (si está configurado)
+    - **Categoría** (si está asignada)
+    - **Proveedor** asignado (si aplica)
+    - **Estado** (Activo/Inactivo)
+    - **Acciones** rápidas (editar, desactivar, eliminar)
+  </Step>
+</Steps>
+
+## Filtros Disponibles
+
+### Filtrar por Categoría
+
+<Steps>
+  <Step title="Busca el selector de categoría">
+    En la parte superior de la tabla, localiza el menú desplegable **"Categoría"**
+  </Step>
+
+  <Step title="Selecciona una categoría">
+    Elige entre las categorías configuradas:
+    - **Todas las categorías** (sin filtro)
+    - **Peluquería**
+    - **Estética**
+    - **Salud**
+    - **Barbería**
+    - Y otras categorías personalizadas
+  </Step>
+
+  <Step title="Ver resultados filtrados">
+    La tabla se actualiza automáticamente mostrando solo servicios de esa categoría
+  </Step>
+</Steps>
+
+### Filtrar por Proveedor
+
+<Steps>
+  <Step title="Busca el selector de proveedor">
+    Localiza el menú desplegable **"Proveedor"**
+  </Step>
+
+  <Step title="Selecciona un proveedor">
+    Elige entre:
+    - **Todos los proveedores** (sin filtro)
+    - **Proveedores específicos** (ej: "Dr. García", "Peluquero 1")
+    - **Sin asignar** (servicios sin proveedor específico)
+  </Step>
+
+  <Step title="Ver servicios asignados">
+    La tabla muestra solo servicios del proveedor seleccionado
+  </Step>
+</Steps>
+
+### Filtrar por Estado
+
+<Steps>
+  <Step title="Usa el toggle de estado">
+    En la parte superior, activa/desactiva los filtros:
+    - ✅ **Activos** (servicios disponibles para agendar)
+    - ❌ **Inactivos** (servicios desactivados temporalmente)
+  </Step>
+
+  <Step title="Ver solo servicios activos o inactivos">
+    Por defecto, solo se muestran servicios **activos**. Activa "Inactivos" para ver servicios desactivados.
+  </Step>
+</Steps>
+
+## Búsqueda de Servicios
+
+<Steps>
+  <Step title="Localiza la barra de búsqueda">
+    En la parte superior de la tabla, busca el campo **"Buscar servicios"**
+  </Step>
+
+  <Step title="Escribe el nombre del servicio">
+    Ejemplos de búsquedas:
+    - `"Corte"` → Encuentra "Corte de Pelo", "Corte y Barba", "Corte Caballero"
+    - `"Manicura"` → Encuentra "Manicura", "Manicura y Pedicura"
+    - `"Consulta"` → Encuentra "Consulta General", "Consulta Especializada"
+  </Step>
+
+  <Step title="Ver resultados en tiempo real">
+    La tabla se filtra automáticamente mientras escribes. La búsqueda es **insensible a mayúsculas/minúsculas**.
+  </Step>
+</Steps>
+
+<Tip>
+  La búsqueda funciona con **coincidencias parciales**. No necesitas escribir el nombre completo del servicio.
+</Tip>
+
+## Ordenamiento
+
+Haz clic en los encabezados de columna para ordenar la tabla:
+
+| Columna | Orden Ascendente | Orden Descendente |
+|---------|------------------|-------------------|
+| **Nombre** | A → Z | Z → A |
+| **Duración** | Menor a mayor (15 min → 120 min) | Mayor a menor (120 min → 15 min) |
+| **Precio** | Más barato → Más caro | Más caro → Más barato |
+| **Categoría** | A → Z | Z → A |
+
+<Info>
+  Haz clic **una vez** en el encabezado para ordenar ascendente, **dos veces** para descendente, **tres veces** para quitar el ordenamiento.
+</Info>
+
+## Acciones Rápidas desde la Lista
+
+Cada fila de la tabla tiene botones de acción rápida:
+
+### Editar Servicio
+
+<Steps>
+  <Step title="Localiza el botón de editar">
+    Busca el icono de **lápiz** o **"Editar"** en la fila del servicio
+  </Step>
+
+  <Step title="Haz clic en Editar">
+    Se abre el formulario de edición con los datos actuales del servicio
+  </Step>
+
+  <Step title="Modifica los campos necesarios">
+    Puedes cambiar nombre, duración, precio, proveedor, etc.
+  </Step>
+
+  <Step title="Guarda los cambios">
+    Haz clic en **"Guardar"** para aplicar las modificaciones
+  </Step>
+</Steps>
+
+<Card title="Más detalles sobre edición" icon="book" href="/services/edit-service">
+  Consulta la guía completa de edición de servicios
+</Card>
+
+### Desactivar Servicio
+
+<Steps>
+  <Step title="Localiza el botón de desactivar">
+    Busca el icono de **prohibición** o **"Desactivar"**
+  </Step>
+
+  <Step title="Haz clic en Desactivar">
+    El servicio cambia a estado **Inactivo**
+  </Step>
+
+  <Step title="Confirma la acción">
+    Algunos sistemas solicitan confirmación. Haz clic en **"Confirmar"**
+  </Step>
+</Steps>
+
+<Info>
+  Desactivar un servicio **NO elimina** las citas existentes. Solo impide crear nuevas citas con ese servicio.
+</Info>
+
+### Reactivar Servicio
+
+<Steps>
+  <Step title="Filtra servicios inactivos">
+    Activa el filtro **"Inactivos"** en la parte superior
+  </Step>
+
+  <Step title="Localiza el botón de activar">
+    Busca el icono de **check** o **"Activar"**
+  </Step>
+
+  <Step title="Haz clic en Activar">
+    El servicio vuelve a estado **Activo** y se puede usar para nuevas citas
+  </Step>
+</Steps>
+
+### Eliminar Servicio
+
+<Steps>
+  <Step title="Localiza el botón de eliminar">
+    Busca el icono de **papelera** o **"Eliminar"** (generalmente en rojo)
+  </Step>
+
+  <Step title="Haz clic en Eliminar">
+    Aparece un diálogo de confirmación
+  </Step>
+
+  <Step title="Confirma la eliminación">
+    Lee la advertencia y haz clic en **"Eliminar Permanentemente"**
+  </Step>
+</Steps>
+
+<Warning>
+  **Eliminar es permanente**. No podrás recuperar el servicio. Considera **desactivar** en lugar de eliminar si quieres preservar el historial.
+</Warning>
+
+<Card title="Guía completa de eliminación" icon="trash" href="/services/delete-service">
+  Aprende cuándo desactivar vs eliminar servicios
+</Card>
+
+## Información Detallada de un Servicio
+
+<Steps>
+  <Step title="Haz clic en la fila del servicio">
+    Algunas interfaces permiten hacer clic en la fila completa para ver detalles
+  </Step>
+
+  <Step title="O usa el botón 'Ver Detalles'">
+    Busca el icono de **ojo** o **"Ver Detalles"**
+  </Step>
+
+  <Step title="Visualiza la vista detallada">
+    Se muestra un panel con:
+    - **Toda la configuración** del servicio
+    - **Recursos requeridos** (si aplica)
+    - **Buffer configurado** (si aplica)
+    - **Estadísticas** (citas realizadas, ingresos generados)
+    - **Historial de cambios** (si hay auditoría)
+  </Step>
+</Steps>
+
+## Estadísticas y Reportes
+
+Algunas interfaces muestran estadísticas útiles:
+
+| Métrica | Descripción |
+|---------|-------------|
+| **Total de Servicios** | Cantidad total de servicios activos |
+| **Servicios Populares** | Top 5 servicios más agendados |
+| **Servicios sin Usar** | Servicios sin citas en los últimos 30 días |
+| **Ingresos por Servicio** | Total facturado por cada servicio |
+
+<Tip>
+  Usa las estadísticas para identificar servicios poco utilizados y considerar desactivarlos o promocionarlos.
+</Tip>
+
+## Exportar Lista de Servicios
+
+<Steps>
+  <Step title="Busca el botón de exportar">
+    En la parte superior de la tabla, localiza el botón **"Exportar"** o **icono de descarga**
+  </Step>
+
+  <Step title="Selecciona el formato">
+    Elige entre:
+    - **CSV** (para Excel/Google Sheets)
+    - **PDF** (para imprimir)
+    - **JSON** (para integración con otros sistemas)
+  </Step>
+
+  <Step title="Descarga el archivo">
+    El archivo se descarga con todos los servicios (respetando filtros activos)
+  </Step>
+</Steps>
+
+<Info>
+  La exportación incluye solo los servicios visibles según los **filtros aplicados**. Si quieres exportar todos, quita todos los filtros primero.
+</Info>
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card
+    title="Crear Nuevo Servicio"
+    icon="plus"
+    href="/services/create-service"
+  >
+    Agrega un servicio personalizado desde cero
+  </Card>
+  <Card
+    title="Importar desde Catálogo"
+    icon="book"
+    href="/services/create-from-catalog"
+  >
+    Usa servicios pre-configurados del catálogo oficial
+  </Card>
+  <Card
+    title="Editar Servicio"
+    icon="pen"
+    href="/services/edit-service"
+  >
+    Modifica configuración de un servicio existente
+  </Card>
+  <Card
+    title="Asignar a Proveedores"
+    icon="user-tie"
+    href="/providers/assign-services"
+  >
+    Vincula servicios con proveedores específicos
+  </Card>
+</CardGroup>

@@ -1,0 +1,505 @@
+---
+title: "Cancelar Cita"
+description: "Cómo cancelar una cita existente y liberar el horario"
+---
+
+# Cancelar Cita
+
+Aprende a cancelar citas ya agendadas de forma correcta, manteniendo el historial para auditoría y reportes.
+
+## Cancelar vs Eliminar: ¿Cuál es la Diferencia?
+
+<CardGroup cols={2}>
+  <Card title="Cancelar (Soft Delete)" icon="circle-xmark" color="#0D9373">
+    **Recomendado**: La cita se marca como "Cancelled" pero permanece en el sistema para auditoría y reportes.
+  </Card>
+  <Card title="Eliminar (Hard Delete)" icon="trash" color="#DC2626">
+    **No disponible**: El sistema NO permite eliminar citas. Siempre usa "Cancelar" para mantener el historial.
+  </Card>
+</CardGroup>
+
+<Warning>
+**Importante**: El sistema usa un patrón de "soft delete" (borrado lógico). Las citas canceladas permanecen en la base de datos con estado `CANCELLED` pero no se eliminan físicamente. Esto permite:
+- Auditoría completa de cambios
+- Reportes históricos precisos
+- Análisis de no-show y cancelaciones
+- Trazabilidad para cumplimiento normativo
+</Warning>
+
+<Tip>
+Cancelar una cita **libera inmediatamente** el horario para que otros pacientes puedan agendarlo.
+</Tip>
+
+---
+
+## Formas de Cancelar una Cita
+
+<Steps>
+  <Step title="Método 1: Desde el Calendario">
+    La forma más rápida de cancelar una cita es directamente desde el calendario.
+
+    1. Navega a **Citas → Calendario** en el menú lateral
+    2. Haz click en la cita que deseas cancelar
+    3. Se abrirá un modal con los detalles de la cita
+    4. Haz click en el botón **"Cancelar Cita"** (icono ❌)
+    5. Confirma la cancelación en el modal de confirmación
+
+    <Note>
+    El calendario actualizará la vista inmediatamente, moviendo la cita a la sección de citas canceladas.
+    </Note>
+  </Step>
+
+  <Step title="Método 2: Desde Búsqueda de Paciente">
+    Si no sabes cuándo es la cita, puedes buscar al paciente primero.
+
+    1. Ve a **Pacientes → Buscar Paciente** en el menú lateral
+    2. Busca por nombre o teléfono (ej: `+34612345678`)
+    3. Una vez encontrado el paciente, verás la lista de sus citas
+    4. Haz click en la cita que deseas cancelar
+    5. Se abrirá el modal de detalles
+    6. Haz click en **"Cancelar Cita"** y confirma
+
+    <Tip>
+    Este método es útil cuando el paciente llama para cancelar y no sabes la fecha exacta de su cita.
+    </Tip>
+  </Step>
+
+  <Step title="Método 3: Desde Lista de Citas">
+    Si necesitas ver todas las citas en formato lista (no calendario):
+
+    1. Ve a **Citas → Todas las Citas** en el menú lateral
+    2. Usa los filtros para encontrar la cita:
+       - Por fecha
+       - Por proveedor
+       - Por estado (Pending, Confirmed)
+       - Por paciente
+    3. Haz click en la cita que deseas cancelar
+    4. Se abrirá el modal de detalles
+    5. Haz click en **"Cancelar Cita"** y confirma
+
+    <Note>
+    La vista de lista es útil cuando buscas citas por criterios múltiples (ej: "todas las citas del Dr. Pérez en noviembre").
+    </Note>
+  </Step>
+</Steps>
+
+---
+
+## Proceso de Cancelación
+
+<Steps>
+  <Step title="Confirmar Antes de Cancelar">
+    Cuando hagas click en **"Cancelar Cita"** (después de ver el modal de detalles), se abrirá un modal de confirmación.
+
+    <Frame>
+      <img src="/images/screenshots/appointments_cancel_01_confirm_modal.png" alt="Modal de confirmación de cancelación de cita" />
+    </Frame>
+
+    **El modal muestra**:
+    - Nombre del paciente
+    - Fecha y hora de la cita
+    - Servicio agendado
+    - Proveedor asignado
+
+    **Campo opcional: Razón de cancelación**
+
+    Aunque es opcional, es **altamente recomendado** ingresar una razón:
+    - "Paciente canceló por enfermedad"
+    - "Paciente no pudo asistir por trabajo"
+    - "Cancelación administrativa"
+    - "Cierre inesperado de la clínica"
+
+    <Tip>
+    Registrar la razón ayuda a entender patrones de cancelación y mejorar la gestión de citas.
+    </Tip>
+  </Step>
+
+  <Step title="Clic en Confirmar Cancelación">
+    Una vez que hayas revisado los datos y (opcionalmente) ingresado la razón:
+
+    1. Haz click en **"Confirmar Cancelación"**
+    2. El sistema validará que tienes permisos para cancelar
+    3. Recibirás una notificación verde confirmando la cancelación
+
+    <Warning>
+    **Esta acción es irreversible**. No puedes "descancelar" una cita. Si te equivocas, deberás crear una nueva cita desde cero.
+    </Warning>
+  </Step>
+
+  <Step title="Notificación Automática al Paciente">
+    Si tienes WhatsApp configurado y activo, el sistema **automáticamente**:
+
+    1. Envía un mensaje al paciente notificándole la cancelación
+    2. El mensaje incluye:
+       - Fecha y hora de la cita cancelada
+       - Nombre del servicio
+       - Mensaje de disculpa (si aplica)
+       - Opción de re-agendar
+
+    **Ejemplo de mensaje**:
+    > "Hola María, lamentamos informarte que tu cita del 15/01/2026 a las 10:00 para Corte de pelo ha sido cancelada. Si deseas re-agendar, responde a este mensaje y te ayudaremos. Gracias."
+
+    <Note>
+    Si WhatsApp no está activo, deberás contactar al paciente manualmente (por teléfono o email).
+    </Note>
+  </Step>
+</Steps>
+
+---
+
+## Qué Sucede al Cancelar una Cita
+
+<CardGroup cols={2}>
+  <Card title="Estado de la Cita" icon="circle-xmark" color="#DC2626">
+    El estado cambia automáticamente de `PENDING` o `CONFIRMED` a `CANCELLED`. La cita permanece en la base de datos pero marcada como cancelada.
+  </Card>
+
+  <Card title="Horario Liberado" icon="calendar-check" color="#0D9373">
+    El horario se libera **inmediatamente** y queda disponible para que otros pacientes puedan agendarlo (manualmente o vía WhatsApp).
+  </Card>
+
+  <Card title="Historial Preservado" icon="clock-rotate-left" color="#6B7280">
+    La cita permanece en el historial del paciente y en la auditoría del sistema para análisis y reportes.
+  </Card>
+
+  <Card title="Notificación Enviada" icon="message" color="#25D366">
+    Si WhatsApp está activo, se envía automáticamente un mensaje al paciente notificándole la cancelación.
+  </Card>
+
+  <Card title="Audit Log Registrado" icon="clipboard-list" color="#F59E0B">
+    El sistema registra automáticamente la cancelación en `audit_logs` con:
+    - Usuario que canceló
+    - Fecha/hora de cancelación
+    - IP del usuario
+    - Razón de cancelación (si se ingresó)
+  </Card>
+
+  <Card title="WebSocket Broadcast" icon="tower-broadcast" color="#8B5CF6">
+    Se emite un evento en tiempo real a todos los usuarios conectados para actualizar calendarios y vistas automáticamente.
+  </Card>
+</CardGroup>
+
+<Info>
+**¿Qué NO sucede al cancelar?**
+- ❌ La cita NO se elimina de la base de datos
+- ❌ NO afecta el límite de tu plan de suscripción (citas canceladas **no cuentan** en el límite)
+- ❌ NO se puede recuperar (debes crear una nueva cita si te equivocaste)
+</Info>
+
+---
+
+## Cancelaciones Múltiples
+
+<Note>
+Esta funcionalidad puede estar o no disponible dependiendo de tu versión del sistema.
+</Note>
+
+En algunos casos, necesitarás cancelar **varias citas a la vez**:
+
+<AccordionGroup>
+  <Accordion title="Caso de Uso: Cierre Inesperado de la Clínica" icon="door-closed">
+    Si tu clínica debe cerrar inesperadamente (ej: emergencia, corte de luz, enfermedad del personal):
+
+    **Opción 1: Cancelar Cita por Cita**
+    - Busca cada cita del día en el calendario
+    - Cancela una por una siguiendo el proceso normal
+    - Ventaja: Puedes personalizar el mensaje para cada paciente
+
+    **Opción 2: Crear un Cierre Programado (Recomendado)**
+    1. Ve a **Configuración → Cierres**
+    2. Crea un cierre para el día/horario específico
+    3. El sistema **automáticamente** marca como no disponibles todos los slots afectados
+    4. Puedes optar por:
+       - Cancelar automáticamente las citas afectadas
+       - Enviar notificación masiva a pacientes
+
+    <Tip>
+    [Aprende más sobre Cierres Programados](/configuration/closures)
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Caso de Uso: Cancelar Todas las Citas de un Proveedor" icon="user-doctor-hair-long">
+    Si un proveedor se enferma o no puede trabajar ese día:
+
+    **Método 1: Usar Filtro de Proveedor**
+    1. Ve a **Citas → Todas las Citas**
+    2. Filtra por proveedor específico
+    3. Filtra por fecha (ej: hoy o mañana)
+    4. Cancela cada cita manualmente
+
+    **Método 2: Crear Cierre para el Proveedor**
+    1. Ve a **Configuración → Cierres**
+    2. Crea un cierre **específico del proveedor** para el día/horario
+    3. El sistema bloqueará los slots de ese proveedor
+    4. Opcionalmente cancela las citas existentes
+
+    <Note>
+    Los cierres de proveedor NO afectan a otros proveedores. Solo bloquean los slots del proveedor específico.
+    </Note>
+  </Accordion>
+
+  <Accordion title="Caso de Uso: Cancelar Citas de un Día Festivo" icon="calendar-days">
+    Si olvidaste configurar un día festivo con anticipación:
+
+    **Solución Recomendada**:
+    1. Ve a **Configuración → Cierres**
+    2. Crea un cierre para el día festivo
+    3. Marca la opción **"Cancelar citas existentes"**
+    4. El sistema:
+       - Cancelará automáticamente todas las citas del día
+       - Enviará notificaciones a todos los pacientes afectados
+       - Registrará la razón de cancelación ("Día festivo")
+
+    <Warning>
+    Configura los días festivos con anticipación (al menos 2 semanas) para evitar cancelaciones de último momento.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Casos Especiales
+
+<AccordionGroup>
+  <Accordion title="¿Puedo cancelar citas pasadas?" icon="clock">
+    **Sí**, técnicamente puedes cancelar citas pasadas, pero **no es recomendado**.
+
+    **Mejor práctica**:
+    - Si la cita ya ocurrió: Marca como **"Completed"** (Completada)
+    - Si el paciente no asistió: Marca como **"No Show"** (No presentado)
+    - Solo cancela citas pasadas si fue una **cancelación administrativa** (ej: error de agenda)
+
+    **Razón**: Marcar correctamente el estado permite análisis precisos de:
+    - Tasa de no-show
+    - Tasa de cancelaciones vs citas completadas
+    - Reportes de facturación
+
+    <Tip>
+    Para cambiar el estado de una cita pasada, usa **Modificar Cita** → **Cambiar Estado**.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="¿Puedo recuperar una cita cancelada?" icon="rotate-left">
+    **No**, las citas canceladas **no se pueden recuperar**.
+
+    **Si cancelaste por error**:
+    1. Crea una nueva cita desde cero
+    2. Usa los mismos datos (paciente, servicio, fecha/hora)
+    3. El sistema creará una nueva cita con un nuevo ID
+
+    **Diferencias**:
+    - ❌ El historial no se une (serán dos citas separadas)
+    - ❌ El ID de la cita será diferente
+    - ✅ Pero el horario y datos serán los mismos
+
+    <Note>
+    El sistema NO permite "descancelar" para mantener la integridad del audit trail (historial de auditoría).
+    </Note>
+  </Accordion>
+
+  <Accordion title="¿El paciente recibe notificación automática?" icon="message">
+    **Depende de si tienes WhatsApp activo**:
+
+    **Si WhatsApp está activo** ✅:
+    - El sistema envía automáticamente un mensaje al paciente
+    - El mensaje incluye fecha/hora cancelada y servicio
+    - El paciente puede responder para re-agendar
+
+    **Si WhatsApp NO está activo** ❌:
+    - Debes contactar al paciente **manualmente**:
+      - Por teléfono (llamada)
+      - Por email (si tienes su email)
+      - Por SMS (si usas otro servicio)
+
+    <Tip>
+    Verifica el estado de envío del mensaje WhatsApp en **Logs → Mensajes WhatsApp** (si tienes acceso).
+    </Tip>
+  </Accordion>
+
+  <Accordion title="¿Afecta a mi límite de plan de suscripción?" icon="credit-card">
+    **No**, las citas canceladas **NO cuentan** en el límite de tu plan.
+
+    **Cómo funciona el conteo**:
+    - ✅ **Citas Completadas**: Cuentan en el límite
+    - ✅ **Citas Confirmadas**: Cuentan en el límite
+    - ✅ **Citas Pending**: Cuentan en el límite
+    - ❌ **Citas Canceladas**: **NO** cuentan en el límite
+    - ❌ **Citas No-Show**: **NO** cuentan en el límite (configurable)
+
+    **Ejemplo**:
+    - Plan STARTER: 50 citas/mes
+    - Citas creadas: 60
+    - Citas canceladas: 15
+    - **Citas facturables**: 60 - 15 = 45 ✅ (Dentro del límite)
+
+    <Note>
+    Puedes verificar tu consumo actual en **Suscripción → Uso del Plan**.
+    </Note>
+  </Accordion>
+
+  <Accordion title="¿Se puede cancelar automáticamente si el paciente no confirma?" icon="robot">
+    **Sí**, si configuras recordatorios y reglas de auto-cancelación:
+
+    **Flujo de Auto-Cancelación**:
+    1. **T-24h**: Sistema envía recordatorio WhatsApp al paciente
+    2. **T-12h**: Si el paciente NO responde, se envía segundo recordatorio
+    3. **T-2h**: Si el paciente NO confirma, el sistema **automáticamente** cancela la cita
+    4. Se envía notificación al paciente: "Tu cita fue cancelada por falta de confirmación"
+
+    **Configuración**:
+    - Ve a **Configuración → Recordatorios → Auto-Cancelación**
+    - Activa **"Cancelar citas no confirmadas"**
+    - Define el tiempo límite (ej: 2 horas antes)
+
+    <Warning>
+    Esta funcionalidad puede estar o no disponible dependiendo de tu plan de suscripción.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Mejores Prácticas
+
+<Tip>
+**Contacta al paciente antes de cancelar**: Siempre que sea posible, llama o envía mensaje al paciente ANTES de cancelar su cita. Esto mejora la experiencia del cliente y reduce conflictos.
+</Tip>
+
+<Warning>
+**No elimines citas, cancélalas**: Nunca intentes eliminar citas de la base de datos directamente. Siempre usa el botón "Cancelar Cita" para mantener el historial de auditoría.
+</Warning>
+
+<Note>
+**Registra siempre la razón**: Aunque es opcional, ingresar la razón de cancelación ayuda a:
+- Identificar patrones (ej: muchos pacientes cancelan por trabajo)
+- Mejorar procesos (ej: ofrecer horarios más flexibles)
+- Generar reportes precisos
+</Note>
+
+<Info>
+**Reagendar vs Cancelar + Crear**: Si un paciente quiere cambiar de fecha:
+- **Usa "Modificar Cita"** (más rápido, mantiene historial)
+- **NO canceles y crees una nueva** (pierde el historial de cambios)
+
+[Ver Modificar Cita](/appointments/modify-appointment)
+</Info>
+
+<Tip>
+**Configura cierres con anticipación**: Si sabes que vas a cerrar por vacaciones, festivos o días de descanso, configúralos con al menos 2 semanas de anticipación en **Configuración → Cierres**. Esto evita que pacientes agenden en días cerrados.
+</Tip>
+
+---
+
+## Próximos Pasos
+
+Ahora que sabes cómo cancelar citas correctamente, explora estas funcionalidades relacionadas:
+
+<CardGroup cols={2}>
+  <Card title="Crear Cita" icon="calendar-plus" href="/appointments/create-appointment">
+    Aprende a agendar nuevas citas manualmente
+  </Card>
+  <Card title="Modificar Cita" icon="pen-to-square" href="/appointments/modify-appointment">
+    Paso a paso para cambiar fecha, hora o servicio de una cita
+  </Card>
+  <Card title="Ver Calendario" icon="calendar" href="/appointments/view-calendar">
+    Navega el calendario y filtra citas por proveedor, estado, etc.
+  </Card>
+  <Card title="Cierres Programados" icon="door-closed" href="/configuration/closures">
+    Configura días festivos, vacaciones y cierres temporales
+  </Card>
+</CardGroup>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No puedo cancelar una cita" icon="triangle-exclamation">
+    **Posibles causas**:
+
+    1. **No tienes permisos suficientes**
+       - Solo usuarios con rol **Staff**, **Clinic Admin** o **System Admin** pueden cancelar citas
+       - Solución: Contacta a un administrador de la clínica
+
+    2. **La cita ya está cancelada**
+       - Verifica el estado de la cita en el modal de detalles
+       - Si ya está en estado `CANCELLED`, no puedes cancelarla de nuevo
+
+    3. **La cita ya está completada**
+       - Las citas completadas tienen un flujo diferente
+       - Solución: Si necesitas corregir, contacta al administrador del sistema
+
+    4. **Problema de conexión**
+       - Verifica tu conexión a internet
+       - Refresca la página e intenta de nuevo
+
+    <Warning>
+    Si el error persiste, contacta a soporte técnico con el ID de la cita.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="La cita cancelada sigue apareciendo en el calendario" icon="calendar-xmark">
+    **Solución**:
+
+    1. **Refresca el calendario**
+       - Haz click en el botón **"Refrescar"** (🔄) en la esquina superior derecha
+       - O presiona `F5` para recargar la página completa
+
+    2. **Verifica los filtros**
+       - Puede que el filtro esté mostrando **"Todas las citas"** (incluidas las canceladas)
+       - Cambia el filtro de estado a **"Active"** o **"Pending/Confirmed"** para ocultar las canceladas
+
+    3. **Limpia la caché del navegador**
+       - Si persiste, limpia la caché de tu navegador (`Ctrl + Shift + Delete`)
+
+    <Note>
+    Las citas canceladas permanecen en la base de datos (soft delete) pero NO deberían aparecer en la vista por defecto del calendario.
+    </Note>
+  </Accordion>
+
+  <Accordion title="El paciente no recibió la notificación de cancelación" icon="message-xmark">
+    **Posibles causas**:
+
+    1. **WhatsApp no está activo**
+       - Verifica en **Configuración → WhatsApp** si está activado
+       - Si no está activo, deberás contactar al paciente manualmente
+
+    2. **Número incorrecto en formato E.164**
+       - Verifica que el número del paciente tenga formato `+[código país][número]`
+       - Ejemplo correcto: `+34612345678`
+
+    3. **Límite de mensajes Twilio**
+       - Si enviaste muchos mensajes en poco tiempo, Twilio puede limitar
+       - Espera 1 hora y verifica en **Logs → Mensajes WhatsApp**
+
+    4. **Período de gracia expirado**
+       - Twilio requiere que el paciente haya iniciado conversación en las últimas 24 horas
+       - Solución: Contacta al paciente por otro medio (llamada, SMS)
+
+    <Tip>
+    Puedes verificar el estado de envío del mensaje en **Logs → Mensajes WhatsApp** (si tienes acceso).
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Cancelé por error, ¿puedo recuperar la cita?" icon="rotate-left">
+    **No**, pero puedes crear una nueva cita con los mismos datos:
+
+    **Pasos**:
+    1. Ve a **Citas → Nueva Cita**
+    2. Ingresa los mismos datos que tenía la cita cancelada:
+       - Paciente (mismo nombre y teléfono)
+       - Servicio (mismo servicio)
+       - Fecha y hora (misma fecha/hora, si sigue disponible)
+       - Proveedor (mismo proveedor)
+    3. Crea la cita normalmente
+
+    **Limitaciones**:
+    - ❌ El ID de la cita será diferente
+    - ❌ El historial de la cita anterior no se transferirá
+    - ✅ Pero funcionará como una cita nueva normal
+
+    <Warning>
+    Ten cuidado al cancelar citas. Revisa bien antes de confirmar la cancelación para evitar errores.
+    </Warning>
+  </Accordion>
+</AccordionGroup>

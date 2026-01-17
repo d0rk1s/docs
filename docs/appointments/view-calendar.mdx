@@ -1,0 +1,367 @@
+---
+title: "Ver Calendario de Citas"
+description: "Cómo navegar y filtrar el calendario de citas"
+---
+
+## Introducción
+
+El calendario de citas es la vista principal del sistema de gestión de tu clínica. Desde aquí puedes visualizar todas las citas programadas, filtrarlas según diferentes criterios, y acceder rápidamente a las acciones más comunes como crear o modificar citas.
+
+<Frame>
+  <img src="/images/screenshots/appointments_calendar_overview.png" alt="Vista general del calendario de citas semanal" />
+</Frame>
+
+Esta vista te permite tener un control completo de tu agenda y optimizar la planificación del tiempo de tu equipo.
+
+## Vistas del Calendario
+
+El calendario ofrece tres vistas diferentes para adaptarse a tus necesidades de planificación:
+
+<Tabs>
+  <Tab title="Vista Día">
+    La vista día muestra todas las citas programadas para una fecha específica, hora por hora.
+
+    **Ideal para:**
+    - Revisar la agenda del día actual
+    - Identificar huecos disponibles
+    - Planificar la jornada de trabajo
+
+    **Características:**
+    - Vista detallada con horario completo (08:00 - 20:00)
+    - Muestra duración exacta de cada cita
+    - Permite ver qué proveedor atiende cada cita
+  </Tab>
+
+  <Tab title="Vista Semana">
+    La vista semana muestra un resumen de lunes a domingo, ideal para planificación a corto plazo.
+
+    **Ideal para:**
+    - Planificar la semana completa
+    - Comparar carga de trabajo entre días
+    - Identificar patrones de demanda
+
+    **Características:**
+    - Vista de 7 columnas (una por día)
+    - Resumen de cantidad de citas por día
+    - Navegación rápida entre semanas
+  </Tab>
+
+  <Tab title="Vista Mes">
+    La vista mes proporciona una visión general de todo el mes en curso.
+
+    **Ideal para:**
+    - Planificación a largo plazo
+    - Identificar períodos de alta demanda
+    - Coordinar vacaciones y cierres
+
+    **Características:**
+    - Vista completa del mes actual
+    - Indicadores de cantidad de citas por día
+    - Navegación rápida entre meses
+  </Tab>
+</Tabs>
+
+<Tip>
+Usa la vista semana para planificar mejor tu carga de trabajo. Es la vista más equilibrada entre detalle y visión general.
+</Tip>
+
+## Filtros Disponibles
+
+El calendario incluye múltiples filtros para ayudarte a encontrar exactamente la información que necesitas:
+
+<AccordionGroup>
+  <Accordion title="Filtrar por Proveedor">
+    Permite visualizar únicamente las citas de un proveedor específico.
+
+    **Cómo usar:**
+    1. Click en el selector "Todos los proveedores"
+    2. Selecciona el proveedor deseado de la lista
+    3. El calendario se actualizará automáticamente
+
+    **Casos de uso:**
+    - Revisar la agenda de un profesional específico
+    - Planificar vacaciones o descansos
+    - Identificar sobrecarga de trabajo individual
+  </Accordion>
+
+  <Accordion title="Filtrar por Servicio">
+    Muestra solo las citas de un tipo de servicio específico.
+
+    **Cómo usar:**
+    1. Click en el selector "Todos los servicios"
+    2. Elige el servicio que deseas visualizar
+    3. El calendario mostrará únicamente esas citas
+
+    **Casos de uso:**
+    - Analizar demanda de un servicio específico
+    - Planificar recursos especializados
+    - Identificar tendencias de consumo
+  </Accordion>
+
+  <Accordion title="Filtrar por Estado">
+    Filtra las citas según su estado actual en el flujo de trabajo.
+
+    **Estados disponibles:**
+    - **Pending**: Citas pendientes de confirmación
+    - **Confirmed**: Citas confirmadas por el paciente
+    - **Completed**: Citas ya realizadas
+    - **Cancelled**: Citas canceladas
+
+    **Cómo usar:**
+    1. Click en el selector de estado
+    2. Selecciona uno o varios estados
+    3. El calendario se filtrará automáticamente
+
+    **Casos de uso:**
+    - Identificar citas pendientes de confirmar
+    - Revisar historial de citas completadas
+    - Analizar tasa de cancelación
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+Puedes combinar múltiples filtros a la vez. Por ejemplo, ver solo las citas "Confirmed" del "Dr. García" para el servicio "Consulta General".
+</Note>
+
+## Leyenda de Colores
+
+El calendario usa un código de colores intuitivo para identificar rápidamente el estado de cada cita:
+
+<CardGroup cols={2}>
+  <Card title="Confirmadas" icon="circle-check" color="#10b981">
+    **Color:** Verde
+
+    Citas que han sido confirmadas por el paciente. Estas citas tienen alta probabilidad de realizarse.
+  </Card>
+
+  <Card title="Pendientes" icon="clock" color="#f59e0b">
+    **Color:** Naranja
+
+    Citas que aún no han sido confirmadas por el paciente. Requieren seguimiento.
+  </Card>
+
+  <Card title="Completadas" icon="circle" color="#6b7280">
+    **Color:** Gris
+
+    Citas que ya fueron realizadas. Sirven como historial del paciente.
+  </Card>
+
+  <Card title="Canceladas" icon="circle-xmark" color="#ef4444">
+    **Color:** Rojo
+
+    Citas que fueron canceladas por el paciente o la clínica. No se realizarán.
+  </Card>
+</CardGroup>
+
+<Tip>
+El código de colores te permite identificar rápidamente la distribución de estados en tu calendario, facilitando la toma de decisiones.
+</Tip>
+
+## Acciones Rápidas desde el Calendario
+
+El calendario está diseñado para maximizar tu productividad con acciones rápidas:
+
+### Ver Detalles de una Cita
+
+**Cómo hacerlo:**
+1. Click en cualquier cita del calendario
+2. Se abrirá un panel lateral con todos los detalles
+3. Desde ahí puedes editar, cancelar o reagendar
+
+**Información visible:**
+- Nombre del paciente
+- Servicio contratado
+- Proveedor asignado
+- Duración y horario
+- Estado actual
+- Notas adicionales
+
+### Crear Nueva Cita
+
+**Cómo hacerlo:**
+1. Click en cualquier espacio vacío del calendario
+2. Se abrirá el formulario de creación de cita
+3. La fecha y hora se preseleccionarán automáticamente
+4. Completa los datos del paciente y servicio
+
+<Tip>
+Al hacer click en un horario específico, ese horario se pre-selecciona automáticamente en el formulario, ahorrándote tiempo.
+</Tip>
+
+### Mover Citas (Drag & Drop)
+
+<Note>
+Esta funcionalidad está disponible solo en la vista día y semana.
+</Note>
+
+**Cómo hacerlo:**
+1. Click y mantén presionado sobre una cita
+2. Arrastra la cita al nuevo horario deseado
+3. Suelta para confirmar el cambio
+4. El sistema validará disponibilidad automáticamente
+
+**Restricciones:**
+- Solo se pueden mover citas con estado "Pending" o "Confirmed"
+- El nuevo horario debe estar dentro de las horas de trabajo
+- No debe haber conflictos con otras citas
+
+## Navegación del Calendario
+
+### Cambiar de Fecha
+
+<Steps>
+  <Step title="Botones de Navegación">
+    Usa los botones `<` y `>` en la parte superior para moverte al día, semana o mes anterior/siguiente.
+  </Step>
+
+  <Step title="Selector de Fecha">
+    Click en la fecha actual mostrada para abrir un calendario y seleccionar cualquier fecha específica.
+  </Step>
+
+  <Step title="Botón Hoy">
+    Click en "Hoy" para regresar rápidamente a la fecha actual.
+  </Step>
+</Steps>
+
+### Cambiar de Vista
+
+Los controles de vista están ubicados en la esquina superior derecha:
+
+- **Día**: Vista detallada hora por hora
+- **Semana**: Vista de 7 días
+- **Mes**: Vista de todo el mes
+
+<Tip>
+Usa los atajos de teclado para cambiar de vista rápidamente:
+- `D`: Vista Día
+- `W`: Vista Semana
+- `M`: Vista Mes
+</Tip>
+
+## Indicadores Visuales
+
+El calendario incluye varios indicadores visuales para mejorar la experiencia:
+
+### Línea de Tiempo Actual
+
+En la vista día y semana, una línea roja horizontal indica la hora actual, ayudándote a identificar rápidamente qué citas ya pasaron y cuáles están por venir.
+
+### Densidad de Citas
+
+Los días con muchas citas se muestran con un indicador visual más prominente, ayudándote a identificar días de alta demanda.
+
+### Conflictos y Advertencias
+
+Si hay citas que se solapan o problemas de disponibilidad, se mostrarán con un icono de advertencia naranja.
+
+<Warning>
+Si ves el icono de advertencia, revisa los detalles de la cita. Puede haber un conflicto de horario que requiera tu atención.
+</Warning>
+
+## Exportar Calendario
+
+Puedes exportar tu calendario a diferentes formatos:
+
+<CardGroup cols={2}>
+  <Card title="Exportar a PDF" icon="file-pdf">
+    Genera un PDF del calendario actual con todos los filtros aplicados. Ideal para imprimir.
+  </Card>
+
+  <Card title="Exportar a Excel" icon="file-excel">
+    Descarga un archivo Excel con todos los datos de las citas visibles. Perfecto para análisis.
+  </Card>
+
+  <Card title="Sincronizar con Google Calendar" icon="calendar">
+    Sincroniza automáticamente tus citas con Google Calendar (requiere configuración previa).
+  </Card>
+
+  <Card title="Sincronizar con Outlook" icon="calendar">
+    Integra tus citas con Microsoft Outlook (requiere configuración previa).
+  </Card>
+</CardGroup>
+
+## Tips Avanzados
+
+<Tip>
+**Optimiza tu flujo de trabajo:**
+- Usa la vista semana los lunes para planificar
+- Revisa citas "Pending" diariamente
+- Exporta a Excel para análisis de tendencias mensuales
+- Configura alertas para citas sin confirmar
+</Tip>
+
+<Note>
+**Mejores prácticas:**
+- Mantén actualizados los estados de las citas
+- Confirma las citas 24-48 horas antes
+- Usa notas para información importante
+- Revisa el historial antes de atender pacientes recurrentes
+</Note>
+
+## Solución de Problemas
+
+<AccordionGroup>
+  <Accordion title="No veo algunas citas en el calendario">
+    **Posibles causas:**
+    - Tienes filtros activos (revisa los selectores de proveedor, servicio o estado)
+    - La cita está fuera del rango de fechas visible (navega a la fecha correcta)
+    - La cita fue cancelada y tienes ocultas las canceladas
+
+    **Solución:**
+    Limpia todos los filtros usando el botón "Limpiar filtros" en la parte superior.
+  </Accordion>
+
+  <Accordion title="El calendario no se actualiza en tiempo real">
+    **Posible causa:**
+    Tu navegador tiene una versión antigua en caché.
+
+    **Solución:**
+    Presiona `Ctrl + F5` (Windows) o `Cmd + Shift + R` (Mac) para forzar una recarga completa.
+  </Accordion>
+
+  <Accordion title="No puedo mover una cita con drag & drop">
+    **Posibles causas:**
+    - La cita tiene estado "Completed" o "Cancelled"
+    - El nuevo horario no está disponible
+    - No tienes permisos para modificar esa cita
+
+    **Solución:**
+    Usa el botón "Editar" en los detalles de la cita para modificarla manualmente.
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card
+    title="Crear una Nueva Cita"
+    icon="calendar-plus"
+    href="/appointments/create"
+  >
+    Aprende a crear y agendar nuevas citas desde el calendario
+  </Card>
+
+  <Card
+    title="Modificar o Cancelar Citas"
+    icon="calendar-pen"
+    href="/appointments/edit"
+  >
+    Descubre cómo editar, reagendar o cancelar citas existentes
+  </Card>
+
+  <Card
+    title="Gestionar Disponibilidad"
+    icon="clock"
+    href="/appointments/availability"
+  >
+    Configura horarios de trabajo y disponibilidad de proveedores
+  </Card>
+
+  <Card
+    title="Reportes de Citas"
+    icon="chart-line"
+    href="/reports/appointments"
+  >
+    Genera reportes y analiza métricas de tus citas
+  </Card>
+</CardGroup>

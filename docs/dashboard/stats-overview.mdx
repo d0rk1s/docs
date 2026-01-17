@@ -1,0 +1,324 @@
+---
+title: "Estadísticas Generales"
+description: "Comprende las métricas clave de tu clínica en tiempo real"
+icon: "chart-line"
+---
+
+## ¿Qué son las estadísticas generales?
+
+El Dashboard muestra 4 tarjetas con las métricas más importantes de tu clínica:
+
+- **Citas Confirmadas**: Total de citas agendadas para hoy
+- **Citas Completadas**: Citas finalizadas (marcadas automáticamente cuando pasa la hora)
+- **Ingresos Estimados**: Suma del precio de los servicios (NO son pagos reales)
+- **Uso del Plan**: Porcentaje de citas consumidas en el período de facturación actual
+
+<Frame>
+  <img src="/images/screenshots/dashboard_stats_widget.png" alt="Tarjetas de estadísticas del dashboard con citas, ingresos y uso del plan" />
+</Frame>
+
+<Note>
+Las estadísticas se actualizan automáticamente cada 5 minutos. No es necesario refrescar la página.
+</Note>
+
+---
+
+## Citas Confirmadas
+
+### ¿Qué muestra?
+
+Cuenta todas las citas con estado `CONFIRMED` para la fecha actual (según la zona horaria de tu clínica).
+
+```
+Ejemplo:
+- Peluquería "Sonrisa Feliz" tiene 12 citas agendadas para hoy
+- Algunas ya pasaron (completadas), otras están pendientes
+- El contador muestra: "12 citas confirmadas"
+```
+
+### ¿Para qué sirve?
+
+- **Capacidad diaria**: Ver cuánto está ocupada tu agenda hoy
+- **Comparación histórica**: Identificar días de mayor/menor demanda
+- **Planificación**: Decidir si aceptar más citas o no
+
+<Warning>
+Las citas canceladas NO se cuentan. Si cancelas una cita, el número disminuye inmediatamente.
+</Warning>
+
+---
+
+## Citas Completadas
+
+### ¿Qué muestra?
+
+Cuenta todas las citas con estado `COMPLETED` para la fecha actual.
+
+**¿Cómo se marcan como completadas?**
+
+El sistema ejecuta un job automático cada 60 segundos que:
+1. Busca citas cuya hora de fin ya pasó
+2. Cambia el estado de `CONFIRMED` → `COMPLETED`
+3. Actualiza el contador en el Dashboard
+
+```
+Ejemplo:
+- Cita: 10:00 - 10:30 (Corte de pelo)
+- Hora actual: 10:35
+- Estado: COMPLETED (marcado automáticamente)
+```
+
+### ¿Para qué sirve?
+
+- **Productividad**: Ver cuántas citas atendiste hoy
+- **Análisis de flujo**: Comparar confirmadas vs completadas (¿hubo inasistencias?)
+- **Reportes**: Base para informes de actividad mensual
+
+<Tip>
+Si una cita se completó pero el estado no cambió, espera 1 minuto. El job se ejecuta cada 60 segundos.
+</Tip>
+
+---
+
+## Ingresos Estimados
+
+### ¿Qué muestra?
+
+Suma el precio de todos los servicios de las citas **completadas** del día.
+
+```
+Ejemplo:
+- Cita 1: Corte de pelo (€15) → Completada ✅
+- Cita 2: Tinte (€45) → Completada ✅
+- Cita 3: Manicura (€20) → Confirmada (no completada) ❌
+- Ingresos estimados: €15 + €45 = €60
+```
+
+<Warning>
+**IMPORTANTE**: Esto NO son pagos reales. El sistema NO registra cobros ni transacciones financieras.
+Solo suma los precios de los servicios agendados.
+</Warning>
+
+### ¿Para qué sirve?
+
+- **Proyección**: Estimar facturación diaria
+- **Comparación**: Identificar días de mayor ingreso potencial
+- **Planificación**: Decidir qué servicios promocionar
+
+### Limitaciones
+
+- No refleja:
+  - Descuentos aplicados manualmente
+  - Pagos parciales o adelantos
+  - Inasistencias (si el cliente no vino, el ingreso real es €0)
+
+<Info>
+Para control financiero real, necesitas un sistema de cobros (ej: TPV, Stripe, contabilidad manual).
+</Info>
+
+---
+
+## Uso del Plan
+
+### ¿Qué muestra?
+
+Porcentaje de citas consumidas en el período de facturación actual.
+
+```
+Ejemplo:
+- Plan: STARTER (50 citas/mes)
+- Período actual: 01/01/2026 - 31/01/2026
+- Citas creadas en este período: 35
+- Uso del plan: 35 / 50 = 70%
+```
+
+### Estados visuales
+
+| Porcentaje | Color | Significado |
+|------------|-------|-------------|
+| 0% - 70% | Verde | Uso normal |
+| 70% - 90% | Amarillo | Acercándose al límite |
+| 90% - 100% | Naranja | Límite cercano |
+| > 100% | Rojo | Límite excedido (overage) |
+
+<Note>
+El sistema permite crear citas aunque se exceda el límite SI tienes **overage habilitado**.
+El excedente se cobra a fin de mes según la tarifa de tu plan (ej: €0.35/cita extra en STARTER).
+</Note>
+
+### ¿Qué cuenta como cita facturada?
+
+- ✅ Citas creadas en el período (confirmadas, completadas o canceladas)
+- ❌ Citas creadas ANTES del período (aunque se atiendan hoy)
+
+```
+Ejemplo:
+- Período actual: 01/02/2026 - 28/02/2026
+- Cita A: Creada el 28/01/2026, atendida el 03/02/2026 → NO cuenta (creada en enero)
+- Cita B: Creada el 05/02/2026, atendida el 10/02/2026 → SÍ cuenta (creada en febrero)
+```
+
+### ¿Para qué sirve?
+
+- **Control de costos**: Saber cuánto pagarás a fin de mes
+- **Planificación**: Decidir si cambiar de plan o activar overage
+- **Alertas**: Evitar sorpresas en la factura
+
+<Tip>
+Si te acercas al límite, considera:
+1. **Upgrading** a un plan superior (ej: STARTER → PRO)
+2. **Activar overage** para seguir aceptando citas
+3. **Esperar al próximo período** (si el límite se resetea pronto)
+</Tip>
+
+---
+
+## Actualización automática
+
+### ¿Cómo funciona?
+
+El Dashboard usa **polling** (consultas periódicas):
+
+1. Frontend hace una petición GET `/v1/dashboard/stats?clinic_id=...` cada 5 minutos
+2. Backend calcula las métricas en tiempo real (query a PostgreSQL)
+3. Frontend actualiza las tarjetas sin refrescar la página
+
+```
+Línea de tiempo:
+- 10:00 → Cargas el Dashboard (muestra 8 citas confirmadas)
+- 10:03 → Usuario agenda 1 cita vía WhatsApp
+- 10:05 → Dashboard se actualiza automáticamente (muestra 9 citas) ✅
+```
+
+<Warning>
+**Limitación**: Las actualizaciones NO son instantáneas. Puedes esperar hasta 5 minutos para ver cambios.
+Si necesitas datos frescos inmediatamente, refresca la página (F5).
+</Warning>
+
+---
+
+## Filtros y personalización
+
+### Filtros disponibles
+
+Actualmente el Dashboard **NO tiene filtros**. Siempre muestra:
+- Fecha: Hoy (según zona horaria de la clínica)
+- Clínica: La seleccionada en el menú superior
+
+### Personalizaciones futuras (planificadas)
+
+- [ ] Filtro por rango de fechas (última semana, mes, trimestre)
+- [ ] Filtro por servicio (ver ingresos solo de "Corte de pelo")
+- [ ] Filtro por proveedor (estadísticas por barbero/peluquero)
+- [ ] Gráficos de tendencia (línea de tiempo de citas/ingresos)
+
+<Info>
+¿Necesitas algún filtro específico? Contacta a soporte para solicitar la funcionalidad.
+</Info>
+
+---
+
+## Casos de uso comunes
+
+### Escenario 1: Planificar el día
+
+**Objetivo**: Saber cuántas citas tengo hoy y cuánto voy a facturar.
+
+**Pasos**:
+1. Abre el Dashboard al iniciar el día
+2. Revisa "Citas Confirmadas" (ej: 15 citas)
+3. Revisa "Ingresos Estimados" (ej: €0 al inicio, porque ninguna se completó aún)
+4. A lo largo del día, las citas se completan automáticamente
+5. Al cierre (ej: 20:00), revisas de nuevo: 15 confirmadas, 13 completadas, €450 estimados
+
+**Conclusión**: Tuviste 2 inasistencias (15 - 13 = 2) y generaste ~€450.
+
+---
+
+### Escenario 2: Control del plan
+
+**Objetivo**: Evitar exceder el límite del plan.
+
+**Pasos**:
+1. Abre el Dashboard a mitad de mes
+2. Revisa "Uso del Plan": 38 / 50 (76%)
+3. Calculas: Faltan 15 días → 12 citas restantes / 15 días ≈ 0.8 citas/día
+4. Conclusión: Estás consumiendo ~2.5 citas/día (38 / 15 días), llegarás al límite
+5. **Acción**: Activas overage o haces upgrade a PRO (200 citas/mes)
+
+---
+
+### Escenario 3: Identificar días lentos
+
+**Objetivo**: Comparar actividad de diferentes días.
+
+**Pasos**:
+1. Lunes: Dashboard muestra 18 citas confirmadas
+2. Martes: 12 citas confirmadas
+3. Miércoles: 22 citas confirmadas
+4. **Conclusión**: Los miércoles son tu día más ocupado
+5. **Acción**: Planificas promociones para los martes (día lento)
+
+<Note>
+Para análisis histórico más robusto, necesitas exportar datos a Excel o usar reportes (funcionalidad futura).
+</Note>
+
+---
+
+## Solución de problemas
+
+### Las estadísticas no se actualizan
+
+**Causas posibles**:
+1. **Cache del navegador**: Refresca con Ctrl+F5 (Windows) o Cmd+Shift+R (Mac)
+2. **Backend caído**: Verifica que el servidor FastAPI esté corriendo
+3. **Base de datos desconectada**: Ejecuta `python -m app.db.management health`
+
+---
+
+### "Ingresos Estimados" no coincide con mis registros
+
+**Posibles razones**:
+1. **Solo cuenta citas completadas**: Las citas confirmadas pero no finalizadas NO suman
+2. **Precios desactualizados**: Verifica que el precio del servicio en "Servicios" sea correcto
+3. **Citas sin servicio asignado**: Si una cita no tiene servicio, su precio es €0
+
+**Solución**: Revisa la lista de citas en "Próximas Citas" (siguiente sección) para validar qué servicios se completaron.
+
+---
+
+### "Uso del Plan" muestra más de 100%
+
+**Esto es normal si**:
+- Tienes **overage habilitado** en tu suscripción
+- Creaste más citas que el límite mensual (ej: 55 citas en plan STARTER de 50)
+
+**El sistema**:
+- Te permite seguir creando citas
+- Cobra el excedente a fin de mes (ej: 5 citas × €0.35 = €1.75 extra)
+
+<Warning>
+Si NO tienes overage habilitado y ves &gt;100%, contacta a soporte. Es un error de configuración.
+</Warning>
+
+---
+
+## Próximos pasos
+
+<CardGroup cols={2}>
+  <Card title="Widget de Citas" icon="calendar-days" href="/dashboard/appointments-widget">
+    Ver las próximas citas del día en detalle
+  </Card>
+
+  <Card title="Ingresos Detallados" icon="money-bill-wave" href="/dashboard/revenue-tracking">
+    Analizar de dónde vienen tus ingresos
+  </Card>
+
+  <Card title="Gestión de Plan" icon="chart-pie" href="/dashboard/plan-usage">
+    Entender tu consumo y opciones de upgrade
+  </Card>
+
+  <Card title="API de Dashboard" icon="code" href="/api-reference/dashboard/get-stats">
+    Integrar las estadísticas en tu sistema
+  </Card>
+</CardGroup>

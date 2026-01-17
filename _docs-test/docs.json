@@ -1,0 +1,20 @@
+{
+  "name": "Test",
+  "theme": "mint",
+  "colors": {
+    "primary": "#0D9373"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Docs",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": ["index"]
+          }
+        ]
+      }
+    ]
+  }
+}

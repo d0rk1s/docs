@@ -1,0 +1,530 @@
+---
+title: "Seguimiento de Ingresos"
+description: "Analiza tus ingresos estimados y optimiza tu facturación"
+icon: "money-bill-wave"
+---
+
+## ¿Qué son los ingresos estimados?
+
+El Dashboard muestra una **proyección** de los ingresos del día basada en:
+- Precio de los servicios agendados
+- Citas completadas (no confirmadas)
+- NO son pagos reales ni transacciones bancarias
+
+```
+Fórmula:
+Ingresos Estimados = Σ (Precio del servicio × Citas completadas)
+```
+
+<Warning>
+**IMPORTANTE**: Este NO es un sistema de cobros. Solo suma precios de servicios. No refleja:
+- Descuentos aplicados
+- Pagos parciales o adelantos
+- Inasistencias (si el cliente no vino, el ingreso real es €0)
+</Warning>
+
+<Frame>
+  <img src="/images/screenshots/dashboard_revenue_tracking.png" alt="Visualización de ingresos estimados con desglose por servicio y totales diarios" />
+</Frame>
+
+---
+
+## ¿Cómo se calculan?
+
+### Paso 1: Filtrar citas completadas
+
+El sistema busca todas las citas con:
+- `clinic_id = tu_clinica`
+- `DATE(start_datetime) = HOY`
+- `status = COMPLETED`
+
+```sql
+SELECT service_id, COUNT(*) as count
+FROM appointments
+WHERE clinic_id = :clinic_id
+  AND DATE(start_datetime) = CURRENT_DATE
+  AND status = 'COMPLETED'
+GROUP BY service_id;
+```
+
+---
+
+### Paso 2: Multiplicar por precio del servicio
+
+Para cada servicio, obtiene el precio de la tabla `services`:
+
+```sql
+SELECT s.name, s.price_eur, COUNT(a.id) as num_citas
+FROM appointments a
+JOIN services s ON a.service_id = s.id
+WHERE a.clinic_id = :clinic_id
+  AND DATE(a.start_datetime) = CURRENT_DATE
+  AND a.status = 'COMPLETED'
+GROUP BY s.id, s.name, s.price_eur;
+```
+
+**Resultado ejemplo**:
+
+| Servicio | Precio | Citas | Subtotal |
+|----------|--------|-------|----------|
+| Corte de pelo | €15 | 8 | €120 |
+| Tinte | €45 | 2 | €90 |
+| Barba | €10 | 5 | €50 |
+| **TOTAL** | | **15** | **€260** |
+
+---
+
+### Paso 3: Sumar todos los subtotales
+
+```python
+ingresos_estimados = sum(servicio.precio * servicio.num_citas)
+# €260 en el ejemplo anterior
+```
+
+<Note>
+El cálculo se ejecuta cada vez que se actualiza el Dashboard (cada 5 minutos).
+</Note>
+
+---
+
+## Estados de citas y facturación
+
+### ¿Qué citas cuentan?
+
+| Estado | Cuenta para ingresos? | Razón |
+|--------|----------------------|-------|
+| `CONFIRMED` | ❌ NO | Aún no se completó, puede cancelarse |
+| `COMPLETED` | ✅ SÍ | Servicio ya prestado |
+| `CANCELLED` | ❌ NO | Cita cancelada, no hubo ingreso |
+
+**Ejemplo**:
+
+```
+Citas del día:
+1. 09:00 - Corte (€15) → COMPLETED ✅ → Cuenta
+2. 10:00 - Tinte (€45) → CONFIRMED ❌ → NO cuenta (aún no termina)
+3. 11:00 - Barba (€10) → CANCELLED ❌ → NO cuenta (cancelada)
+4. 12:00 - Corte (€15) → COMPLETED ✅ → Cuenta
+
+Ingresos Estimados = €15 + €15 = €30
+```
+
+---
+
+### Transición automática a COMPLETED
+
+El sistema marca citas como `COMPLETED` cada 60 segundos:
+
+```python
+# Job del scheduler (app/scheduler.py)
+@scheduler.scheduled_job('interval', seconds=60, id='complete_appointments')
+async def complete_appointments():
+    # Busca citas cuyo end_datetime ya pasó
+    now = datetime.now(timezone.utc)
+    overdue_appointments = await db.execute(
+        select(Appointment)
+        .where(Appointment.status == 'CONFIRMED')
+        .where(Appointment.end_datetime < now)
+    )
+    # Cambia estado a COMPLETED
+    for appt in overdue_appointments:
+        appt.status = 'COMPLETED'
+```
+
+**Ejemplo de transición**:
+
+```
+Cita: 10:00 - 10:30 (Corte de pelo - €15)
+
+10:25 → Estado: CONFIRMED, Ingresos: €X
+10:30 → Estado: CONFIRMED, Ingresos: €X (aún no pasó 1 minuto)
+10:31 → Estado: COMPLETED, Ingresos: €X + €15 ✅ (job ejecutado)
+```
+
+<Tip>
+Si una cita se completó pero el Dashboard no la refleja, espera hasta 1 minuto. El job se ejecuta cada 60 segundos.
+</Tip>
+
+---
+
+## Desglose por servicio
+
+### Vista detallada (en desarrollo)
+
+Actualmente el Dashboard muestra solo el **total agregado** (ej: €260).
+
+**Mejora futura**: Tabla de desglose por servicio:
+
+| Servicio | Citas | Precio Unitario | Subtotal |
+|----------|-------|----------------|----------|
+| Corte de pelo | 8 | €15 | €120 |
+| Tinte | 2 | €45 | €90 |
+| Barba | 5 | €10 | €50 |
+| **TOTAL** | **15** | | **€260** |
+
+<Info>
+¿Necesitas este desglose ahora? Usa la API `/v1/dashboard/stats` y procesa el JSON manualmente.
+</Info>
+
+---
+
+## Comparación con ingresos reales
+
+### Escenario 1: Inasistencias (no-shows)
+
+**Problema**: Cita se marca como `COMPLETED` pero el paciente no vino.
+
+**Ejemplo**:
+```
+Cita: 10:00 - 10:30 (Corte - €15)
+10:31 → Estado: COMPLETED (automático)
+Ingresos estimados: +€15
+Ingreso real: €0 (paciente no apareció)
+```
+
+**Solución**:
+1. Cancelar manualmente la cita (cambia a `CANCELLED`)
+2. Esto elimina los €15 de "Ingresos Estimados"
+3. Opcional: Agregar nota en perfil del paciente
+
+<Warning>
+El sistema NO detecta automáticamente inasistencias. Debes marcarlas manualmente para corregir los ingresos.
+</Warning>
+
+---
+
+### Escenario 2: Descuentos o promociones
+
+**Problema**: Aplicaste descuento del 20% pero el sistema suma precio completo.
+
+**Ejemplo**:
+```
+Servicio: Tinte (€45)
+Descuento: 20% → Precio real: €36
+Ingresos estimados: €45 ❌ (incorrecto)
+Ingreso real: €36 ✅
+```
+
+**Solución**:
+1. **Opción A (recomendada)**: Crear servicio temporal "Tinte con descuento" (€36)
+2. **Opción B**: Registrar descuentos manualmente en hoja de cálculo externa
+3. **Opción C**: Esperar integración con sistema de cobros (Stripe, TPV)
+
+<Info>
+Los descuentos NO están implementados en el sistema. Si los aplicas frecuentemente, considera crear servicios duplicados con diferentes precios.
+</Info>
+
+---
+
+### Escenario 3: Pagos parciales o adelantos
+
+**Problema**: Cliente pagó €20 de adelanto para un tinte de €45.
+
+**Ejemplo**:
+```
+Servicio: Tinte (€45)
+Adelanto: €20 (pagado hoy)
+Pendiente: €25 (pagarás en la cita)
+
+Ingresos estimados: €45 (cuando se complete la cita)
+Ingreso real hoy: €20 (adelanto)
+```
+
+**Solución**:
+- El sistema NO gestiona adelantos
+- Debes llevar registro manual (ej: Excel, cuaderno)
+- Los "Ingresos Estimados" reflejan el precio total (€45), no el adelanto (€20)
+
+---
+
+## Casos de uso comunes
+
+### Escenario 1: Proyectar facturación del día
+
+**Objetivo**: Al iniciar el día, estimar cuánto facturarás.
+
+**Pasos**:
+1. Abre el Dashboard a las 09:00
+2. Revisa "Citas Confirmadas": 18 citas
+3. Calcula precio promedio: €15 (mayoría son cortes de pelo)
+4. **Proyección**: 18 citas × €15 = €270 estimados
+5. A lo largo del día, las citas se completan automáticamente
+6. A las 20:00, revisas: "Ingresos Estimados": €245
+7. **Análisis**: Facturaste €25 menos de lo esperado (1 inasistencia + 1 cancelación)
+
+---
+
+### Escenario 2: Identificar servicios más rentables
+
+**Objetivo**: Saber qué servicios generan más ingresos.
+
+**Pasos**:
+1. Exporta datos del Dashboard usando la API:
+   ```bash
+   curl -H "Authorization: Bearer {token}" \
+     "https://api.clinica.com/v1/dashboard/stats?clinic_id={id}"
+   ```
+2. Procesa el JSON para agrupar por servicio
+3. **Resultado**:
+   - Corte de pelo: 8 citas × €15 = €120 (46%)
+   - Tinte: 2 citas × €45 = €90 (35%)
+   - Barba: 5 citas × €10 = €50 (19%)
+4. **Conclusión**: Los cortes generan más volumen, pero los tintes tienen mejor margen
+5. **Acción**: Promocionas los tintes en redes sociales para aumentar demanda
+
+---
+
+### Escenario 3: Comparar ingresos entre días
+
+**Objetivo**: Identificar días de mayor/menor facturación.
+
+**Pasos**:
+1. Lunes: Dashboard muestra €320 estimados
+2. Martes: €180 estimados
+3. Miércoles: €450 estimados
+4. **Conclusión**: Los miércoles son tu día más rentable
+5. **Acción**:
+   - Planificas promociones para los martes (día lento)
+   - Evitas cerrar los miércoles (día pico)
+
+<Note>
+Para análisis histórico robusto, necesitas exportar datos a Excel o implementar reportes (funcionalidad futura).
+</Note>
+
+---
+
+## Optimización de ingresos
+
+### Estrategia 1: Aumentar ticket promedio
+
+**Objetivo**: Subir el ingreso por cita de €15 a €20.
+
+**Tácticas**:
+1. **Upselling**: Ofrecer servicios complementarios
+   - Corte de pelo (€15) + Barba (€10) = €25
+2. **Paquetes**: Crear combos con descuento
+   - "Corte + Barba + Ceja" = €30 (ahorro de €5 vs precio individual)
+3. **Servicios premium**: Añadir opciones más caras
+   - Corte básico (€15) vs Corte + tratamiento capilar (€25)
+
+**Impacto**:
+```
+Antes: 15 citas/día × €15 = €225
+Después: 15 citas/día × €20 = €300
+Incremento: +€75/día = +€2,250/mes (30 días)
+```
+
+---
+
+### Estrategia 2: Aumentar volumen de citas
+
+**Objetivo**: Pasar de 15 citas/día a 20 citas/día.
+
+**Tácticas**:
+1. **Reducir duración de servicios**: Optimizar procesos para atender más rápido
+   - Corte actual: 30 min → Corte optimizado: 20 min
+   - Capacidad: 20 citas/día (10h × 60min / 20min = 30 slots, asumiendo 66% ocupación)
+2. **Contratar más personal**: Añadir un segundo peluquero
+   - Capacidad: 15 citas × 2 peluqueros = 30 citas/día
+3. **Ampliar horario**: Abrir 1 hora más temprano o cerrar 1 hora más tarde
+   - Horario actual: 10:00-20:00 (10h)
+   - Horario ampliado: 09:00-21:00 (12h) → +20% capacidad
+
+**Impacto**:
+```
+Antes: 15 citas/día × €15 = €225
+Después: 20 citas/día × €15 = €300
+Incremento: +€75/día = +€2,250/mes
+```
+
+---
+
+### Estrategia 3: Reducir inasistencias
+
+**Objetivo**: Reducir no-shows del 10% al 5%.
+
+**Tácticas**:
+1. **Recordatorios automáticos**: WhatsApp 24h antes de la cita
+   - Implementado: Sistema envía recordatorios (job del scheduler)
+2. **Confirmación obligatoria**: Pedir confirmación 2h antes
+   - "Confirma con SÍ para mantener tu cita de las 15:00"
+3. **Política de adelantos**: Cobrar €5 al agendar (descontado del total)
+   - Ejemplo: Cita de €15 → Adelanto €5 → Pago final €10
+   - Reduce inasistencias porque el cliente ya pagó algo
+
+**Impacto**:
+```
+Citas/día: 15
+No-shows antes: 10% → 1.5 citas perdidas × €15 = €22.50/día
+No-shows después: 5% → 0.75 citas perdidas × €15 = €11.25/día
+Ahorro: +€11.25/día = +€337/mes
+```
+
+---
+
+## Integración con sistemas de cobros
+
+### Problema actual
+
+El Dashboard muestra "ingresos estimados" pero NO rastrea:
+- ¿El cliente pagó en efectivo, tarjeta o Bizum?
+- ¿Pagó el total o parcial?
+- ¿Dejó propina?
+
+**Para control financiero real, necesitas**:
+- Sistema de TPV (Terminal Punto de Venta)
+- Stripe / PayPal para pagos online
+- Software de contabilidad (ej: Holded, Sage)
+
+---
+
+### Integración futura con Stripe
+
+**Flujo propuesto**:
+1. Cita se completa → Estado: `COMPLETED`
+2. Sistema genera "Payment Intent" en Stripe (€15 para el corte)
+3. Cliente paga con tarjeta en el local (TPV físico o link de pago)
+4. Stripe confirma el pago → Webhook actualiza cita con `payment_status: PAID`
+5. Dashboard muestra:
+   - Ingresos estimados: €15 (basado en servicio)
+   - Ingresos confirmados: €15 (basado en pago real)
+
+**Beneficios**:
+- Reconciliación automática (ingresos estimados vs reales)
+- Tracking de inasistencias (citas completadas pero no pagadas)
+- Reportes financieros exportables
+
+<Info>
+Esta integración está en el roadmap pero no implementada. Si la necesitas, contacta a soporte para planificar desarrollo.
+</Info>
+
+---
+
+## Reportes históricos
+
+### Exportar datos vía API
+
+Para analizar ingresos de períodos más largos (semana, mes, año), usa la API:
+
+**Endpoint**: `GET /v1/dashboard/stats?clinic_id={id}&start_date={date}&end_date={date}`
+
+**Ejemplo**:
+```bash
+curl -H "Authorization: Bearer {token}" \
+  "https://api.clinica.com/v1/dashboard/stats?clinic_id=abc-123&start_date=2026-01-01&end_date=2026-01-31"
+```
+
+**Respuesta**:
+```json
+{
+  "total_appointments": 450,
+  "completed_appointments": 420,
+  "cancelled_appointments": 30,
+  "estimated_revenue": 6750.00,
+  "breakdown_by_service": [
+    {"service": "Corte de pelo", "count": 300, "revenue": 4500.00},
+    {"service": "Tinte", "count": 60, "revenue": 2700.00},
+    {"service": "Barba", "count": 60, "revenue": 600.00}
+  ]
+}
+```
+
+**Procesamiento**:
+1. Descarga el JSON
+2. Impórtalo a Excel / Google Sheets
+3. Crea gráficos de tendencia (línea de tiempo de ingresos)
+
+---
+
+### Reportes automáticos (en desarrollo)
+
+**Funcionalidades planificadas**:
+- 📊 **Dashboard de reportes**: Vista dedicada con gráficos
+- 📅 **Filtros por rango de fechas**: Semana, mes, trimestre, año
+- 📈 **Gráfico de tendencia**: Línea de tiempo de ingresos diarios
+- 📊 **Desglose por servicio**: Pie chart de distribución de ingresos
+- 📊 **Desglose por proveedor**: Comparar productividad de peluqueros
+- 📄 **Exportar a PDF/Excel**: Descarga reportes para contabilidad
+
+<Note>
+¿Necesitas reportes avanzados urgentemente? Usa la API para extraer datos crudos y procésalos en Excel.
+</Note>
+
+---
+
+## Solución de problemas
+
+### Ingresos estimados no coinciden con registros manuales
+
+**Diagnóstico**:
+1. **Verifica estados de citas**: Solo `COMPLETED` cuentan
+   ```bash
+   # Consulta manual a la DB
+   SELECT status, COUNT(*)
+   FROM appointments
+   WHERE clinic_id = 'abc-123'
+     AND DATE(start_datetime) = '2026-01-17'
+   GROUP BY status;
+   ```
+2. **Verifica precios de servicios**: Asegúrate de que coincidan
+   ```bash
+   SELECT name, price_eur FROM services WHERE clinic_id = 'abc-123';
+   ```
+3. **Verifica zona horaria**: La fecha "hoy" depende de `CLINIC_DEFAULT_TZ`
+
+---
+
+### Ingresos estimados no aumentan aunque completo citas
+
+**Causas posibles**:
+1. **Job del scheduler no corre**: Las citas no se marcan como `COMPLETED`
+   ```bash
+   curl http://localhost:8000/system/scheduler/status
+   # Verifica que "complete_appointments" esté activo
+   ```
+2. **Cita sin servicio asignado**: Si `service_id IS NULL`, el precio es €0
+   ```sql
+   SELECT COUNT(*) FROM appointments
+   WHERE service_id IS NULL
+     AND status = 'COMPLETED'
+     AND DATE(start_datetime) = CURRENT_DATE;
+   ```
+3. **Cache del Dashboard**: Espera 5 minutos para actualización automática
+
+---
+
+### Ingresos estimados están inflados
+
+**Causas posibles**:
+1. **Citas de inasistencias no canceladas**: Marcadas como `COMPLETED` pero cliente no vino
+   - **Solución**: Cancela manualmente las citas (cambia a `CANCELLED`)
+2. **Precios incorrectos en servicios**: Servicio tiene precio €45 pero debería ser €30
+   - **Solución**: Actualiza el precio en "Servicios" (NO afecta citas ya creadas)
+3. **Citas duplicadas**: Error al crear cita (ej: doble clic en botón "Crear")
+   - **Solución**: Elimina duplicados manualmente
+
+<Warning>
+Cambiar el precio de un servicio NO afecta citas ya creadas. La relación `appointment.service_id` apunta a `services.price_eur` en el momento del cálculo.
+</Warning>
+
+---
+
+## Próximos pasos
+
+<CardGroup cols={2}>
+  <Card title="Estadísticas Generales" icon="chart-line" href="/dashboard/stats-overview">
+    Volver a la vista general del Dashboard
+  </Card>
+
+  <Card title="Widget de Citas" icon="calendar-days" href="/dashboard/appointments-widget">
+    Ver las próximas citas del día en detalle
+  </Card>
+
+  <Card title="Gestión de Servicios" icon="scissors" href="/services/overview">
+    Actualizar precios de servicios
+  </Card>
+
+  <Card title="API de Dashboard" icon="code" href="/api-reference/dashboard/get-stats">
+    Integrar las estadísticas en tu sistema
+  </Card>
+</CardGroup>

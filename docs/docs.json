@@ -1,0 +1,138 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Clinic Management - Manual de Usuario",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Manual de Usuario",
+        "groups": [
+          {
+            "group": "Primeros Pasos",
+            "pages": [
+              "getting-started/introduction",
+              "getting-started/first-login",
+              "getting-started/dashboard-overview"
+            ]
+          },
+          {
+            "group": "Gestión de Citas",
+            "pages": [
+              "appointments/overview",
+              "appointments/view-calendar",
+              "appointments/create-appointment",
+              "appointments/modify-appointment",
+              "appointments/cancel-appointment",
+              "appointments/search-patient",
+              "appointments/appointment-statuses"
+            ]
+          },
+          {
+            "group": "Servicios",
+            "pages": [
+              "services/overview",
+              "services/view-services",
+              "services/create-service",
+              "services/create-from-catalog",
+              "services/edit-service",
+              "services/delete-service"
+            ]
+          },
+          {
+            "group": "Catálogo de Servicios",
+            "pages": [
+              "catalog/overview",
+              "catalog/search-catalog",
+              "catalog/filter-by-category",
+              "catalog/import-service"
+            ]
+          },
+          {
+            "group": "Horarios de Trabajo",
+            "pages": [
+              "work-hours/overview",
+              "work-hours/clinic-hours",
+              "work-hours/multiple-periods",
+              "work-hours/provider-hours",
+              "work-hours/edit-delete-hours"
+            ]
+          },
+          {
+            "group": "Cierres y Vacaciones",
+            "pages": [
+              "closures/overview",
+              "closures/create-closure",
+              "closures/impact-preview",
+              "closures/view-upcoming",
+              "closures/cancel-closure"
+            ]
+          },
+          {
+            "group": "Proveedores",
+            "pages": [
+              "providers/overview",
+              "providers/view-providers",
+              "providers/create-provider",
+              "providers/configure-schedule",
+              "providers/assign-services"
+            ]
+          },
+          {
+            "group": "Suscripciones",
+            "pages": [
+              "subscription/overview",
+              "subscription/view-current-plan",
+              "subscription/upgrade-plan",
+              "subscription/downgrade-plan",
+              "subscription/usage-monitoring"
+            ]
+          },
+          {
+            "group": "Conversaciones WhatsApp",
+            "pages": [
+              "whatsapp/overview",
+              "whatsapp/view-conversations",
+              "whatsapp/message-history",
+              "whatsapp/pause-bot",
+              "whatsapp/send-manual-message"
+            ]
+          },
+          {
+            "group": "Dashboard",
+            "pages": [
+              "dashboard/stats-overview",
+              "dashboard/appointments-widget",
+              "dashboard/revenue-tracking",
+              "dashboard/plan-usage"
+            ]
+          },
+          {
+            "group": "Solución de Problemas",
+            "pages": [
+              "troubleshooting/common-issues",
+              "troubleshooting/whatsapp-not-working",
+              "troubleshooting/availability-incorrect",
+              "troubleshooting/contact-support"
+            ]
+          },
+          {
+            "group": "Ayuda",
+            "pages": [
+              "faqs"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  }
+}

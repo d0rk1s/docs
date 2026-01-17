@@ -1,0 +1,281 @@
+---
+title: "Suscripciones - Visión General"
+description: "Sistema de suscripciones multi-plan con gestión de límites, overage y facturación automática vía Stripe"
+icon: "credit-card"
+---
+
+## Introducción
+
+El sistema de suscripciones de Sonrisa Feliz ofrece planes escalables para clínicas de todos los tamaños, desde pequeñas peluquerías hasta grandes centros médicos. Cada plan define límites de citas mensuales, precios y opciones de sobrecupo (overage).
+
+## Arquitectura de Suscripciones
+
+### Tablas Principales
+
+**`plans` - Catálogo de Planes**
+- Almacena todas las configuraciones de planes (FREE, STARTER, PRO, BUSINESS, ENTERPRISE)
+- Cada plan se define una vez y es referenciado por múltiples suscripciones de clínicas
+- Campos clave: `plan_name`, `appointment_limit`, `overage_rate`, `price_monthly`, `stripe_price_id`
+
+**`clinic_subscriptions` - Instancia por Clínica**
+- Cada clínica tiene exactamente una suscripción (relación 1:1)
+- Foreign Key: `plan_id` → `plans.id`
+- Campos clave: `billing_period_start`, `billing_period_end`, `appointments_billed`, `allow_overage`
+
+### Relación de Tablas
+
+```
+plans (1) ----< (N) clinic_subscriptions
+   ↑                       ↑
+   |                       |
+plan_id           clinic_id (UNIQUE)
+```
+
+## Planes Disponibles
+
+| Plan | Citas/mes | Overage Rate | Precio/mes | Descripción |
+|------|-----------|--------------|------------|-------------|
+| **FREE** | 10 | - | €0 | Plan de prueba gratuito |
+| **STARTER** | 50 | €0.35/cita | €29 | Para clínicas pequeñas |
+| **PRO** | 200 | €0.30/cita | €99 | Para clínicas medianas |
+| **BUSINESS** | 500 | €0.25/cita | €199 | Para clínicas grandes |
+| **ENTERPRISE** | Ilimitado | - | €499 | Plan sin límites |
+
+<Note>
+  Todos los planes soportan overage por defecto. El campo `clinic_subscriptions.allow_overage` controla si el overage está habilitado para cada clínica.
+</Note>
+
+<Frame>
+  <img src="/images/screenshots/subscription_current_plan.png" alt="Vista del plan de suscripción actual con límites, uso y opciones de overage" />
+</Frame>
+
+## Sistema de Overage
+
+### ¿Qué es Overage?
+
+El **overage** permite a las clínicas exceder el límite de citas de su plan, pagando una tarifa adicional por cada cita extra.
+
+### Configuración de Overage
+
+- **Soporte universal**: Todos los planes soportan overage (definido en `plans.overage_rate`)
+- **Control por clínica**: `clinic_subscriptions.allow_overage` (Boolean) determina si está habilitado
+- **Precio por cita extra**: Definido en `plans.overage_rate` (ej: €0.35 para STARTER)
+
+### Ejemplo de Facturación con Overage
+
+**Escenario**: Clínica con plan STARTER (50 citas/mes, €29/mes, overage €0.35/cita)
+
+```
+Mes de Enero:
+- Citas reservadas: 65
+- Citas dentro del plan: 50 (incluidas en €29)
+- Citas en overage: 15 (exceso)
+- Cargo overage: 15 × €0.35 = €5.25
+- Total facturado: €29 + €5.25 = €34.25
+```
+
+## Integración con Stripe
+
+### Flujo de Pago
+
+1. **Checkout Session**: Usuario selecciona plan y completa pago en Stripe Checkout
+2. **Webhook `checkout.session.completed`**: Crea/actualiza `clinic_subscriptions` en BD
+3. **Facturación mensual**: Stripe factura automáticamente cada período
+4. **Webhook `invoice.paid`**: Actualiza `billing_period_start` y `billing_period_end`
+
+### Stripe Price IDs
+
+Los Stripe Price IDs se almacenan en la base de datos (`plans.stripe_price_id`), no en variables de entorno.
+
+```python
+# CORRECTO - Obtener price desde BD
+price_id = await StripeService.get_stripe_price_id_for_plan(db, "STARTER")
+
+# INCORRECTO - No usar variables de entorno
+# STRIPE_PRICE_STARTER (ELIMINADO de config.py)
+```
+
+<Warning>
+  La base de datos es la única fuente de verdad para los Stripe Price IDs. Esto garantiza consistencia entre checkout y webhooks.
+</Warning>
+
+## Subscription Schedules (Downgrades)
+
+Los **downgrades** utilizan Stripe Subscription Schedules para diferir el cambio de plan hasta el final del período de facturación actual.
+
+### Flujo de Downgrade
+
+1. Usuario solicita downgrade (ej: PRO → STARTER)
+2. Sistema crea `SubscriptionSchedule` en Stripe con dos fases:
+   - **Fase 1**: Plan actual (PRO) hasta `current_period_end`
+   - **Fase 2**: Nuevo plan (STARTER) a partir de `current_period_end`
+3. Schedule se almacena en tabla `subscription_schedules` (status: `active`)
+4. Cuando finaliza Fase 1, Stripe emite webhook `subscription_schedule.completed`
+5. Webhook actualiza `clinic_subscriptions.plan_id` al nuevo plan
+
+### Constraint de Integridad
+
+**Índice Parcial UNIQUE** (añadido 2026-01-15):
+```sql
+CREATE UNIQUE INDEX subscription_schedules_active_unique_idx
+ON subscription_schedules (clinic_subscription_id)
+WHERE status = 'active';
+```
+
+**Beneficios**:
+- ✅ Solo un schedule ACTIVO por suscripción (garantizado por base de datos)
+- ✅ Múltiples schedules históricos preservados (auditoría)
+- ✅ Previene data corruption (race conditions)
+
+## Invariantes del Sistema
+
+### INV-1: Suscripciones FREE sin Stripe
+
+```
+stripe_subscription_id IS NULL ⇒ plan_name MUST be FREE
+```
+
+Cuando una suscripción no tiene `stripe_subscription_id`, el plan DEBE ser FREE. Esta invariante es aplicada a nivel de aplicación.
+
+### INV-2: Stripe Price IDs Únicos
+
+Cada `stripe_price_id` debe ser único en la tabla `plans` (constraint de BD).
+
+### INV-3: Stripe Price IDs Válidos
+
+Todos los `stripe_price_id` deben existir en Stripe (validado por script `validate_stripe_prices.py`).
+
+### INV-4: Precios Sincronizados
+
+El campo `price_monthly` en BD debe coincidir con `unit_amount / 100` en Stripe.
+
+## Validación de Precios
+
+### Script de Validación
+
+```bash
+# Validar precios (FAIL HARD si hay drift)
+python scripts/validate_stripe_prices.py
+
+# Validar y corregir precios desde Stripe
+python scripts/validate_stripe_prices.py --fix
+```
+
+**Invariantes verificadas**:
+- INV-1: FREE no tiene stripe_price_id
+- INV-2: stripe_price_id es UNIQUE
+- INV-3: stripe_price_id existe en Stripe
+- INV-4: price_monthly coincide con Stripe
+
+<Tip>
+  Ejecuta el script de validación antes de cada deploy para prevenir inconsistencias.
+</Tip>
+
+## Endpoints REST API
+
+### Admin Endpoints
+
+**Base URL**: `/v1/admin/subscription-plans`
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/v1/admin/subscription-plans` | Listar todos los planes activos |
+| GET | `/v1/admin/subscription-plans?include_inactive=true` | Incluir planes desactivados |
+| POST | `/v1/admin/subscription-plans` | Crear plan custom (enterprise) |
+| PUT | `/v1/admin/subscription-plans/{plan_name}` | Actualizar configuración de plan |
+| DELETE | `/v1/admin/subscription-plans/{plan_name}` | Desactivar plan (soft delete) |
+| POST | `/v1/admin/subscription-plans/{plan_name}/reactivate` | Reactivar plan |
+
+**Autenticación**: Requiere rol `admin` (enforced por `require_admin` dependency).
+
+### Subscription Endpoints
+
+**Base URL**: `/v1/subscription`
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/v1/subscription` | Ver suscripción actual |
+| POST | `/v1/subscription/upgrade` | Upgrade de plan |
+| POST | `/v1/subscription/downgrade` | Downgrade de plan |
+| GET | `/v1/subscription/usage` | Monitoreo de uso |
+
+## Planes Enterprise Personalizados
+
+Para clientes enterprise con necesidades específicas, puedes crear planes custom:
+
+```python
+from app.services.plan_service import PlanService
+
+plan_service = PlanService(db)
+custom_plan = await plan_service.create_custom_enterprise_plan(
+    plan_name="ENTERPRISE_CUSTOM_HOSPITAL_X",
+    display_name="Hospital X Custom Plan",
+    appointment_limit=300,
+    price_monthly=350.0,
+    overage_rate=0.20,  # Precio por cita extra si overage habilitado
+    description="Custom plan for Hospital X - 300 appointments/month"
+)
+```
+
+## Scripts de Gestión
+
+### Ver Estado de Suscripción
+
+```bash
+python scripts/check_subscription_limit.py --clinic-id <uuid>
+# Muestra plan actual, uso, límites, configuración overage
+```
+
+### Cambiar Plan
+
+```bash
+# Cambiar plan (mantiene uso actual)
+python scripts/change_subscription_plan.py \
+  --clinic-id <uuid> \
+  --plan STARTER
+
+# Cambiar plan y resetear uso
+python scripts/change_subscription_plan.py \
+  --clinic-id <uuid> \
+  --plan PRO \
+  --reset-usage
+```
+
+### Configurar Todas las Clínicas con STARTER
+
+```bash
+python scripts/configure_starter_plan.py
+```
+
+### Setup para Nuevas Clínicas
+
+```bash
+# Modo interactivo - elegir plan para cada clínica
+python scripts/setup_subscriptions.py
+
+# Modo batch - asignar FREE a todas sin suscripción
+python scripts/setup_subscriptions.py --batch --plan FREE --yes
+```
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Ver Plan Actual" icon="eye" href="/subscription/view-current-plan">
+    Cómo consultar la suscripción activa de una clínica
+  </Card>
+  <Card title="Upgrade de Plan" icon="arrow-trend-up" href="/subscription/upgrade-plan">
+    Proceso de mejora de plan con Stripe Checkout
+  </Card>
+  <Card title="Downgrade de Plan" icon="arrow-trend-down" href="/subscription/downgrade-plan">
+    Reducción de plan con Subscription Schedules
+  </Card>
+  <Card title="Monitoreo de Uso" icon="chart-line" href="/subscription/usage-monitoring">
+    Seguimiento de citas y límites del plan
+  </Card>
+</CardGroup>
+
+## Referencias
+
+- [Stripe Subscription API](https://stripe.com/docs/api/subscriptions)
+- [Stripe Subscription Schedules](https://stripe.com/docs/billing/subscriptions/subscription-schedules)
+- [PostgreSQL Partial Indexes](https://www.postgresql.org/docs/current/indexes-partial.html)

@@ -1,0 +1,480 @@
+---
+title: "Historial de Mensajes"
+description: "Revisa el historial completo de una conversación con el bot"
+---
+
+# Historial de Mensajes WhatsApp
+
+El historial de mensajes te permite revisar la conversación completa entre un paciente y el bot de WhatsApp, incluyendo:
+
+- Todos los mensajes enviados y recibidos
+- Herramientas invocadas por el bot (create_appointment, get_availability, etc.)
+- Timestamps precisos de cada mensaje
+- Metadatos técnicos (IDs, latencia, cache hits)
+
+## Acceder al Historial
+
+### Desde la Lista de Conversaciones
+
+<Steps>
+  <Step title="Ve a WhatsApp → Conversaciones">
+    Navega a la sección **WhatsApp** → **Conversaciones** desde el menú lateral.
+  </Step>
+
+  <Step title="Encuentra la conversación">
+    Usa búsqueda o filtros para encontrar la conversación deseada.
+  </Step>
+
+  <Step title="Haz clic en 'Ver'">
+    Haz clic en el botón **"Ver"** o en la fila completa para abrir el historial.
+  </Step>
+</Steps>
+
+### Vista de Historial
+
+El historial muestra mensajes en orden cronológico (más antiguo arriba, más reciente abajo), similar a una conversación de WhatsApp.
+
+<Frame>
+  <img src="/images/screenshots/whatsapp_conversation_detail.png" alt="Detalle de conversación WhatsApp mostrando mensajes, herramientas usadas y timestamps" />
+</Frame>
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│ Historial de Conversación                                     │
+│ Paciente: María García (+34612345678)                         │
+│ Estado: Activa                                                 │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  [16/01/2026 14:30:15] Paciente:                              │
+│  "Hola, necesito un corte de pelo para mañana"                │
+│                                                                │
+│  [16/01/2026 14:30:18] Bot:                                   │
+│  "¡Hola María! Claro, te muestro disponibilidad para          │
+│  corte de pelo mañana (17 de enero)..."                       │
+│  🔧 Herramienta: get_availability                             │
+│  ⏱️ Latencia: 2.35ms (cache hit)                             │
+│                                                                │
+│  [16/01/2026 14:31:02] Paciente:                              │
+│  "A las 10 está bien"                                         │
+│                                                                │
+│  [16/01/2026 14:31:05] Bot:                                   │
+│  "Perfecto, he agendado tu cita:                              │
+│  📅 Fecha: 17/01/2026 a las 10:00                             │
+│  ✂️ Servicio: Corte de pelo (30 min)                          │
+│  ¡Te esperamos!"                                               │
+│  🔧 Herramienta: create_appointment                           │
+│  ⏱️ Latencia: 543ms (DB query)                               │
+│                                                                │
+│  [16/01/2026 14:31:10] Paciente:                              │
+│  "Gracias!"                                                    │
+│                                                                │
+│  [16/01/2026 14:31:11] Bot:                                   │
+│  "¡De nada! Si necesitas algo más, aquí estoy 😊"             │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+```
+
+## Elementos del Historial
+
+### Mensajes del Paciente
+
+<Card icon="user" color="#6366F1">
+Los mensajes del paciente se muestran con:
+- **Icono de usuario** a la izquierda
+- **Timestamp** preciso (formato: DD/MM/YYYY HH:MM:SS)
+- **Texto del mensaje** tal como fue enviado
+- **Alineación izquierda** (convención de chat)
+</Card>
+
+**Tipos de mensajes soportados**:
+- **Texto plano**: Mensajes escritos normalmente
+- **Notas de voz**: Se muestra la transcripción con icono 🎤
+- **Emojis**: Se muestran correctamente (unicode)
+
+### Mensajes del Bot
+
+<Card icon="robot" color="#0D9373">
+Los mensajes del bot se muestran con:
+- **Icono de robot** a la derecha
+- **Timestamp** preciso
+- **Texto de respuesta** formateado
+- **Alineación derecha** (convención de chat)
+- **Metadatos técnicos** (ver abajo)
+</Card>
+
+### Metadatos Técnicos
+
+Para mensajes del bot que invocan herramientas, el sistema muestra metadatos expandibles:
+
+<AccordionGroup>
+  <Accordion title="🔧 Herramienta Usada">
+    **Qué muestra**: Nombre de la herramienta invocada por el LLM.
+
+    **Ejemplos**:
+    - `get_availability` - Consultó horarios disponibles
+    - `create_appointment` - Creó una cita nueva
+    - `reschedule_appointment` - Modificó una cita existente
+    - `cancel_appointment` - Canceló una cita
+    - `get_patient_appointments` - Buscó citas del paciente
+    - `list_services` - Listó servicios de la clínica
+
+    **Para qué sirve**: Entender qué acción ejecutó el bot internamente.
+  </Accordion>
+
+  <Accordion title="⏱️ Latencia">
+    **Qué muestra**: Tiempo que tomó procesar el mensaje.
+
+    **Valores típicos**:
+    - **2-5ms (cache hit)**: Resultado obtenido desde cache, ultra rápido
+    - **200-600ms (DB query)**: Query a base de datos, normal
+    - **3-5s (LLM call)**: Invocación del modelo de lenguaje, aceptable
+    - **>10s**: Latencia alta, posible problema de performance
+
+    **Para qué sirve**: Detectar mensajes lentos que frustran al paciente.
+  </Accordion>
+
+  <Accordion title="💾 Cache Status">
+    **Qué muestra**: Si el resultado vino de cache o requirió query nuevo.
+
+    **Valores**:
+    - **Cache HIT**: Resultado cacheado (ahorro de 99% de latencia)
+    - **Cache MISS**: Requirió query a DB o API
+    - **Cache INVALIDATED**: Cache limpiado por cambio de estado
+
+    **Para qué sirve**: Validar que el cache está funcionando correctamente.
+  </Accordion>
+
+  <Accordion title="🔑 IDs Técnicos">
+    **Qué muestra**: IDs de base de datos para debugging.
+
+    **Campos**:
+    - `message_id`: ID único del mensaje en DB
+    - `conversation_id`: ID de la conversación completa
+    - `appointment_id`: ID de la cita creada/modificada (si aplica)
+    - `trace_id`: ID de LangSmith para tracing (si LangSmith está activo)
+
+    **Para qué sirve**: Reportar bugs específicos a equipo técnico con IDs exactos.
+  </Accordion>
+
+  <Accordion title="⚠️ Errores y Warnings">
+    **Qué muestra**: Si hubo errores o advertencias durante el procesamiento.
+
+    **Ejemplos**:
+    - `[ERROR] Service not found` - Servicio solicitado no existe
+    - `[WARNING] Appointment limit reached` - Límite de plan alcanzado
+    - `[ERROR] Invalid phone format` - Número de teléfono inválido
+    - `[WARNING] Hallucination detected` - Audio corto con transcripción dudosa
+
+    **Para qué sirve**: Identificar conversaciones con problemas técnicos.
+  </Accordion>
+</AccordionGroup>
+
+## Funcionalidades Interactivas
+
+### Expandir/Contraer Metadatos
+
+Por defecto, los metadatos técnicos están contraídos para no saturar la vista. Puedes:
+
+- **Clic en icono** 🔧 para expandir/contraer metadatos de un mensaje específico
+- **Botón "Expandir todos"** para ver metadatos de todos los mensajes
+- **Botón "Contraer todos"** para ocultar todos los metadatos
+
+<Tip>
+Usa "Expandir todos" cuando estés debugging una conversación problemática. Usa vista normal (contraída) para lectura rápida.
+</Tip>
+
+### Copiar Texto de Mensaje
+
+Haz clic en el icono de **"copiar"** (📋) junto a cada mensaje para copiar el texto al portapapeles.
+
+**Útil para**:
+- Reportar bugs con texto exacto
+- Compartir conversación con equipo técnico
+- Documentar casos de uso
+
+### Buscar en Historial
+
+Usa el campo de búsqueda en la parte superior para encontrar mensajes específicos:
+
+**Ejemplos de búsqueda**:
+- `cancelar` - Encuentra mensajes donde el paciente pidió cancelar
+- `10:00` - Encuentra menciones de horarios específicos
+- `corte` - Encuentra menciones del servicio "corte de pelo"
+- `create_appointment` - Encuentra mensajes donde el bot creó una cita
+
+<Note>
+La búsqueda es case-insensitive (no distingue mayúsculas/minúsculas) y busca en texto de mensajes y nombres de herramientas.
+</Note>
+
+## Indicadores Visuales
+
+### Transcripción de Notas de Voz
+
+Los mensajes de voz transcritos se muestran con formato especial:
+
+```
+[16/01/2026 15:45:20] Paciente:
+🎤 Nota de voz (4.2 segundos):
+"Hola necesito una cita para mañana a las diez"
+
+Transcripción: OpenAI Whisper
+Latencia: 5.3s (2.1s transcripción + 3.2s procesamiento)
+```
+
+**Elementos**:
+- **Icono 🎤**: Indica que fue nota de voz, no texto escrito
+- **Duración**: Segundos de audio
+- **Texto transcrito**: Lo que Whisper entendió del audio
+- **Metadatos**: Servicio usado (Whisper) y latencia desglosada
+
+### Mensajes con Errores
+
+Los mensajes donde el bot falló se muestran con banner rojo:
+
+```
+[16/01/2026 16:10:33] Bot:
+⚠️ ERROR: No pude procesar tu mensaje
+"Lo siento, hubo un problema técnico. Por favor intenta de nuevo o contacta a la clínica."
+
+🔧 Error: ServiceNotFoundError
+Detalle: Service "tinte de cejas" not found in database
+Sugerencia: Verifica que el servicio exista en catálogo
+```
+
+**Qué hacer**:
+1. Lee el detalle del error
+2. Sigue la sugerencia (si aplica)
+3. Reporta a equipo técnico con `message_id` si no puedes resolver
+
+## Casos de Uso Comunes
+
+### Validar que el Bot Agendó Correctamente
+
+**Objetivo**: Verificar que una cita fue creada con datos correctos.
+
+<Steps>
+  <Step title="Abre el historial">
+    Desde la lista de conversaciones, haz clic en "Ver" para la conversación deseada.
+  </Step>
+
+  <Step title="Busca 'create_appointment'">
+    Usa la búsqueda para encontrar mensajes con herramienta `create_appointment`.
+  </Step>
+
+  <Step title="Expande metadatos">
+    Haz clic en 🔧 para ver parámetros enviados a la herramienta.
+  </Step>
+
+  <Step title="Verifica datos">
+    Confirma que:
+    - Fecha y hora son correctas
+    - Servicio es el solicitado por el paciente
+    - Teléfono está en formato E.164 correcto (+34612345678)
+    - Nombre del paciente es correcto
+  </Step>
+
+  <Step title="Valida en calendario">
+    Ve al calendario de citas para confirmar que la cita existe en el sistema.
+  </Step>
+</Steps>
+
+### Debugging de Conversación Problemática
+
+**Objetivo**: Identificar por qué el bot no pudo ayudar al paciente.
+
+<Steps>
+  <Step title="Identifica síntomas">
+    ¿Qué indica que hay problema?
+    - Paciente repite la misma pregunta 3+ veces
+    - Bot invoca la misma herramienta múltiples veces sin éxito
+    - Conversación tiene 15+ mensajes sin resolver
+    - Paciente usa palabras como "error", "no funciona", "no entiendo"
+  </Step>
+
+  <Step title="Expande todos los metadatos">
+    Haz clic en "Expandir todos" para ver detalles técnicos completos.
+  </Step>
+
+  <Step title="Busca errores">
+    Revisa mensajes con banner rojo (⚠️ ERROR).
+  </Step>
+
+  <Step title="Analiza herramientas">
+    ¿Qué herramientas se invocaron?
+    - Si `get_availability` se llamó 5+ veces → problema con detección de disponibilidad
+    - Si `create_appointment` falló → problema con validación de datos
+    - Si `search_patient` falló → problema con formato de teléfono
+  </Step>
+
+  <Step title="Verifica parámetros">
+    Expande metadatos de herramientas fallidas para ver qué parámetros se enviaron.
+
+    **Problemas comunes**:
+    - Fecha en formato incorrecto (debe ser YYYY-MM-DD)
+    - Teléfono sin formato E.164 (+34...)
+    - Service ID incorrecto (no existe en DB)
+  </Step>
+
+  <Step title="Reporta con IDs">
+    Copia `message_id`, `conversation_id`, y `trace_id` (si LangSmith está activo) para reportar al equipo técnico.
+  </Step>
+</Steps>
+
+### Analizar Performance del Bot
+
+**Objetivo**: Identificar mensajes lentos que frustran al paciente.
+
+<Steps>
+  <Step title="Filtra por latencia alta">
+    Busca mensajes con ⏱️ Latencia > 10s.
+  </Step>
+
+  <Step title="Identifica patrón">
+    ¿La latencia alta es sistemática o aislada?
+    - **Sistemática**: Problema de infraestructura (DB lenta, API de OpenAI lenta)
+    - **Aislada**: Problema con herramienta específica o query compleja
+  </Step>
+
+  <Step title="Revisa cache status">
+    ¿Los resultados vienen de cache o requieren queries?
+    - **Cache HIT frecuente**: Sistema optimizado ✓
+    - **Cache MISS frecuente**: Cache no está funcionando, problema de TTL
+  </Step>
+
+  <Step title="Analiza herramientas lentas">
+    ¿Qué herramientas toman más tiempo?
+    - `get_availability` debería ser 2-5ms (cache) o 200-400ms (DB)
+    - `create_appointment` debería ser 400-600ms
+    - Si toma &gt;1s → problema de query o índices faltantes
+  </Step>
+
+  <Step title="Reporta performance issues">
+    Reporta a equipo técnico con:
+    - `message_id` del mensaje lento
+    - Latencia observada
+    - Herramienta invocada
+    - Cache status (HIT o MISS)
+  </Step>
+</Steps>
+
+## Exportar Historial
+
+### Copiar Conversación Completa
+
+Haz clic en el botón **"Copiar todo"** en la parte superior para copiar el historial completo al portapapeles.
+
+**Formato**:
+```
+Conversación con María García (+34612345678)
+Estado: Activa
+Fecha: 16/01/2026 - 17/01/2026
+
+[16/01/2026 14:30:15] Paciente:
+Hola, necesito un corte de pelo para mañana
+
+[16/01/2026 14:30:18] Bot:
+¡Hola María! Claro, te muestro disponibilidad...
+[Herramienta: get_availability]
+
+...
+```
+
+**Útil para**:
+- Compartir con equipo técnico
+- Documentar casos de uso
+- Reportar bugs con contexto completo
+
+### Descargar como JSON (Técnico)
+
+Haz clic en **"Descargar JSON"** para obtener el historial en formato JSON con todos los metadatos técnicos.
+
+**Formato**:
+```json
+{
+  "conversation_id": "conv_abc123",
+  "patient": {
+    "name": "María García",
+    "phone": "+34612345678"
+  },
+  "messages": [
+    {
+      "message_id": "msg_xyz789",
+      "timestamp": "2026-01-16T14:30:15Z",
+      "role": "user",
+      "content": "Hola, necesito un corte de pelo para mañana"
+    },
+    {
+      "message_id": "msg_abc456",
+      "timestamp": "2026-01-16T14:30:18Z",
+      "role": "assistant",
+      "content": "¡Hola María! Claro...",
+      "tool_calls": [
+        {
+          "tool": "get_availability",
+          "latency_ms": 2.35,
+          "cache_status": "HIT"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Útil para**:
+- Análisis técnico profundo
+- Import a herramientas de análisis (LangSmith, etc.)
+- Debugging avanzado
+
+## Mejores Prácticas
+
+<Tip>
+**Revisa conversaciones finalizadas**: Aunque parezca que todo salió bien, revisa conversaciones finalizadas para encontrar patrones de mejora.
+</Tip>
+
+<Tip>
+**Usa búsqueda para auditar**: Busca palabras clave como "cancelar", "error", "no entiendo" para identificar conversaciones problemáticas rápidamente.
+</Tip>
+
+<Warning>
+**No modifiques el historial**: El historial es read-only para preservar integridad de auditoría. Solo staff técnico puede modificar datos.
+</Warning>
+
+## Troubleshooting
+
+### No veo metadatos técnicos
+
+**Causa**: Los metadatos están contraídos por defecto.
+
+**Solución**: Haz clic en el icono 🔧 junto al mensaje o en "Expandir todos".
+
+### Mensaje aparece como "[Contenido no disponible]"
+
+**Causas posibles**:
+1. **Mensaje eliminado**: El paciente eliminó el mensaje en WhatsApp antes de que llegara al servidor
+2. **Formato no soportado**: El paciente envió un formato de mensaje que el sistema no procesa (video, imagen, documento)
+3. **Error de sincronización**: Problema temporal con Twilio webhook
+
+**Solución**: Si se repite, reporta a equipo técnico con `conversation_id`.
+
+### Latencia muy alta (>30s)
+
+**Causas comunes**:
+1. **API de OpenAI saturada**: Picos de tráfico en OpenAI
+2. **Base de datos lenta**: Queries complejas sin índices
+3. **Timeout de cache**: Cache expiró y requiere query completa
+
+**Qué hacer**:
+1. Verifica si es problema aislado o sistemático (revisa otras conversaciones)
+2. Si es sistemático, contacta a equipo técnico
+3. Si es aislado, simplemente reintenta la acción
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Pausar el Bot" icon="pause" href="/whatsapp/pause-bot">
+    Aprende a pausar el bot cuando detectes problemas
+  </Card>
+  <Card title="Enviar Mensaje Manual" icon="paper-plane" href="/whatsapp/send-manual-message">
+    Toma control manualmente para responder como staff
+  </Card>
+</CardGroup>
