@@ -1,329 +1,307 @@
 ---
-title: 'Common Issues'
-description: 'Troubleshooting guide for the most frequent problems in the clinic management system'
+title: 'Problemas Comunes'
+description: 'Soluciones a los 5 problemas más frecuentes del sistema'
 icon: 'circle-exclamation'
 ---
 
 <Note>
-This page lists the top 10 most common issues reported by users. For specific troubleshooting guides, see the links at the bottom.
+Esta página lista los 5 problemas más comunes reportados por usuarios. Si tu problema no está aquí, [contacta soporte](/troubleshooting/contact-support).
 </Note>
 
-<Frame>
-  <img src="/images/screenshots/troubleshooting_common_errors.png" alt="Panel de troubleshooting mostrando errores comunes y sus soluciones" />
-</Frame>
+---
 
-## Top 10 Common Issues
+## Top 5 Problemas Más Comunes
 
 <AccordionGroup>
-  <Accordion title="Cannot log in - 'Invalid credentials' error" icon="lock">
-    **Symptom**: Login fails with "Invalid email or password" error message.
+  <Accordion title="1. No se muestran horarios disponibles en el calendario" icon="calendar-xmark">
+    **Síntoma:** El calendario muestra "No hay horarios disponibles" aunque la clínica esté abierta.
 
-    **Diagnosis**:
-    - Wrong email or password
-    - Account not activated
-    - Password expired (90+ days)
-    - Email case sensitivity issue
+    **Causas comunes:**
+    - Horarios de trabajo no configurados (clínica o proveedor)
+    - Hay un cierre programado activo
+    - Alcanzaste el límite de citas de tu plan
+    - El servicio requiere recursos que están ocupados
 
-    **Solution**:
+    **Solución paso a paso:**
+
     <Steps>
-      <Step title="Verify email format">
-        Ensure email is exactly as registered (case-sensitive). Check for extra spaces.
+      <Step title="Verificar Horarios de Clínica">
+        1. Ve a **Configuración de Horarios** → **Horarios de Clínica**
+        2. Verifica que hay horarios configurados para el día que buscas
+        3. Ejemplo: Si buscas el lunes, debe haber un horario de lunes configurado
       </Step>
-      <Step title="Reset password">
-        Click "Forgot password?" and follow email instructions.
+
+      <Step title="Verificar Horarios de Proveedor">
+        1. Ve a **Equipo** → Selecciona el proveedor
+        2. Haz clic en **"Horarios"**
+        3. Verifica que el proveedor trabaja ese día
+        4. **Importante:** Los horarios del proveedor deben estar dentro de los horarios de clínica
       </Step>
-      <Step title="Check account status">
-        Contact your clinic admin to verify your account is `APPROVED` status.
+
+      <Step title="Verificar Cierres">
+        1. Ve a **Cierres y Vacaciones** → **Ver Próximos Cierres**
+        2. Verifica que no haya un cierre activo para esa fecha
+        3. Si hay un cierre, cancelarlo o elegir otra fecha
       </Step>
-      <Step title="Clear browser cache">
-        Sometimes cached cookies cause login issues. Try incognito mode.
+
+      <Step title="Verificar Límite de Suscripción">
+        1. Ve a **Suscripción**
+        2. Revisa "Citas Usadas" vs. "Límite"
+        3. Si alcanzaste el límite:
+           - Activa overage en **Suscripción** → **Configuración de Overage**
+           - O haz upgrade a un plan superior
       </Step>
     </Steps>
 
-    <Warning>
-    If you've been inactive for 90+ days, your password may have expired. You'll need to reset it via email.
-    </Warning>
+    <Tip>
+    **Regla clave:** Para que un slot esté disponible, DEBEN cumplirse:
+    1. Clínica abierta ✅
+    2. Proveedor trabajando ✅
+    3. No hay cita en ese horario ✅
+    4. No hay cierre programado ✅
+    5. No alcanzaste límite de suscripción ✅
+    </Tip>
   </Accordion>
 
-  <Accordion title="No available time slots shown" icon="calendar-xmark">
-    **Symptom**: Availability calendar shows "No slots available" even though clinic is open.
+  <Accordion title="2. El bot de WhatsApp no responde a los pacientes" icon="message-xmark">
+    **Síntoma:** Un paciente envía mensaje al WhatsApp de la clínica pero no recibe respuesta.
 
-    **Diagnosis**:
-    - Work hours not configured (clinic or provider)
-    - Closure period active
-    - Subscription limit reached
-    - All resources booked
+    **Causas comunes:**
+    - WhatsApp no está activado
+    - Webhook de Twilio mal configurado
+    - Credenciales de Twilio o OpenAI inválidas
+    - Número de teléfono en formato incorrecto
 
-    **Solution**:
+    **Solución paso a paso:**
+
     <Steps>
-      <Step title="Verify work hours">
-        Go to **Configuration** → **Work Hours** and ensure both clinic-level AND provider-level hours are set.
+      <Step title="Verificar que WhatsApp esté Activo">
+        1. Ve a **Configuración** → **Integraciones** → **WhatsApp**
+        2. Verifica que el toggle esté **ACTIVO** (verde)
+        3. Si está inactivo, actívalo y guarda cambios
       </Step>
-      <Step title="Check for closures">
-        Go to **Closures** and verify there are no active closures for the selected date.
+
+      <Step title="Verificar Credenciales">
+        1. En la misma sección de WhatsApp, verifica:
+           - **Account SID** de Twilio (debe empezar con "AC...")
+           - **Auth Token** de Twilio
+           - **API Key de OpenAI** (debe empezar con "sk-...")
+        2. Si alguna está incorrecta, actualízala y guarda
       </Step>
-      <Step title="Verify subscription limits">
-        Go to **Settings** → **Subscription** and check if you've reached your monthly appointment limit.
+
+      <Step title="Verificar Webhook en Twilio">
+        1. Ve a [Twilio Console → Messaging](https://console.twilio.com)
+        2. Selecciona tu número de WhatsApp
+        3. En **"When a message comes in"**, verifica que la URL sea:
+           ```
+           https://tudominio.com/api/whatsapp/webhook
+           ```
+        4. Método debe ser: **POST**
       </Step>
-      <Step title="Review resource availability">
-        If service requires resources, ensure resources are configured and available.
+
+      <Step title="Probar con Mensaje de Prueba">
+        1. Desde otro teléfono, envía: "Hola"
+        2. Deberías recibir respuesta en 2-5 segundos
+        3. Si no hay respuesta, revisa los pasos anteriores
       </Step>
     </Steps>
 
-    See [Availability Incorrect](/troubleshooting/availability-incorrect) for detailed debugging.
+    <Card href="/getting-started/whatsapp-setup">
+      Ver guía completa de configuración de WhatsApp
+    </Card>
   </Accordion>
 
-  <Accordion title="WhatsApp bot not responding" icon="message-xmark">
-    **Symptom**: Patient sends message to WhatsApp number but receives no response.
+  <Accordion title="3. Error al crear cita: 'Horario no disponible'" icon="calendar-circle-exclamation">
+    **Síntoma:** Intentas crear una cita y aparece "El horario seleccionado no está disponible" aunque lo veas en el calendario.
 
-    **Diagnosis**:
-    - WhatsApp integration disabled
-    - Grace period expired (30 days without appointments)
-    - Twilio credentials invalid
-    - OpenAI API key expired
+    **Causas comunes:**
+    - Otro usuario acabó de agendar ese horario
+    - El proveedor tiene otra cita que se sobrepone
+    - El servicio es muy largo para el tiempo restante
+    - Problemas de sincronización del navegador
 
-    **Solution**:
+    **Solución paso a paso:**
+
     <Steps>
-      <Step title="Verify WhatsApp is active">
-        Go to **Settings** → **WhatsApp** and check that integration is ACTIVE (green status).
+      <Step title="Refrescar el Calendario">
+        1. Refresca la página (F5 o Ctrl+R)
+        2. El sistema actualizará los slots disponibles
+        3. Elige un horario diferente si el anterior ya no está
       </Step>
-      <Step title="Check grace period">
-        If you haven't created appointments in 30+ days, WhatsApp auto-disables. Create an appointment to reactivate.
-      </Step>
-      <Step title="Verify Twilio webhook">
-        In Twilio console, check that webhook URL points to your backend: `https://your-domain.com/v1/whatsapp/webhook`
-      </Step>
-      <Step title="Test manually">
-        Send a test message like "Hola" from a different phone number.
-      </Step>
-    </Steps>
 
-    See [WhatsApp Not Working](/troubleshooting/whatsapp-not-working) for comprehensive debugging.
-  </Accordion>
-
-  <Accordion title="Cannot create appointment - 'Time not available' error" icon="calendar-circle-exclamation">
-    **Symptom**: System shows available slots but creation fails with "El horario solicitado no está disponible".
-
-    **Diagnosis**:
-    - Race condition (slot booked by another user)
-    - Timezone mismatch (UTC vs local)
-    - Service duration conflict
-    - Resource conflict
-
-    **Solution**:
-    <Steps>
-      <Step title="Refresh availability">
-        Click **Refresh** to get latest available slots (cache may be stale).
+      <Step title="Verificar Duración del Servicio">
+        1. Si el servicio dura 60 min, necesitas 60 min libres
+        2. Si solo quedan 30 min antes del siguiente horario ocupado, ese slot no sirve
+        3. Busca un slot con duración suficiente
       </Step>
-      <Step title="Verify timezone">
-        System stores in UTC but displays in clinic timezone (default: Europe/Madrid). Check browser timezone settings.
-      </Step>
-      <Step title="Check service duration">
-        Ensure selected slot has enough time for service duration + buffer_before.
-      </Step>
-      <Step title="Retry with different slot">
-        If issue persists with same slot, try a different time.
-      </Step>
-    </Steps>
 
-    <Warning>
-    If you consistently see this error, there may be a timezone configuration issue. Contact support with your clinic ID and timestamp.
-    </Warning>
-  </Accordion>
-
-  <Accordion title="Phone number not accepted - Invalid format error" icon="phone-xmark">
-    **Symptom**: System rejects phone number with "Invalid phone format" error.
-
-    **Diagnosis**:
-    - Phone not in E.164 format
-    - Missing country code
-    - Invalid characters (spaces, dashes, parentheses)
-
-    **Solution**:
-    <Steps>
-      <Step title="Use E.164 format">
-        Required format: `+[country code][number]`
-
-        Examples:
-        - Spain: `+34612345678` ✅
-        - US: `+14155551234` ✅
-        - Wrong: `612345678` ❌
-        - Wrong: `+34 612 345 678` ❌
-      </Step>
-      <Step title="Remove formatting">
-        Remove spaces, dashes, parentheses: `(612) 345-678` → `+34612345678`
-      </Step>
-      <Step title="Verify country code">
-        Spain (+34), US (+1), Mexico (+52), Argentina (+54), etc.
+      <Step title="Elegir Horario Alternativo">
+        1. Elige un horario diferente cercano al original
+        2. O elige otro día
+        3. El sistema solo muestra slots que realmente están libres
       </Step>
     </Steps>
 
     <Info>
-    The system automatically normalizes phone numbers on the backend, but the UI input must be valid E.164 to pass validation.
+    **¿Por qué pasa esto?** Entre el momento en que ves el calendario y haces clic para agendar, otro usuario pudo haber tomado ese horario. El sistema previene doble-booking verificando disponibilidad en tiempo real al crear la cita.
     </Info>
   </Accordion>
 
-  <Accordion title="Dashboard not updating with recent appointments" icon="chart-line-down">
-    **Symptom**: Dashboard stats (appointments count, revenue) not reflecting recent changes.
+  <Accordion title="4. Número de teléfono no aceptado - Error de formato" icon="phone-xmark">
+    **Síntoma:** Al crear una cita, aparece "Formato de teléfono inválido" aunque el número parezca correcto.
 
-    **Diagnosis**:
-    - Cache not invalidated
-    - Browser cache stale
-    - Background job delayed
+    **Causa:** El sistema requiere formato E.164 internacional.
 
-    **Solution**:
+    **Formato correcto:**
+
+    ```
+    +[código país][número completo sin espacios ni guiones]
+    ```
+
+    **Ejemplos correctos:**
+    - México: `+521234567890`
+    - USA: `+11234567890`
+    - España: `+341234567890`
+    - Argentina: `+541134567890`
+
+    **Ejemplos incorrectos:**
+    - ❌ `1234567890` (falta código de país con +)
+    - ❌ `+52 123 456 7890` (tiene espacios)
+    - ❌ `+52-123-456-7890` (tiene guiones)
+    - ❌ `0521234567890` (empieza con 0 en lugar de +)
+
+    **Solución:**
+
     <Steps>
-      <Step title="Refresh browser">
-        Press `Ctrl+F5` (Windows) or `Cmd+Shift+R` (Mac) to force refresh.
-      </Step>
-      <Step title="Wait 1-2 minutes">
-        Dashboard stats are cached for 30 seconds. Recent changes may take up to 2 minutes to appear.
-      </Step>
-      <Step title="Clear browser cache">
-        Go to browser settings and clear cached data for the last hour.
-      </Step>
-      <Step title="Check appointment status">
-        Verify appointment status is `CONFIRMED` or `COMPLETED`. `CANCELLED` appointments don't count in stats.
-      </Step>
-    </Steps>
-  </Accordion>
+      <Step title="Encontrar tu Código de País">
+        Busca el código de tu país:
+        - México: +52
+        - USA/Canadá: +1
+        - España: +34
+        - Argentina: +54
+        - Colombia: +57
+        - Chile: +56
+        - Perú: +51
 
-  <Accordion title="Cannot delete service - 'Service has appointments' error" icon="trash-xmark">
-    **Symptom**: Service deletion fails with error "Cannot delete service with existing appointments".
-
-    **Diagnosis**:
-    - Service has past appointments (audit trail)
-    - Service has future appointments (data integrity)
-
-    **Solution**:
-    <Steps>
-      <Step title="Cancel future appointments first">
-        Go to **Appointments** → Filter by service → Cancel all future appointments.
+        [Lista completa de códigos](https://en.wikipedia.org/wiki/List_of_country_calling_codes)
       </Step>
-      <Step title="Deactivate instead of delete">
-        If service has past appointments, use **Deactivate** instead of delete. This preserves history.
+
+      <Step title="Formatear el Número">
+        1. Empieza con `+`
+        2. Añade el código de país (ej: 52 para México)
+        3. Añade el número completo sin espacios ni guiones
+        4. Ejemplo: `+521234567890`
       </Step>
-      <Step title="Wait for appointments to complete">
-        Alternatively, wait for all appointments to complete naturally, then delete.
+
+      <Step title="Copiar y Pegar">
+        Para evitar errores de tipeo:
+        1. Formatea el número en un editor de texto
+        2. Copia el número completo (Ctrl+C)
+        3. Pega en el campo de teléfono (Ctrl+V)
       </Step>
     </Steps>
 
     <Warning>
-    Deleting a service with appointments would break data integrity. The system enforces this constraint at the database level.
+    **Importante:** El código de país SIEMPRE incluye el signo `+` al inicio. Sin el `+`, el número será rechazado.
     </Warning>
   </Accordion>
 
-  <Accordion title="Closure not blocking appointments" icon="door-open">
-    **Symptom**: Created closure period but system still shows available slots.
+  <Accordion title="5. Error al guardar horarios: 'Los horarios se sobreponen'" icon="clock-rotate-left">
+    **Síntoma:** Al intentar guardar horarios de trabajo, aparece "Los horarios tienen sobreposición".
 
-    **Diagnosis**:
-    - Closure `starts_at` / `ends_at` incorrect timezone
-    - Provider-specific closure (doesn't affect other providers)
-    - Cache not invalidated
+    **Causa:** Estás intentando crear horarios que se sobreponen entre sí.
 
-    **Solution**:
+    **Ejemplo de sobreposición:**
+    ```
+    ❌ Horario 1: Lunes 9:00 AM - 6:00 PM
+    ❌ Horario 2: Lunes 2:00 PM - 8:00 PM
+    (Se sobreponen de 2:00 PM a 6:00 PM)
+    ```
+
+    **Solución paso a paso:**
+
     <Steps>
-      <Step title="Verify closure dates">
-        Go to **Closures** and check `starts_at` and `ends_at` are in correct timezone (should show as local time).
+      <Step title="Identificar el Conflicto">
+        1. Ve a **Configuración de Horarios**
+        2. Revisa todos los horarios configurados
+        3. Busca dos horarios que compartan:
+           - Mismo día de la semana
+           - Horas que se sobreponen
       </Step>
-      <Step title="Check if provider-specific">
-        If closure is provider-specific, other providers will still show availability. Create clinic-level closure to block all.
-      </Step>
-      <Step title="Wait for cache invalidation">
-        Availability cache is 3 minutes. Wait up to 3 minutes and refresh.
-      </Step>
-      <Step title="Verify closure is active">
-        Check closure status is ACTIVE (not DRAFT or CANCELLED).
-      </Step>
-    </Steps>
-  </Accordion>
 
-  <Accordion title="Subscription limit reached but can't upgrade" icon="credit-card-blank">
-    **Symptom**: "Appointment limit reached" error but upgrade button doesn't work.
+      <Step title="Decidir Cómo Resolver">
+        **Opción 1: Combinar en un solo horario**
+        ```
+        ✅ Lunes: 9:00 AM - 8:00 PM (un solo período)
+        ```
 
-    **Diagnosis**:
-    - Stripe checkout session expired
-    - Payment method declined
-    - Browser blocked popup
+        **Opción 2: Crear horario partido (gap entre períodos)**
+        ```
+        ✅ Lunes: 9:00 AM - 1:00 PM (mañana)
+        ✅ Lunes: 3:00 PM - 8:00 PM (tarde)
+        (Gap de 1:00 PM a 3:00 PM para almuerzo)
+        ```
+      </Step>
 
-    **Solution**:
-    <Steps>
-      <Step title="Allow popups">
-        Ensure browser allows popups from your domain (Stripe checkout opens in new window).
-      </Step>
-      <Step title="Retry upgrade">
-        Click **Upgrade** again. Previous checkout session may have expired (60 minutes).
-      </Step>
-      <Step title="Check payment method">
-        Ensure credit card is valid and has sufficient funds.
-      </Step>
-      <Step title="Enable overage temporarily">
-        If urgent, enable **Allow Overage** in Settings → Subscription to continue with extra charges.
-      </Step>
-    </Steps>
-  </Accordion>
-
-  <Accordion title="Work hours not saving - Overlap error" icon="clock-rotate-left">
-    **Symptom**: Cannot save work hours with error "Work hours overlap".
-
-    **Diagnosis**:
-    - Two periods overlap (e.g., 09:00-14:00 and 13:00-17:00)
-    - Editing period overlaps with another existing period
-    - Database validation conflict
-
-    **Solution**:
-    <Steps>
-      <Step title="Check for overlaps">
-        Ensure no two periods share the same time:
-        - ❌ Period A: 09:00-14:00, Period B: 13:00-17:00 (OVERLAP 13:00-14:00)
-        - ✅ Period A: 09:00-13:00, Period B: 13:00-17:00 (CONTIGUOUS, no overlap)
-      </Step>
-      <Step title="Delete conflicting period first">
-        If editing, delete the existing period, then create the new one.
-      </Step>
-      <Step title="Use contiguous times">
-        If you want back-to-back periods, use the same time for end/start: 13:00-13:00 is allowed.
+      <Step title="Eliminar Horario Duplicado">
+        1. Si ya existe un horario, elimínalo primero
+        2. Luego crea el nuevo horario corregido
+        3. Guarda cambios
       </Step>
     </Steps>
 
-    <Info>
-    The system allows multiple non-contiguous periods per day (e.g., morning + afternoon shifts), but they cannot overlap.
-    </Info>
+    <Tip>
+    **Horario partido (mañana y tarde):** Si tu clínica tiene descanso al mediodía, crea DOS horarios separados con un gap entre ellos. Esto es correcto y no se considera sobreposición.
+    </Tip>
   </Accordion>
 </AccordionGroup>
 
-## Quick Links to Specific Troubleshooting
+---
+
+## ¿No Encontraste Tu Problema?
+
+Si tu problema no está en la lista anterior:
 
 <CardGroup cols={2}>
-  <Card title="WhatsApp Issues" icon="message-bot" href="/troubleshooting/whatsapp-not-working">
-    Bot not responding, voice messages, hallucinations
+  <Card title="Contactar Soporte" icon="headset" href="/troubleshooting/contact-support">
+    Nuestro equipo puede ayudarte con problemas específicos
   </Card>
-  <Card title="Availability Issues" icon="calendar-days" href="/troubleshooting/availability-incorrect">
-    No slots shown, timezone issues, work hours conflicts
+
+  <Card title="Preguntas Frecuentes" icon="circle-question" href="/faqs">
+    Revisa conceptos y preguntas comunes sobre el sistema
   </Card>
-  <Card title="Contact Support" icon="headset" href="/troubleshooting/contact-support">
-    How to report bugs and get help from the support team
+
+  <Card title="Guía de Configuración" icon="gear" href="/getting-started/initial-setup">
+    Verifica que tu clínica esté configurada correctamente
   </Card>
-  <Card title="FAQs" icon="circle-question" href="/faqs">
-    Frequently asked questions about features and usage
+
+  <Card title="Configurar WhatsApp" icon="message" href="/getting-started/whatsapp-setup">
+    Problemas específicos de WhatsApp
   </Card>
 </CardGroup>
 
-## Still Having Issues?
+---
 
-If your problem is not listed here, try these resources:
+## Consejos Generales para Evitar Problemas
 
-1. Check the [FAQs](/faqs) for answers to common questions
-2. Search the documentation using the search bar (top right)
-3. Review specific troubleshooting guides:
-   - [WhatsApp Not Working](/troubleshooting/whatsapp-not-working)
-   - [Availability Incorrect](/troubleshooting/availability-incorrect)
-4. [Contact Support](/troubleshooting/contact-support) with detailed information
+<AccordionGroup>
+  <Accordion title="Refresca la página regularmente" icon="rotate">
+    El calendario se actualiza en tiempo real, pero a veces tu navegador muestra información antigua. Refresca (F5) antes de crear citas importantes.
+  </Accordion>
 
-<Tip>
-Before contacting support, gather this information to speed up resolution:
-- Clinic ID (from Settings)
-- Exact error message (screenshot)
-- Steps to reproduce the issue
-- Browser and OS version
-</Tip>
+  <Accordion title="Usa Chrome o Firefox actualizado" icon="browser">
+    El sistema funciona mejor en navegadores modernos. Evita Internet Explorer y Opera Mini.
+  </Accordion>
+
+  <Accordion title="Verifica tu suscripción mensualmente" icon="chart-line">
+    Ve a **Suscripción** al inicio de cada mes para ver cuántas citas tienes disponibles. Evita sorpresas al alcanzar el límite.
+  </Accordion>
+
+  <Accordion title="Configura horarios correctamente" icon="clock">
+    Los horarios de proveedor DEBEN estar dentro de los horarios de clínica. Si la clínica abre a las 9 AM, no puedes configurar un proveedor desde las 8 AM.
+  </Accordion>
+
+  <Accordion title="Guarda números en formato E.164" icon="phone">
+    Crea una plantilla en tu teléfono o documento con el formato correcto: `+52XXXXXXXXXX` para evitar errores de tipeo.
+  </Accordion>
+</AccordionGroup>

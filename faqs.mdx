@@ -1,1077 +1,434 @@
 ---
-title: 'Frequently Asked Questions'
-description: 'Common questions about the clinic management system'
+title: 'Preguntas Frecuentes (FAQs)'
+description: 'Respuestas a las preguntas más comunes sobre el sistema de gestión de clínicas'
 icon: 'circle-question'
 ---
 
 <Note>
-Can't find your question? Check the [Troubleshooting Guide](/troubleshooting/common-issues) or [Contact Support](/troubleshooting/contact-support).
+¿No encuentras tu pregunta? Consulta la [Guía de Problemas Comunes](/troubleshooting/common-issues) o [Contacta Soporte](/troubleshooting/contact-support).
 </Note>
 
-## General Questions
+## Gestión de Cuentas y Clínicas
 
 <AccordionGroup>
-  <Accordion title="How do I change my password?" icon="key">
-    <Steps>
-      <Step title="Go to Settings">
-        Click your profile icon (top right) → **Settings**
-      </Step>
-      <Step title="Navigate to Security">
-        Select **Security** tab in left sidebar
-      </Step>
-      <Step title="Change password">
-        Click **Change Password** button
+  <Accordion title="¿Puedo gestionar múltiples clínicas con una sola cuenta?" icon="building">
+    **Sí**. Una sola cuenta de usuario puede estar asociada con múltiples clínicas.
 
-        Enter:
-        - Current password
-        - New password (min 8 characters, 1 uppercase, 1 number)
-        - Confirm new password
-      </Step>
-      <Step title="Save changes">
-        Click **Update Password**. You'll be logged out and must login with new password.
-      </Step>
-    </Steps>
+    **Cómo funciona:**
+    - Cada administrador de clínica te invita a su clínica
+    - Aceptas la invitación vía enlace en email
+    - Después de iniciar sesión, verás un **Selector de Clínica** (esquina superior izquierda)
+    - Puedes cambiar entre clínicas sin cerrar sesión
 
-    <Warning>
-    Passwords expire after 90 days. You'll be prompted to change it on login.
-    </Warning>
+    **Roles por clínica:**
+    - Puedes tener roles diferentes en diferentes clínicas
+    - Ejemplo: Admin en Clínica A, Staff en Clínica B
+    - Los permisos son por clínica (no globales)
+
+    **Clínica preferida:**
+    - Configúrala en **Configuración** → **General** → **Clínica Preferida**
+    - Después de iniciar sesión, serás redirigido a esta clínica por defecto
   </Accordion>
 
-  <Accordion title="Can I manage multiple clinics with one account?" icon="building">
-    **Yes**. A single user account can be associated with multiple clinics.
-
-    **How it works**:
-    - Each clinic admin invites you to their clinic
-    - You accept invitation via email link
-    - After login, you'll see a **Clinic Selector** (top left)
-    - Switch between clinics without logging out
-
-    **Roles per clinic**:
-    - You can have different roles in different clinics
-    - Example: Admin in Clinic A, Staff in Clinic B
-    - Permissions are per-clinic (not global)
-
-    **Preferred clinic**:
-    - Set in **Settings** → **General** → **Preferred Clinic**
-    - After login, you'll be redirected to this clinic by default
-
-    <Info>
-    Your email and phone are global (shared across clinics), but your name and preferences are per-clinic.
-    </Info>
-  </Accordion>
-
-  <Accordion title="Does the system work on mobile devices?" icon="mobile">
-    **Yes**, the dashboard is fully responsive and works on:
+  <Accordion title="¿Funciona el sistema en dispositivos móviles?" icon="mobile">
+    **Sí**, el sistema es completamente responsive y funciona en:
     - Smartphones (iOS, Android)
-    - Tablets (iPad, Android tablets)
-    - Desktop browsers (Chrome, Firefox, Safari, Edge)
+    - Tablets (iPad, tablets Android)
+    - Navegadores de escritorio (Chrome, Firefox, Safari, Edge)
 
-    **Recommended**:
-    - Use Chrome or Safari on mobile for best experience
-    - For WhatsApp integration, use mobile browser or desktop app
-    - For data entry (creating appointments, services), desktop is recommended
-
-    **Mobile app**: Native iOS/Android apps are on the roadmap but not yet available. Use the web app via browser.
+    **Recomendado:**
+    - Usa Chrome o Safari en móvil para mejor experiencia
+    - Para WhatsApp, usa navegador móvil o app de escritorio
+    - Para entrada de datos (crear citas, servicios), escritorio es más cómodo
   </Accordion>
 
-  <Accordion title="What browsers are compatible?" icon="browser">
-    **Fully supported**:
-    - Chrome 90+ (recommended)
-    - Firefox 88+
-    - Safari 14+
-    - Edge 90+
+  <Accordion title="¿Cómo exporto mis datos?" icon="download">
+    **Citas:**
+    1. Ve a **Citas** → **Ver Calendario**
+    2. Haz clic en **Exportar** (esquina superior derecha)
+    3. Selecciona formato: CSV o Excel
+    4. Elige rango de fechas y filtros
+    5. Descarga el archivo
 
-    **Partially supported** (some features may not work):
-    - Internet Explorer 11 (deprecated, not recommended)
-    - Older versions of above browsers
+    **Pacientes:**
+    1. Ve a **Pacientes**
+    2. Haz clic en **Exportar** → CSV
+    3. Datos incluidos: Nombre, Teléfono, Email, Última cita
 
-    **Not supported**:
-    - Internet Explorer 10 and below
-    - Opera Mini (mobile)
+    <Warning>
+    Los datos exportados contienen información personal. Manéjalos según las leyes de protección de datos de tu país.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Suscripción y Límites
+
+<AccordionGroup>
+  <Accordion title="¿Cuántas citas puedo crear por mes?" icon="calendar-days">
+    **Depende de tu plan de suscripción:**
+
+    | Plan | Citas/Mes | Overage |
+    |------|-----------|---------|
+    | FREE | 10 | No disponible |
+    | STARTER | 50 | $0.35/cita extra |
+    | PRO | 200 | $0.30/cita extra |
+    | BUSINESS | 500 | $0.25/cita extra |
+    | ENTERPRISE | Ilimitadas | Incluido |
+
+    **Cómo verificar tu uso:**
+    - Ve a **Suscripción**
+    - Verás "Citas Usadas" vs. "Límite"
+
+    **Qué pasa al alcanzar el límite:**
+    - **Con overage activado:** Puedes seguir agendando (se cobra por cita adicional)
+    - **Sin overage:** El sistema bloquea nuevas citas hasta el próximo período de facturación
+
+    **Período de facturación:**
+    - Se resetea mensualmente en tu fecha de aniversario de suscripción
+    - Ejemplo: Suscrito el 15 Nov → Se resetea el 15 Dic, 15 Ene, etc.
+
+    <Card href="/subscription/overview">
+      Ver detalles de planes y precios
+    </Card>
+  </Accordion>
+
+  <Accordion title="¿Qué es el overage y cómo funciona?" icon="chart-line-up">
+    El **overage** te permite exceder el límite de citas de tu plan pagando solo por las citas adicionales.
+
+    **Ejemplo:**
+    ```
+    Plan: STARTER (50 citas/mes, $29/mes)
+    Citas agendadas: 65
+    Citas extra: 15
+    Cargo overage: 15 × $0.35 = $5.25
+    Total facturado: $29 + $5.25 = $34.25
+    ```
+
+    **Activar overage:**
+    1. Ve a **Suscripción** → **Configuración de Overage**
+    2. Activa el toggle "Permitir Overage"
+    3. Confirma que entiendes el costo por cita adicional
+
+    **Cuándo usarlo:**
+    - Meses de alto volumen ocasional (ej: temporada alta)
+    - No quieres hacer upgrade permanente
+    - Pagas solo cuando lo necesitas
+  </Accordion>
+
+  <Accordion title="¿Las citas canceladas cuentan para mi límite mensual?" icon="calendar-xmark">
+    **Sí, las citas canceladas cuentan para tu límite mensual.**
+
+    Esto previene abuso del sistema (crear/cancelar repetidamente para bloquear slots).
+
+    **Efectos de cancelar una cita:**
+    - ✅ El slot queda disponible para otros pacientes
+    - ✅ El paciente recibe notificación de cancelación (si WhatsApp está activo)
+    - ⚠️ La cita sigue contando en tu límite mensual
+    - ⚠️ No recuperas el "cupo" de esa cita
+
+    **Consejo:** Planifica cuidadosamente antes de crear citas para minimizar cancelaciones.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Citas y Agendamiento
+
+<AccordionGroup>
+  <Accordion title="¿Cómo evita el sistema las reservas duplicadas (doble-booking)?" icon="copy">
+    El sistema previene automáticamente conflictos de horarios:
+
+    **Prevención:**
+    - Verifica disponibilidad en tiempo real antes de crear cita
+    - Valida que el proveedor no tenga otra cita en ese horario
+    - Verifica que los recursos necesarios estén disponibles
+    - Bloquea slots durante la transacción de creación
+
+    **Si intentas crear una cita conflictiva:**
+    ```
+    ❌ Error: El proveedor ya tiene una cita a esa hora
+    Cita existente: 10:00-10:30 con Paciente X
+    Cita nueva: 10:15-10:45 con Paciente Y
+    ```
+
+    El sistema te sugerirá slots alternativos cercanos al horario solicitado.
+  </Accordion>
+
+  <Accordion title="¿Puedo modificar citas pasadas?" icon="clock-rotate-left">
+    **No**. Las citas pasadas (hora de inicio < ahora) no pueden modificarse.
+
+    **Permitido:**
+    - Ver detalles de la cita
+    - Añadir notas o comentarios internos
+    - Marcar como "NO ASISTIÓ" si el paciente no vino
+
+    **No permitido:**
+    - Cambiar fecha/hora
+    - Cambiar paciente
+    - Cambiar servicio
+    - Eliminar la cita
+
+    **Razón:** Preserva el historial de auditoría y previene manipulación de datos.
+
+    **Alternativa:** Si necesitas corregir datos pasados, contacta soporte con:
+    - ID de la cita
+    - Campo a corregir
+    - Razón de la corrección
+  </Accordion>
+
+  <Accordion title="¿Por qué algunos horarios no están disponibles en el calendario?" icon="calendar-question">
+    Varios factores pueden hacer que un horario no esté disponible:
+
+    **1. Fuera de horario de clínica**
+    - La clínica no está abierta a esa hora
+    - Verifica: **Horarios de Trabajo** → **Horarios de Clínica**
+
+    **2. Proveedor no disponible**
+    - El proveedor no trabaja ese día/hora
+    - Verifica: **Equipo** → Selecciona proveedor → **Horarios**
+
+    **3. Ya hay una cita agendada**
+    - Otro paciente reservó ese slot
+    - El slot está bloqueado por mantenimiento
+
+    **4. Cierre programado**
+    - Hay vacaciones o día festivo configurado
+    - Verifica: **Cierres y Vacaciones** → **Ver Próximos Cierres**
+
+    **5. Servicio demasiado largo**
+    - El servicio dura 60 min pero solo quedan 30 min disponibles
+    - El sistema solo muestra slots con duración suficiente
+
+    <Card href="/troubleshooting/common-issues">
+      Ver más soluciones a problemas de disponibilidad
+    </Card>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## WhatsApp
+
+<AccordionGroup>
+  <Accordion title="¿Qué formato debe tener el número de teléfono?" icon="phone">
+    **Formato requerido: E.164**
+
+    El formato E.164 es el estándar internacional para números de teléfono:
+
+    ```
+    +[código país][número sin espacios ni guiones]
+    ```
+
+    **Ejemplos correctos:**
+    - México: `+521234567890` (código país: 52)
+    - USA: `+11234567890` (código país: 1)
+    - España: `+341234567890` (código país: 34)
+    - Argentina: `+541134567890` (código país: 54, área: 11)
+
+    **Ejemplos incorrectos:**
+    - ❌ `1234567890` (falta código de país)
+    - ❌ `+52 123 456 7890` (tiene espacios)
+    - ❌ `+52-123-456-7890` (tiene guiones)
+    - ❌ `0521234567890` (empieza con 0, no con +)
+
+    **Validación automática:**
+    El sistema valida el formato al crear citas. Si el formato es incorrecto, verás un error.
 
     <Tip>
-    For best experience, use the latest version of Chrome or Firefox. Enable JavaScript and cookies.
+    El código de país siempre incluye el signo `+` al inicio. Busca el código de tu país en [Wikipedia: Country calling codes](https://en.wikipedia.org/wiki/List_of_country_calling_codes).
     </Tip>
   </Accordion>
 
-  <Accordion title="How do I export my data?" icon="download">
-    **Appointments**:
-    1. Go to **Appointments**
-    2. Click **Export** button (top right)
-    3. Select format: CSV or Excel
-    4. Choose date range and filters
-    5. Download file
+  <Accordion title="¿Por qué no llegan los mensajes de WhatsApp?" icon="message-xmark">
+    **Causas comunes:**
 
-    **Patients**:
-    1. Go to **Patients**
-    2. Click **Export** → CSV
-    3. Data includes: Name, Phone, Email, Last appointment
+    **1. Número de teléfono incorrecto**
+    - Verifica que el número esté en formato E.164 (ej: +52XXXXXXXXXX)
+    - Revisa que el código de país sea correcto
 
-    **Reports**:
-    1. Go to **Dashboard** → **Reports**
-    2. Select report type (Revenue, Appointments, Services)
-    3. Choose date range
-    4. Click **Export to Excel**
+    **2. WhatsApp no está configurado**
+    - Ve a **Configuración** → **Integraciones** → **WhatsApp**
+    - Verifica que el bot esté activo (toggle verde)
 
-    <Warning>
-    Exported data contains personal information. Handle according to GDPR/data protection laws.
-    </Warning>
+    **3. El paciente no tiene WhatsApp**
+    - El número debe tener WhatsApp instalado y activo
+    - No se pueden enviar mensajes a números sin WhatsApp
+
+    **4. Problemas con Twilio**
+    - Verifica créditos en tu cuenta Twilio
+    - Revisa que el webhook esté configurado correctamente
+
+    **5. El bot está pausado**
+    - Ve a **Conversaciones WhatsApp**
+    - Verifica que el bot no esté pausado para ese paciente
+
+    <Card href="/getting-started/whatsapp-setup">
+      Ver guía completa de configuración de WhatsApp
+    </Card>
   </Accordion>
 </AccordionGroup>
 
-## Appointments
+---
+
+## Servicios y Proveedores
 
 <AccordionGroup>
-  <Accordion title="How many appointments can I create per month?" icon="calendar-days">
-    **Depends on your subscription plan**:
+  <Accordion title="¿Qué pasa si elimino un servicio que tiene citas futuras?" icon="trash">
+    Al eliminar un servicio con citas futuras:
 
-    | Plan | Appointments/Month | Overage Rate |
-    |------|-------------------|--------------|
-    | FREE | 10 | - |
-    | STARTER | 50 | €0.35/appointment |
-    | PRO | 200 | €0.30/appointment |
-    | BUSINESS | 500 | €0.25/appointment |
-    | ENTERPRISE | Unlimited | - |
+    **El sistema te preguntará:**
+    ```
+    ⚠️ Este servicio tiene 15 citas futuras agendadas.
+    ¿Qué deseas hacer?
 
-    **How to check**:
-    - Go to **Settings** → **Subscription**
-    - See "Appointments Used" vs "Limit"
+    1. Cancelar todas las citas futuras (no recomendado)
+    2. Desactivar el servicio (recomendado)
+    3. Cancelar la eliminación
+    ```
 
-    **What happens at limit**:
-    - If overage enabled: You can continue booking (charged per appointment)
-    - If overage disabled: System blocks new appointments until next billing period
+    **Opción recomendada: Desactivar**
+    - El servicio se oculta de la lista de servicios activos
+    - Las citas existentes se mantienen
+    - No puedes agendar nuevas citas con este servicio
+    - Puedes reactivarlo después si es necesario
 
-    **Billing period**:
-    - Resets monthly on your subscription anniversary date
-    - Example: Subscribed on Nov 15 → Resets on Dec 15, Jan 15, etc.
-
-    See [Subscription Plans](/subscription/plans) for details.
+    **Si cancelas las citas:**
+    - Se envían notificaciones automáticas a los pacientes
+    - Los slots quedan disponibles
+    - Debes contactar a los pacientes para reagendar con otro servicio
   </Accordion>
 
-  <Accordion title="What happens when I cancel an appointment?" icon="calendar-xmark">
-    **Immediate effects**:
-    - Status changes to `CANCELLED`
-    - Slot becomes available for other patients
-    - Patient receives WhatsApp cancellation notification (if enabled)
-    - Availability cache invalidated (new slots appear within 3 minutes)
+  <Accordion title="¿Puedo tener horarios diferentes para cada día de la semana?" icon="calendar-week">
+    **Sí**. Puedes configurar horarios únicos para cada día.
 
-    **Does NOT affect**:
-    - Subscription appointment count (cancelled appointments still count toward monthly limit)
-    - Past revenue reports (historical data preserved)
-    - Audit logs (cancellation is logged with reason)
+    **Ejemplo de configuración:**
+    ```
+    Lunes-Viernes: 9:00 AM - 6:00 PM
+    Sábado: 10:00 AM - 2:00 PM
+    Domingo: Cerrado
+    ```
 
-    **Re-booking**:
-    - Patient can book a new appointment (treated as new appointment)
-    - Original appointment ID is preserved (cannot be reused)
+    **Cómo configurar:**
+    1. Ve a **Configuración de Horarios** → **Horarios de Clínica**
+    2. Haz clic en **"+ Añadir Horario"**
+    3. Selecciona los días específicos
+    4. Define hora de inicio y fin
+    5. Repite para diferentes grupos de días
 
-    <Info>
-    Cancellations are soft deletes. Appointment record is preserved in database for audit trail but marked as CANCELLED.
-    </Info>
+    **Horario partido (mañana y tarde):**
+    También puedes tener múltiples períodos en el mismo día:
+    ```
+    Lunes: 9:00-13:00 y 15:00-19:00 (2 períodos)
+    ```
+
+    <Card href="/work-hours/multiple-periods">
+      Aprende a configurar múltiples períodos por día
+    </Card>
   </Accordion>
 
-  <Accordion title="Can I modify past appointments?" icon="clock-rotate-left">
-    **No**. Past appointments (start time < now) cannot be modified.
+  <Accordion title="¿Cuántos proveedores puedo añadir?" icon="users">
+    **Sin límite de proveedores en ningún plan.**
 
-    **Allowed**:
-    - View details
-    - Add notes (internal comments)
-    - Mark as `NO_SHOW` if patient didn't attend
+    Todos los planes (FREE, STARTER, PRO, BUSINESS, ENTERPRISE) permiten proveedores ilimitados.
 
-    **Not allowed**:
-    - Change datetime
-    - Change patient
-    - Change service
-    - Delete appointment
+    **Lo que SÍ está limitado es:**
+    - **Número de citas por mes** (depende del plan)
+    - No el número de proveedores
 
-    **Reason**: Preserves audit trail and prevents data manipulation.
+    **Ejemplo:**
+    - Plan STARTER: 50 citas/mes
+    - Puedes tener 10 proveedores
+    - Pero solo puedes agendar 50 citas en total entre todos los proveedores
 
-    **Workaround**: If you need to correct past data, contact support with:
-    - Appointment ID
-    - Field to correct
-    - Reason for correction
-    - Supporting documentation
-  </Accordion>
-
-  <Accordion title="How does the system prevent double-booking?" icon="copy">
-    **Database-level prevention**:
-
-    The system uses PostgreSQL **exclusion constraints** with GiST indexes to prevent overlapping appointments.
-
-    **How it works**:
-    - Database constraint checks clinic, provider, and time range
-    - Two appointments for same provider CANNOT overlap (even by 1 minute)
-    - Works at database level (bypasses application logic)
-    - Prevents race conditions (two users booking same slot simultaneously)
-
-    **Also prevents**:
-    - Resource conflicts (if service requires exclusive resource)
-    - Work hours violations (appointment outside provider work hours)
-
-    <Warning>
-    If you try to book overlapping slots, you'll see error: "El horario solicitado no está disponible" (even if UI showed it as available due to stale cache).
-    </Warning>
-  </Accordion>
-
-  <Accordion title="Can I reschedule an appointment to a past date?" icon="calendar-arrow-down">
-    **No**. Appointments can only be rescheduled to future dates.
-
-    **Validation rules**:
-    - New datetime must be > now (current time)
-    - New datetime must have availability (no conflicts)
-    - New datetime must be within work hours
-    - New datetime must respect service duration + buffers
-
-    **Error message**: "No puedes reagendar a una fecha pasada"
-
-    **Workaround**: If you need to record a past appointment, create a new appointment manually and set status to `COMPLETED`.
-  </Accordion>
-
-  <Accordion title="Why can't I see all appointment statuses?" icon="filter">
-    **Default filter**: Appointments page shows only `CONFIRMED` appointments by default.
-
-    **All statuses**:
-    - `CONFIRMED` - Future appointment (default view)
-    - `COMPLETED` - Past appointment that occurred
-    - `CANCELLED` - Cancelled by patient or clinic
-    - `NO_SHOW` - Patient didn't attend
-
-    **How to see all**:
-    1. Go to **Appointments**
-    2. Click **Status** filter dropdown
-    3. Select **All Statuses** or specific status
-
-    **Why filter exists**:
-    - Reduces clutter (most users only need to see upcoming appointments)
-    - Improves performance (fewer records loaded)
+    **Consejo:** Si tienes muchos proveedores y alto volumen de citas, considera un plan PRO o BUSINESS para mayor límite de citas mensuales.
   </Accordion>
 </AccordionGroup>
 
-## Services
+---
+
+## Conceptos Importantes
 
 <AccordionGroup>
-  <Accordion title="Can I import services from another clinic?" icon="file-import">
-    **Not directly**, but you can use templates:
+  <Accordion title="¿Qué es el período de gracia (grace period)?" icon="clock">
+    El **período de gracia** es un tiempo extra después de alcanzar tu límite de citas donde aún puedes agendar.
 
-    <Steps>
-      <Step title="Export services from source clinic">
-        1. Switch to source clinic
-        2. Go to **Services** → **Export** → CSV
-      </Step>
-      <Step title="Import to target clinic">
-        1. Switch to target clinic
-        2. Go to **Services** → **Import** → Upload CSV
-        3. System will create new services with same configuration
-      </Step>
-    </Steps>
+    **Cómo funciona:**
+    - Alcanzas el límite de tu plan (ej: 50 citas en STARTER)
+    - Tienes un período de gracia de **7 días**
+    - Durante esos 7 días, puedes agendar citas adicionales sin cargo
+    - Después de 7 días, se aplica overage (si está activado) o se bloquean nuevas citas
 
-    **What is copied**:
-    - Service name
-    - Duration
-    - Price
-    - Buffer before/after
-    - Resource requirements
+    **Ejemplo:**
+    ```
+    Plan: STARTER (50 citas/mes)
+    Fecha límite alcanzado: 20 de Enero
+    Período de gracia: 20-27 de Enero
+    Citas en gracia: 5 citas extra (sin cargo)
+    Después del 27 de Enero: Se aplica overage o se bloquea
+    ```
 
-    **What is NOT copied**:
-    - Service ID (new IDs generated)
-    - Past appointments (appointments stay in source clinic)
-    - Provider assignments (must reassign in target clinic)
+    **Razón:** Te da tiempo para hacer upgrade o planificar sin interrumpir el servicio a tus pacientes.
+
+    <Warning>
+    El período de gracia es una cortesía de una sola vez por mes. No es un límite extendido permanente.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="¿Qué son los recursos y cuándo usarlos?" icon="box">
+    Los **recursos** son equipos o espacios físicos necesarios para realizar un servicio.
+
+    **Ejemplos de recursos:**
+    - Sala de Operaciones
+    - Equipo Láser
+    - Camilla especial
+    - Máquina de Rayos X
+
+    **Cuándo usar recursos:**
+    - El servicio requiere equipo específico que puede estar ocupado
+    - Tienes espacios limitados (ej: 3 salas de tratamiento)
+    - Quieres evitar conflictos de disponibilidad de equipos
+
+    **Cómo funciona:**
+    1. Creas el recurso en **Configuración** → **Recursos**
+    2. Al crear un servicio, asignas los recursos necesarios
+    3. Al agendar una cita, el sistema verifica que el recurso esté disponible
+    4. Si el recurso está ocupado, ese slot no aparece como disponible
+
+    **Ejemplo:**
+    ```
+    Servicio: Depilación Láser
+    Recursos: Equipo Láser 1, Sala de Tratamiento 2
+
+    Si el Equipo Láser 1 está ocupado de 10:00-11:00,
+    no se puede agendar otra depilación láser en ese horario.
+    ```
 
     <Tip>
-    If you manage multiple similar clinics (e.g., franchise), create a "master clinic" with standard services, then export/import to new clinics.
+    No uses recursos si tu clínica tiene equipos ilimitados o suficientes para todas las citas. Solo úsalos cuando realmente sean limitados.
     </Tip>
   </Accordion>
-
-  <Accordion title="How many services can I create?" icon="list">
-    **No limit** on number of services.
-
-    **Recommendations**:
-    - Keep service names concise (show in dropdowns)
-    - Use categories for organization (e.g., "Haircut - Men", "Haircut - Women")
-    - Archive inactive services instead of deleting (preserves history)
-
-    **Performance**:
-    - UI performs well with 100+ services
-    - Use search/filter to find services quickly
-  </Accordion>
-
-  <Accordion title="Can I have services with different durations?" icon="clock">
-    **Yes**. Each service has its own duration.
-
-    **Examples**:
-    - Haircut: 30 minutes
-    - Haircut + Beard: 45 minutes
-    - Hair Coloring: 90 minutes
-
-    **How it affects availability**:
-    - System calculates slots dynamically based on service duration
-    - Longer services require larger contiguous free periods
-    - Buffers (before/after) are added on top of duration
-
-    **Configuration**:
-    1. Go to **Services** → Edit service
-    2. Set **Duration** (minutes)
-    3. Set **Buffer Before** (preparation time)
-    4. Set **Buffer After** (cleanup time)
-
-    <Info>
-    Duration + buffers must fit within work hours. If service is 90min + 15min buffer before + 15min buffer after = 120min total, you need at least a 2-hour work shift.
-    </Info>
-  </Accordion>
-
-  <Accordion title="What happens if I delete a service with future appointments?" icon="trash">
-    **System prevents deletion** with error:
-
-    "Cannot delete service with existing appointments"
-
-    **Options**:
-
-    <Tabs>
-      <Tab title="Cancel appointments first">
-        1. Go to **Appointments**
-        2. Filter by service
-        3. Cancel all future appointments
-        4. Return to **Services** → Delete service
-      </Tab>
-
-      <Tab title="Deactivate instead">
-        1. Go to **Services** → Edit service
-        2. Uncheck **Active**
-        3. Click **Save**
-
-        Service won't show in booking UI but appointments remain valid.
-      </Tab>
-
-      <Tab title="Wait for completion">
-        Wait until all appointments naturally complete (pass their datetime), then delete.
-      </Tab>
-    </Tabs>
-
-    **Why this restriction**:
-    - Deleting service would orphan appointments (appointments reference service ID)
-    - Breaks data integrity and reports
-    - Database constraint enforces this rule
-
-    <Warning>
-    Deactivating is recommended over deletion. Preserves historical data and audit trail.
-    </Warning>
-  </Accordion>
 </AccordionGroup>
 
-## Work Hours and Scheduling
+---
 
-<AccordionGroup>
-  <Accordion title="Can I have different hours for each day of the week?" icon="calendar-week">
-    **Yes**. Work hours are configured per weekday (Monday-Sunday).
+## ¿Aún tienes preguntas?
 
-    **Example configuration**:
-    - Monday-Friday: 09:00-19:00
-    - Saturday: 09:00-14:00
-    - Sunday: Closed (no work hours entry)
-
-    **How to set**:
-    1. Go to **Configuration** → **Work Hours**
-    2. Click **Add Period** for each weekday
-    3. Select weekday from dropdown (1=Monday, 7=Sunday)
-    4. Set open and close times
-
-    <Info>
-    Weekday numbering: 1=Monday, 2=Tuesday, ..., 6=Saturday, 7=Sunday (ISO 8601 standard)
-    </Info>
-  </Accordion>
-
-  <Accordion title="What are multiple time periods per day?" icon="clock-desk">
-    **Multiple time periods** = Non-contiguous work hours on same day.
-
-    **Use case**: Split shifts with lunch break
-
-    **Example**:
-    - Period 1: 09:00-13:00 (morning)
-    - Period 2: 15:00-19:00 (afternoon)
-    - Gap: 13:00-15:00 (no appointments)
-
-    **How to configure**:
-    1. Go to **Configuration** → **Work Hours**
-    2. Click **Add Period** → Select weekday=Monday
-    3. Set 09:00-13:00, click **Save**
-    4. Click **Add Period** → Select weekday=Monday again
-    5. Set 15:00-19:00, click **Save**
-
-    **Result**:
-    - Slots generated: 09:00, 09:30, 10:00, ..., 12:30, 15:00, 15:30, ..., 18:30
-    - No slots in gap: 13:00, 13:30, 14:00, 14:30 ✓
-
-    <Warning>
-    Periods CANNOT overlap. Example: 09:00-14:00 and 13:00-17:00 will be rejected (overlap 13:00-14:00).
-    </Warning>
-  </Accordion>
-
-  <Accordion title="How does the gap between work periods work?" icon="arrows-left-right">
-    **Gap** = Time range with no work hours entry.
-
-    **Behavior**:
-    - No slots generated in gap
-    - Appointments cannot be booked during gap
-    - Useful for lunch breaks, cleaning time, meetings
-
-    **Example**:
-    - Morning period: 09:00-13:00
-    - Afternoon period: 15:00-19:00
-    - Gap: 13:00-15:00 ✓ (no work hours entry)
-
-    **Contiguous periods (no gap)**:
-    - Period 1: 09:00-13:00
-    - Period 2: 13:00-17:00
-    - Gap: None ✓ (13:00 is the end of period 1 and start of period 2)
-
-    <Info>
-    Contiguous periods are allowed. If the close time of period A matches the open time of period B, there's no overlap.
-    </Info>
-  </Accordion>
-
-  <Accordion title="What happens if I don't configure work hours?" icon="calendar-question">
-    **Clinic-level work hours missing**:
-    - No availability shown (even if providers have work hours)
-    - System cannot calculate slots without operational window
-    - Error: "No available slots"
-
-    **Provider-level work hours missing**:
-    - Provider does not appear in availability calculations
-    - Other providers with work hours still show slots
-
-    **Fix**:
-    <Steps>
-      <Step title="Configure clinic hours">
-        Go to **Configuration** → **Work Hours** → **Clinic Hours**
-
-        Add at least one period for each working day.
-      </Step>
-      <Step title="Configure provider hours">
-        Go to **Providers** → Select provider → **Work Hours**
-
-        Add periods for each working day (must intersect with clinic hours).
-      </Step>
-    </Steps>
-
-    <Warning>
-    Work hours hierarchy: Clinic hours define operational window → Provider hours must intersect with clinic hours.
-    </Warning>
-  </Accordion>
-</AccordionGroup>
-
-## Closures
-
-<AccordionGroup>
-  <Accordion title="How far in advance should I create a closure?" icon="calendar-plus">
-    **Recommended**: At least 14 days in advance.
-
-    **Why**:
-    - System shows "Upcoming Closures" warnings 14 days before
-    - Gives patients time to reschedule
-    - High-impact closures trigger email notifications to affected patients
-
-    **Can I create last-minute closures**:
-    - Yes, you can create closures at any time
-    - But patients with appointments in that period will NOT be auto-notified
-    - You must manually contact affected patients
-
-    **Best practice**:
-    1. Create closure as soon as you know (e.g., vacation planned 3 months ahead)
-    2. Use **Impact Preview** to see affected appointments
-    3. Send notifications manually if needed (WhatsApp broadcast)
-
-    See [Closures - Impact Preview](/closures/impact-preview) for details.
-  </Accordion>
-
-  <Accordion title="Can I create a closure for just one provider?" icon="user-xmark">
-    **Yes**. Closures can be clinic-wide or provider-specific.
-
-    **Clinic-wide closure**:
-    - All providers affected
-    - No appointments allowed for ANY provider
-    - Example: Clinic renovation, national holiday
-
-    **Provider-specific closure**:
-    - Only selected provider affected
-    - Other providers still show availability
-    - Example: Provider vacation, sick leave
-
-    **How to create**:
-    <Tabs>
-      <Tab title="Clinic-wide">
-        1. Go to **Closures** → **Create**
-        2. Leave **Provider** dropdown empty (or select "All Providers")
-        3. Set dates and reason
-        4. Click **Create**
-      </Tab>
-
-      <Tab title="Provider-specific">
-        1. Go to **Closures** → **Create**
-        2. Select specific provider from dropdown
-        3. Set dates and reason
-        4. Click **Create**
-      </Tab>
-    </Tabs>
-
-    <Info>
-    You can create multiple closures for different providers on the same dates (e.g., Provider A vacation Nov 20-25, Provider B vacation Nov 22-27).
-    </Info>
-  </Accordion>
-
-  <Accordion title="What happens to appointments already booked during a closure?" icon="calendar-exclamation">
-    **When you create a closure**:
-    - Existing appointments in that period are NOT automatically cancelled
-    - System shows warning: "X appointments will be affected"
-    - You must manually cancel/reschedule them
-
-    **How to handle**:
-    <Steps>
-      <Step title="Preview impact">
-        Before creating closure, click **Impact Preview**
-
-        Shows:
-        - Number of affected appointments
-        - List of appointments with patient names and times
-      </Step>
-      <Step title="Create closure">
-        Click **Create Closure** (system confirms you understand impact)
-      </Step>
-      <Step title="Cancel appointments">
-        1. Go to **Appointments**
-        2. Filter by date range (closure start-end)
-        3. Filter by provider (if provider-specific)
-        4. Select all → **Bulk Cancel**
-      </Step>
-      <Step title="Notify patients">
-        System sends WhatsApp notifications on cancellation (if enabled).
-
-        Alternatively, use **Send SMS** or **Send Email** for bulk notifications.
-      </Step>
-    </Steps>
-
-    <Warning>
-    High-impact closures (all slots blocked) trigger automatic email notifications to clinic admin. You should manually notify affected patients.
-    </Warning>
-  </Accordion>
-
-  <Accordion title="How does the impact preview work?" icon="magnifying-glass-chart">
-    **Impact Preview** analyzes what would happen if you create a closure.
-
-    **Metrics shown**:
-    - Total appointments affected
-    - Appointments per day (breakdown)
-    - Availability reduction (percentage of slots blocked)
-    - Impact level: LOW / MEDIUM / HIGH
-
-    **Impact levels**:
-    - **LOW**: &lt;30% of slots blocked, few appointments affected
-    - **MEDIUM**: 30-70% of slots blocked
-    - **HIGH**: &gt;70% of slots blocked or all providers affected
-
-    **How to use**:
-    1. Go to **Closures** → **Create**
-    2. Fill in dates, provider (optional), reason
-    3. Click **Preview Impact** (before creating)
-    4. Review affected appointments
-    5. If acceptable, click **Create Closure**
-
-    See [Closures - Impact Preview](/closures/impact-preview) for detailed guide.
-  </Accordion>
-</AccordionGroup>
-
-## WhatsApp Integration
-
-<AccordionGroup>
-  <Accordion title="Does the WhatsApp bot work 24/7?" icon="clock">
-    **Yes**, the bot responds to messages at any time (24/7/365).
-
-    **But**:
-    - Availability shown is based on clinic work hours
-    - Patient can ask "quiero cita mañana a las 3am" → Bot will say "La clínica no está abierta a esa hora"
-    - Patient can ask for past dates → Bot will say "No puedes agendar en el pasado"
-
-    **Backend requirements**:
-    - Server must be running 24/7 (not localhost)
-    - Twilio webhook must be accessible (public URL, not localhost)
-    - OpenAI API must have credits
-
-    <Info>
-    If your clinic uses shared hosting or local server that shuts down overnight, the bot will NOT respond during downtime.
-    </Info>
-  </Accordion>
-
-  <Accordion title="What languages does the bot support?" icon="language">
-    **Optimized for**: Spanish (Castilian and Latin American)
-
-    **Experimental support**: English, Catalan, Portuguese
-
-    **How to change**:
-    - System prompt is in Spanish by default
-    - To add other languages, modify `app/services/clinic_agent/core/agent.py`
-    - LLM (GPT-4o-mini) supports 50+ languages natively
-
-    **Limitations**:
-    - Voice transcription (Whisper) works best with Spanish
-    - Vocabulary hints are Spanish-specific (appointment terms, months, days)
-    - Non-Spanish messages may have lower accuracy
-
-    <Tip>
-    If you need multi-language support, contact support. We can configure language detection and switch prompts dynamically.
-    </Tip>
-  </Accordion>
-
-  <Accordion title="Can I customize the bot's messages?" icon="message-pen">
-    **Partially customizable**:
-
-    **What you CAN customize**:
-    - Greeting message: "Bienvenido a {clinic_name}" → "Hola, ¿en qué te puedo ayudar?"
-    - Clinic name, address, contact info (appears in bot context)
-    - System prompt personality (friendly, formal, casual)
-
-    **What you CANNOT customize** (without code changes):
-    - Tool-generated messages (formatted_message bypass)
-    - Error messages ("No encontré citas activas")
-    - Availability response format
-
-    **How to customize**:
-    <Steps>
-      <Step title="Simple customization (via settings)">
-        Go to **Settings** → **WhatsApp** → **Bot Configuration**
-
-        Change:
-        - Greeting message
-        - Closing message
-        - No-availability message
-      </Step>
-      <Step title="Advanced customization (code)">
-        Contact support to modify:
-        - System prompt in `app/services/clinic_agent/core/agent.py`
-        - Formatted messages in `app/services/clinic_agent/infrastructure/formatters.py`
-      </Step>
-    </Steps>
-
-    <Warning>
-    Modifying system prompt may affect bot accuracy. Test thoroughly with golden set scenarios after changes.
-    </Warning>
-  </Accordion>
-
-  <Accordion title="What happens with WhatsApp voice messages?" icon="microphone">
-    **Automatic transcription**:
-
-    1. Patient sends voice message via WhatsApp
-    2. System downloads audio from Twilio
-    3. OpenAI Whisper API transcribes to text (Spanish)
-    4. Transcribed text is processed like normal text message
-    5. Bot responds normally
-
-    **Quality factors**:
-    - Audio &gt;5 seconds: Good transcription quality
-    - Audio &lt;5 seconds: Poor quality, may be rejected as "hallucination"
-    - Clear speech, no background noise: Best results
-    - Appointment-related vocabulary: Higher accuracy
-
-    **Cost**: ~$0.006 per minute of audio
-
-    **Limitations**:
-    - Very short audio (&lt;3 seconds) is often gibberish
-    - Heavy background noise causes errors
-    - Non-Spanish audio has lower accuracy
-
-    **Error handling**:
-    - If transcription is gibberish (detected via hallucination filter), bot responds:
-      "No pude entender tu mensaje de voz. ¿Podrías escribirlo o enviarlo de nuevo?"
-
-    See [WhatsApp - Voice Messages](/whatsapp/voice-messages) for details.
-  </Accordion>
-
-  <Accordion title="How do I pause the bot temporarily?" icon="pause">
-    **Option 1: Deactivate WhatsApp integration**
-    <Steps>
-      <Step title="Go to Settings">
-        **Settings** → **WhatsApp**
-      </Step>
-      <Step title="Toggle off">
-        Turn off **WhatsApp Active** toggle
-
-        Status changes to INACTIVE (gray)
-      </Step>
-    </Steps>
-
-    **Result**:
-    - Bot stops responding to messages
-    - Patients receive no response (as if bot is offline)
-    - Reactivate by toggling back on
-
-    **Option 2: Auto-pause (grace period)**
-    - If no appointments created for 30+ days, system auto-deactivates WhatsApp
-    - Create any appointment to reactivate
-    - Prevents API costs for inactive clinics
-
-    <Info>
-    Pausing WhatsApp does NOT affect manual appointment booking via dashboard.
-    </Info>
-  </Accordion>
-</AccordionGroup>
-
-## Subscriptions and Billing
-
-<AccordionGroup>
-  <Accordion title="What subscription plan do I need?" icon="credit-card">
-    **Depends on monthly appointment volume**:
-
-    <CardGroup cols={2}>
-      <Card title="FREE" icon="gift">
-        **10 appointments/month**
-
-        Good for:
-        - Testing the system
-        - Very small clinics (1-2 clients/day)
-        - Side projects
-
-        Limitations:
-        - No overage allowed
-        - Basic features only
-      </Card>
-
-      <Card title="STARTER" icon="rocket">
-        **50 appointments/month** - €29/month
-
-        Good for:
-        - Small clinics (2-3 clients/day)
-        - Solo practitioners
-        - Barbershops, beauty salons
-
-        Includes:
-        - WhatsApp bot
-        - Overage: €0.35/appointment
-      </Card>
-
-      <Card title="PRO" icon="star">
-        **200 appointments/month** - €99/month
-
-        Good for:
-        - Medium clinics (7-10 clients/day)
-        - Multi-provider clinics
-        - Dental clinics, medical practices
-
-        Includes:
-        - All features
-        - Overage: €0.30/appointment
-      </Card>
-
-      <Card title="BUSINESS" icon="building">
-        **500 appointments/month** - €199/month
-
-        Good for:
-        - Large clinics (17-20 clients/day)
-        - Franchises
-        - Multi-location businesses
-
-        Includes:
-        - Priority support
-        - Overage: €0.25/appointment
-      </Card>
-    </CardGroup>
-
-    **How to calculate**:
-    - Count appointments in last 30 days
-    - Add 20% buffer for growth
-    - Choose plan that covers peak month
-
-    Example: 45 appointments/month → Choose STARTER (50 limit)
-
-    See [Subscription Plans](/subscription/plans) for detailed comparison.
-  </Accordion>
-
-  <Accordion title="How does overage work?" icon="plus-minus">
-    **Overage** = Appointments beyond monthly limit, charged per appointment.
-
-    **How it works**:
-    <Steps>
-      <Step title="Enable overage">
-        Go to **Settings** → **Subscription** → **Allow Overage** (toggle ON)
-      </Step>
-      <Step title="Create appointments beyond limit">
-        Example: STARTER plan (50 limit)
-        - Appointments 1-50: Included in €29/month
-        - Appointment 51: +€0.35
-        - Appointment 52: +€0.35
-        - Total: €29 + €0.70 = €29.70
-      </Step>
-      <Step title="Billing">
-        Overage charges appear on next invoice:
-        - Base plan: €29.00
-        - Overage (2 appointments @ €0.35): €0.70
-        - Total: €29.70
-      </Step>
-    </Steps>
-
-    **Overage rates** (per plan):
-    - STARTER: €0.35/appointment
-    - PRO: €0.30/appointment
-    - BUSINESS: €0.25/appointment
-    - ENTERPRISE: Unlimited (no overage)
-
-    **When to enable**:
-    - Seasonal spikes (holidays, summer)
-    - Temporary growth before upgrading plan
-    - Unpredictable appointment volume
-
-    <Warning>
-    If overage is DISABLED and you reach limit, system blocks new appointments until next billing period.
-    </Warning>
-  </Accordion>
-
-  <Accordion title="Can I downgrade my subscription?" icon="down-left-and-up-right-to-center">
-    **Yes**, using Stripe Subscription Schedules.
-
-    **How it works**:
-    <Steps>
-      <Step title="Request downgrade">
-        Go to **Settings** → **Subscription** → **Change Plan**
-
-        Select lower plan (e.g., PRO → STARTER)
-      </Step>
-      <Step title="Schedule created">
-        System creates a **Subscription Schedule**:
-        - Phase 1: Current plan (PRO) until billing period end
-        - Phase 2: New plan (STARTER) starting at next billing date
-
-        Example: If billing date is Dec 15, downgrade takes effect Dec 15.
-      </Step>
-      <Step title="Continue using current plan">
-        You keep current plan (PRO) until billing period ends.
-      </Step>
-      <Step title="Downgrade applied">
-        On next billing date, plan changes to STARTER automatically.
-      </Step>
-    </Steps>
-
-    **Important**:
-    - No prorated refund for unused portion of current plan
-    - Downgrade takes effect at END of billing period (not immediately)
-    - You can cancel pending downgrade before it applies
-
-    <Info>
-    If you need immediate downgrade (emergency), contact support. We can apply downgrade manually with prorated refund.
-    </Info>
-  </Accordion>
-
-  <Accordion title="When does the appointment counter reset?" icon="arrows-rotate">
-    **Billing period** = 30 days from subscription start date.
-
-    **Example**:
-    - Subscribed on Nov 15, 2025
-    - Billing periods:
-      - Period 1: Nov 15 - Dec 14 (30 days)
-      - Period 2: Dec 15 - Jan 13 (30 days)
-      - Period 3: Jan 14 - Feb 12 (30 days)
-
-    **Appointment counter resets** on each billing start date:
-    - Nov 15: Counter = 0 (starts counting)
-    - Dec 14: Counter = 32 (end of period 1)
-    - Dec 15: Counter = 0 (reset for period 2)
-
-    **How to check**:
-    - Go to **Settings** → **Subscription**
-    - See "Billing Period: Nov 15 - Dec 14"
-    - See "Appointments Used: 32 / 50"
-
-    <Warning>
-    Counter resets on billing date, NOT calendar month (e.g., NOT always on the 1st).
-    </Warning>
-  </Accordion>
-
-  <Accordion title="What happens if I reach the appointment limit?" icon="ban">
-    **Depends on overage setting**:
-
-    <Tabs>
-      <Tab title="Overage ENABLED">
-        - System allows creating appointments beyond limit
-        - Each extra appointment costs overage rate (€0.35, €0.30, or €0.25 depending on plan)
-        - Charges appear on next invoice
-        - No interruption to service
-      </Tab>
-
-      <Tab title="Overage DISABLED">
-        - System blocks new appointments with error:
-          "Has alcanzado el límite de citas de tu plan. Actualiza tu plan o habilita sobrecargo."
-        - Dashboard shows warning banner
-        - WhatsApp bot responds: "Lo siento, la clínica ha alcanzado su límite mensual de citas. Por favor, contacta con la clínica."
-        - Existing appointments remain valid
-        - Patients cannot book until:
-          - You upgrade plan, OR
-          - You enable overage, OR
-          - Next billing period starts (counter resets)
-      </Tab>
-    </Tabs>
-
-    **How to resolve**:
-    <Steps>
-      <Step title="Quick fix: Enable overage">
-        **Settings** → **Subscription** → **Allow Overage** (toggle ON)
-
-        Immediate effect - patients can book again.
-      </Step>
-      <Step title="Permanent fix: Upgrade plan">
-        **Settings** → **Subscription** → **Change Plan** → Select higher tier
-
-        Takes effect immediately (prorated billing).
-      </Step>
-    </Steps>
-  </Accordion>
-</AccordionGroup>
-
-## Security and Privacy
-
-<AccordionGroup>
-  <Accordion title="Are my clinic's data secure?" icon="shield-check">
-    **Yes**. Security measures include:
-
-    **Data encryption**:
-    - In transit: TLS 1.3 (HTTPS)
-    - At rest: PostgreSQL encryption
-    - Passwords: bcrypt hashing (never stored in plain text)
-
-    **Access control**:
-    - Role-based permissions (ADMIN, STAFF, PROVIDER)
-    - Multi-tenant Row Level Security (RLS) - clinics cannot see each other's data
-    - JWT authentication with secure HttpOnly cookies
-
-    **Infrastructure**:
-    - Hosted on AWS / Google Cloud (SOC 2 compliant)
-    - Daily backups (30-day retention)
-    - DDoS protection (CloudFlare)
-
-    **Compliance**:
-    - GDPR compliant (data protection, right to deletion)
-    - HIPAA-ready architecture (for medical clinics)
-    - Regular security audits
-
-    See [Security Documentation](/security) for details.
-  </Accordion>
-
-  <Accordion title="Is the system GDPR compliant?" icon="scale-balanced">
-    **Yes**. GDPR compliance features:
-
-    **Data minimization**:
-    - Only collect necessary data (name, phone, email for appointments)
-    - No excessive tracking (analytics are anonymized)
-
-    **User rights**:
-    - Right to access: Patients can request their data via API
-    - Right to deletion: `DELETE /patients/{id}` endpoint (GDPR delete)
-    - Right to portability: Export patient data to CSV/JSON
-
-    **Consent management**:
-    - WhatsApp opt-in required for notifications
-    - Explicit consent for marketing communications
-
-    **Data isolation**:
-    - PII stored in separate table (`user_clinic_profiles`)
-    - Can delete PII without losing access audit trail
-    - Multi-tenant RLS prevents data leaks between clinics
-
-    **Audit logging**:
-    - All data access logged (`audit_logs` table)
-    - Who accessed what, when, from where (IP address)
-
-    **Data retention**:
-    - Patient data retained as long as account active
-    - Deleted on request (GDPR delete)
-    - Audit logs retained for 7 years (legal requirement)
-
-    <Info>
-    For GDPR data deletion request, contact privacy@clinic.com with patient email and clinic ID.
-    </Info>
-  </Accordion>
-
-  <Accordion title="Who can see WhatsApp conversation history?" icon="eye">
-    **Access levels**:
-
-    **Clinic Admins**:
-    - Can see conversation metadata (timestamps, tool calls, message count)
-    - CANNOT see message content (patient privacy)
-    - Can export metadata for debugging (anonymized)
-
-    **Support Team**:
-    - Can access conversation logs for debugging (with clinic consent)
-    - Data is anonymized (patient names/phones redacted)
-    - Access is logged (audit trail)
-
-    **Developers**:
-    - No access to production data
-    - Can access LangSmith traces (tool calls, not message content)
-
-    **Third Parties** (OpenAI, Twilio):
-    - OpenAI: Processes messages for LLM (not stored, zero-retention policy)
-    - Twilio: Delivers messages (stored for 30 days, then deleted)
-
-    **Patient**:
-    - Can see their own conversation history in WhatsApp app
-    - No access to other patients' conversations
-
-    <Warning>
-    Clinic admins cannot read patient messages in the system. This is intentional for privacy. If you need to review conversations for quality assurance, use LangSmith traces (tool calls only, no message content).
-    </Warning>
-  </Accordion>
-
-  <Accordion title="Are patient data encrypted?" icon="lock">
-    **Yes**, at multiple levels:
-
-    **In transit** (data moving between client and server):
-    - TLS 1.3 encryption (HTTPS)
-    - Certificate from Let's Encrypt (auto-renewed)
-    - HSTS enforced (browsers must use HTTPS)
-
-    **At rest** (data stored in database):
-    - PostgreSQL encryption (AES-256)
-    - Encrypted backups (AWS S3 server-side encryption)
-    - Passwords: bcrypt (12 rounds, salted)
-
-    **In memory** (data in application):
-    - Sensitive data cleared after use
-    - No logging of passwords or API keys
-
-    **Encryption keys**:
-    - Managed by cloud provider (AWS KMS, Google Cloud KMS)
-    - Rotated annually
-    - Access logged and audited
-
-    **Fields encrypted**:
-    - Passwords (bcrypt)
-    - API keys (environment variables, not in database)
-    - Patient PII (name, phone, email) - via database encryption
-
-    **Fields NOT encrypted** (but access-controlled):
-    - Appointment times (needed for indexing, queries)
-    - Service names (public data)
-    - Audit logs (needed for compliance)
-
-    <Info>
-    Email addresses are NOT encrypted in database (needed for login, authentication). However, database encryption protects them at rest.
-    </Info>
-  </Accordion>
-</AccordionGroup>
-
-## Still Have Questions?
-
-<CardGroup cols={3}>
-  <Card title="Troubleshooting" icon="wrench" href="/troubleshooting/common-issues">
-    Diagnose and fix common issues
+<CardGroup cols={2}>
+  <Card title="Problemas Comunes" icon="triangle-exclamation" href="/troubleshooting/common-issues">
+    Soluciones a los problemas más frecuentes del sistema
   </Card>
-  <Card title="Contact Support" icon="headset" href="/troubleshooting/contact-support">
-    Get help from the support team
+
+  <Card title="Contactar Soporte" icon="headset" href="/troubleshooting/contact-support">
+    Nuestro equipo está aquí para ayudarte
   </Card>
-  <Card title="Documentation" icon="book" href="/">
-    Browse the complete user manual
+
+  <Card title="Configuración Inicial" icon="rocket" href="/getting-started/initial-setup">
+    Guía paso a paso para configurar tu clínica por primera vez
+  </Card>
+
+  <Card title="Configurar WhatsApp" icon="message" href="/getting-started/whatsapp-setup">
+    Activa el bot de WhatsApp para automatizar confirmaciones
   </Card>
 </CardGroup>
-
-<Tip>
-**Can't find what you're looking for?**
-
-1. Use the search bar (top right) to search documentation
-2. Check the specific feature guide (e.g., Appointments, Services, Work Hours)
-3. Review troubleshooting guides for your issue type
-4. Contact support with your question
-</Tip>

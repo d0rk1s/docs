@@ -31,7 +31,9 @@
       "pages": [
         "getting-started/introduction",
         "getting-started/first-login",
-        "getting-started/dashboard-overview"
+        "getting-started/dashboard-overview",
+        "getting-started/initial-setup",
+        "getting-started/whatsapp-setup"
       ]
     },
     {
@@ -51,20 +53,16 @@
       "pages": [
         "services/overview",
         "services/view-services",
-        "services/create-service",
-        "services/create-from-catalog",
-        "services/edit-service",
-        "services/delete-service"
+        "services/manage-services"
       ]
     },
     {
-      "group": "Horarios de Trabajo",
+      "group": "Configuración de Horarios",
       "pages": [
         "work-hours/overview",
         "work-hours/clinic-hours",
         "work-hours/provider-hours",
-        "work-hours/multiple-periods",
-        "work-hours/edit-delete-hours"
+        "work-hours/multiple-periods"
       ]
     },
     {
@@ -78,7 +76,7 @@
       ]
     },
     {
-      "group": "Conversaciones WhatsApp",
+      "group": "WhatsApp",
       "pages": [
         "whatsapp/overview",
         "whatsapp/view-conversations",
@@ -88,32 +86,27 @@
       ]
     },
     {
-      "group": "Proveedores",
+      "group": "Equipo",
       "pages": [
         "providers/overview",
         "providers/view-providers",
         "providers/create-provider",
-        "providers/assign-services",
-        "providers/configure-schedule"
-      ]
-    },
-    {
-      "group": "Dashboard",
-      "pages": [
-        "dashboard/stats-overview",
-        "dashboard/appointments-widget",
-        "dashboard/revenue-tracking",
-        "dashboard/plan-usage"
+        "providers/assign-services"
       ]
     },
     {
       "group": "Suscripción",
       "pages": [
         "subscription/overview",
-        "subscription/view-current-plan",
-        "subscription/upgrade-plan",
-        "subscription/downgrade-plan",
         "subscription/usage-monitoring"
+      ]
+    },
+    {
+      "group": "Soporte",
+      "pages": [
+        "faqs",
+        "troubleshooting/common-issues",
+        "troubleshooting/contact-support"
       ]
     }
   ],

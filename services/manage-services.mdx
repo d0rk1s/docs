@@ -1,0 +1,263 @@
+---
+title: 'Gestionar Servicios'
+description: 'Crea, edita y elimina servicios de tu clínica'
+icon: 'list-check'
+---
+
+## Qué vas a aprender
+
+Esta guía te muestra cómo gestionar los servicios de tu clínica:
+
+- **Crear servicios nuevos** - Añade servicios desde cero con configuración personalizada
+- **Editar servicios existentes** - Modifica nombre, duración, precio y configuración
+- **Eliminar servicios** - Desactiva servicios que ya no ofreces
+
+<Info>
+Los servicios son los tratamientos o consultas que ofreces. Cada servicio tiene nombre, duración, precio (opcional) y puede estar asignado a proveedores específicos.
+</Info>
+
+---
+
+## Crear un Nuevo Servicio
+
+<Steps>
+  <Step title="Abrir el Formulario de Nuevo Servicio">
+    1. Ve a **"Servicios"** en el menú lateral
+    2. Haz clic en **"+ Nuevo Servicio"** o **"Agregar Servicio"**
+    3. Se abre el formulario de creación vacío
+  </Step>
+
+  <Step title="Completar Información Básica">
+    **Campos requeridos:**
+
+    - **Nombre**: Usa un nombre descriptivo y claro
+      - ✅ Bueno: "Corte de Pelo Caballero", "Consulta General (30 min)"
+      - ❌ Malo: "Corte 1", "Srv-01"
+
+    - **Duración**: Tiempo total en minutos (incluye preparación y limpieza)
+      - Corte de pelo: 30 minutos
+      - Manicura: 45 minutos
+      - Consulta médica: 20 minutos
+
+    **Campos opcionales:**
+
+    - **Precio**: Monto fijo en tu moneda (déjalo vacío si el precio varía)
+    - **Categoría**: Ayuda a organizar servicios (Peluquería, Estética, Salud, etc.)
+    - **Descripción**: Información adicional sobre el servicio
+  </Step>
+
+  <Step title="Configuración Avanzada (Opcional)">
+    Si necesitas configuración adicional:
+
+    **Asignar a proveedor específico:**
+    - Solo si ese proveedor puede realizar el servicio
+    - Si dejas sin asignar, cualquier proveedor disponible puede atenderlo
+
+    **Recursos requeridos:**
+    - Equipo láser, sala de operaciones, etc.
+    - El sistema verifica disponibilidad antes de agendar
+
+    **Buffer (tiempo de preparación):**
+    - Minutos adicionales antes del servicio para preparación
+    - Ejemplo: 15 min buffer para cirugía menor
+  </Step>
+
+  <Step title="Guardar Servicio">
+    1. Revisa que toda la información sea correcta
+    2. Haz clic en **"Guardar"** o **"Crear Servicio"**
+    3. El servicio aparecerá en la lista y estará disponible para agendar citas
+  </Step>
+</Steps>
+
+<Tip>
+**Duración realista:** Si configuras 15 minutos para un servicio que toma 30, generarás conflictos en la agenda. Incluye tiempo de preparación y limpieza.
+</Tip>
+
+### Validaciones Importantes
+
+| Campo | Validación |
+|-------|-----------|
+| Nombre | Requerido, máximo 200 caracteres |
+| Duración | Entre 5 y 480 minutos (8 horas) |
+| Precio | Número positivo o vacío |
+| Proveedor | Debe estar activo en el sistema |
+
+### Ejemplos de Configuración
+
+**Servicio Básico:**
+```
+Nombre: Corte de Pelo Caballero
+Duración: 30 minutos
+Precio: $250
+Proveedor: (cualquiera)
+```
+
+**Servicio Especializado:**
+```
+Nombre: Consulta Cardiológica
+Duración: 45 minutos
+Precio: $800
+Proveedor: Dr. García (especialista)
+Recursos: Sala de Consulta 1, Electrocardiógrafo
+Buffer: 15 minutos
+```
+
+---
+
+## Editar un Servicio Existente
+
+Puedes modificar cualquier servicio en cualquier momento sin afectar citas pasadas.
+
+<Steps>
+  <Step title="Buscar el Servicio">
+    1. Ve a **"Servicios"** → **"Ver Servicios"**
+    2. Busca el servicio que quieres editar en la lista
+    3. O usa la barra de búsqueda si tienes muchos servicios
+  </Step>
+
+  <Step title="Abrir el Editor">
+    1. Haz clic en el **ícono de lápiz** (editar) junto al servicio
+    2. O haz clic en el nombre del servicio para ver detalles
+    3. Luego haz clic en **"Editar Servicio"**
+  </Step>
+
+  <Step title="Modificar Campos">
+    Puedes cambiar cualquier campo:
+    - **Nombre** - El nuevo nombre se aplicará a citas futuras
+    - **Duración** - Solo afecta nuevas citas (las existentes mantienen su duración original)
+    - **Precio** - Se actualiza para futuras citas
+    - **Categoría** - Reorganiza el servicio
+    - **Proveedor** - Cambia asignación
+    - **Recursos** - Añade o quita recursos necesarios
+  </Step>
+
+  <Step title="Guardar Cambios">
+    1. Revisa los cambios realizados
+    2. Haz clic en **"Guardar Cambios"**
+    3. Los cambios se aplican inmediatamente para nuevas citas
+  </Step>
+</Steps>
+
+<Warning>
+**Cambios en duración:** Si cambias la duración de un servicio de 30 a 60 minutos, las citas ya agendadas mantendrán 30 minutos. Solo las nuevas citas usarán 60 minutos.
+</Warning>
+
+### Cuándo Editar vs. Crear Nuevo
+
+**Edita un servicio existente cuando:**
+- ✅ Solo cambias precio o nombre
+- ✅ Ajustas duración ligeramente (ej: 30 → 35 minutos)
+- ✅ Añades/quitas proveedores asignados
+
+**Crea un nuevo servicio cuando:**
+- ❌ La duración cambia drásticamente (ej: 30 → 90 minutos)
+- ❌ El servicio es fundamentalmente diferente
+- ❌ Quieres mantener historial separado
+
+---
+
+## Eliminar un Servicio
+
+Cuando un servicio ya no se ofrece, puedes eliminarlo (desactivarlo) del sistema.
+
+<Steps>
+  <Step title="Seleccionar Servicio a Eliminar">
+    1. Ve a **"Servicios"** → **"Ver Servicios"**
+    2. Busca el servicio que quieres eliminar
+    3. Haz clic en el **ícono de papelera** (eliminar)
+  </Step>
+
+  <Step title="Confirmar Eliminación">
+    El sistema te mostrará una advertencia:
+
+    - ¿Tienes citas futuras con este servicio? Se cancelarán automáticamente
+    - Las citas pasadas se mantendrán en el historial
+    - No podrás agendar nuevas citas con este servicio
+
+    Si estás seguro, haz clic en **"Confirmar Eliminación"**
+  </Step>
+
+  <Step title="Resultado">
+    - ✅ Servicio eliminado (desactivado)
+    - ✅ No aparece en lista de servicios activos
+    - ✅ Historial de citas pasadas se conserva
+    - ⚠️ Citas futuras se cancelan (si las había)
+  </Step>
+</Steps>
+
+<Warning>
+**¡Importante!** Eliminar un servicio **cancelará automáticamente** todas las citas futuras asociadas. Verifica que no haya citas agendadas antes de eliminar, o reprograma esas citas con otro servicio.
+</Warning>
+
+### Alternativa: Desactivar Temporalmente
+
+Si quieres suspender un servicio sin eliminarlo:
+
+1. **Edita el servicio**
+2. **Desmarca todos los proveedores** asignados
+3. Esto hace que el servicio no esté disponible para agendar
+4. Puedes reactivarlo después asignando proveedores nuevamente
+
+<Tip>
+Esta opción es útil para servicios estacionales o que quieres pausar temporalmente.
+</Tip>
+
+---
+
+## Errores Comunes
+
+<AccordionGroup>
+  <Accordion title="&quot;El nombre ya existe&quot; - Servicio duplicado">
+    **Problema:** Ya existe un servicio con ese nombre.
+
+    **Solución:**
+    - Cambia el nombre ligeramente (ej: "Corte de Pelo - Premium")
+    - O verifica si puedes reutilizar el servicio existente
+  </Accordion>
+
+  <Accordion title="&quot;Duración inválida&quot; - Minutos incorrectos">
+    **Problema:** La duración está fuera del rango 5-480 minutos.
+
+    **Solución:**
+    - Verifica que usas **minutos**, no horas (60 min = 1 hora)
+    - No uses decimales (usa `15` no `15.5`)
+  </Accordion>
+
+  <Accordion title="&quot;No puedo eliminar el servicio&quot; - Tiene citas futuras">
+    **Problema:** El servicio tiene citas agendadas.
+
+    **Solución:**
+    - Cancela o reprograma las citas primero
+    - O espera a que pasen las citas antes de eliminar
+  </Accordion>
+
+  <Accordion title="&quot;Proveedor no disponible&quot; - Proveedor inactivo">
+    **Problema:** El proveedor asignado está desactivado.
+
+    **Solución:**
+    - Ve a **"Equipo"** y reactiva el proveedor
+    - O asigna un proveedor diferente
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+  <Card title="Ver Servicios" icon="list" href="/services/view-services">
+    Explora todos tus servicios activos
+  </Card>
+
+  <Card title="Asignar a Proveedores" icon="user-tie" href="/providers/assign-services">
+    Vincula servicios con proveedores específicos
+  </Card>
+
+  <Card title="Crear Citas" icon="calendar" href="/appointments/create-appointment">
+    Agenda citas usando tus servicios
+  </Card>
+
+  <Card title="Ver Servicios Populares" icon="chart-line" href="/services/overview">
+    Revisa estadísticas de uso de servicios
+  </Card>
+</CardGroup>

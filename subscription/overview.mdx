@@ -1,281 +1,396 @@
 ---
-title: "Suscripciones - Visión General"
-description: "Sistema de suscripciones multi-plan con gestión de límites, overage y facturación automática vía Stripe"
+title: "Gestión de Suscripción"
+description: "Ver tu plan actual, cambiar de plan y entender las diferencias entre planes"
 icon: "credit-card"
 ---
 
-## Introducción
+## Qué vas a aprender
 
-El sistema de suscripciones de Sonrisa Feliz ofrece planes escalables para clínicas de todos los tamaños, desde pequeñas peluquerías hasta grandes centros médicos. Cada plan define límites de citas mensuales, precios y opciones de sobrecupo (overage).
+En esta guía aprenderás a:
 
-## Arquitectura de Suscripciones
+- **Ver tu plan actual** - Consulta qué plan tienes y cuántas citas puedes agendar
+- **Cambiar de plan** - Mejora o reduce tu plan según tus necesidades
+- **Comparar planes** - Entiende las diferencias entre FREE, STARTER, PRO, BUSINESS y ENTERPRISE
 
-### Tablas Principales
+<Info>
+Tu plan determina cuántas citas mensuales puedes agendar. Puedes cambiar de plan en cualquier momento.
+</Info>
 
-**`plans` - Catálogo de Planes**
-- Almacena todas las configuraciones de planes (FREE, STARTER, PRO, BUSINESS, ENTERPRISE)
-- Cada plan se define una vez y es referenciado por múltiples suscripciones de clínicas
-- Campos clave: `plan_name`, `appointment_limit`, `overage_rate`, `price_monthly`, `stripe_price_id`
+---
 
-**`clinic_subscriptions` - Instancia por Clínica**
-- Cada clínica tiene exactamente una suscripción (relación 1:1)
-- Foreign Key: `plan_id` → `plans.id`
-- Campos clave: `billing_period_start`, `billing_period_end`, `appointments_billed`, `allow_overage`
+## Ver Tu Plan Actual
 
-### Relación de Tablas
+<Steps>
+  <Step title="Ir a Suscripción">
+    1. En el menú lateral, haz clic en **"Suscripción"**
+    2. O haz clic en tu nombre de usuario → **"Ver Suscripción"**
+  </Step>
 
-```
-plans (1) ----< (N) clinic_subscriptions
-   ↑                       ↑
-   |                       |
-plan_id           clinic_id (UNIQUE)
-```
+  <Step title="Revisar Información del Plan">
+    Verás una tarjeta con la información de tu plan actual:
 
-## Planes Disponibles
+    **Información mostrada:**
+    - **Plan activo:** Nombre del plan (ej: STARTER, PRO)
+    - **Citas incluidas:** Límite mensual (ej: 50 citas/mes)
+    - **Precio mensual:** Costo del plan (ej: $29/mes)
+    - **Período de facturación:** Fechas del ciclo actual
+    - **Uso actual:** Citas agendadas este mes vs. límite
+  </Step>
 
-| Plan | Citas/mes | Overage Rate | Precio/mes | Descripción |
-|------|-----------|--------------|------------|-------------|
-| **FREE** | 10 | - | €0 | Plan de prueba gratuito |
-| **STARTER** | 50 | €0.35/cita | €29 | Para clínicas pequeñas |
-| **PRO** | 200 | €0.30/cita | €99 | Para clínicas medianas |
-| **BUSINESS** | 500 | €0.25/cita | €199 | Para clínicas grandes |
-| **ENTERPRISE** | Ilimitado | - | €499 | Plan sin límites |
+  <Step title="Verificar Estado de Uso">
+    La barra de progreso te muestra:
+    - 🟢 **Verde:** Uso normal (menos del 80% del límite)
+    - 🟡 **Amarillo:** Cerca del límite (80-100%)
+    - 🔴 **Rojo:** Límite alcanzado (100% o más)
 
-<Note>
-  Todos los planes soportan overage por defecto. El campo `clinic_subscriptions.allow_overage` controla si el overage está habilitado para cada clínica.
-</Note>
-
-<Frame>
-  <img src="/images/screenshots/subscription_current_plan.png" alt="Vista del plan de suscripción actual con límites, uso y opciones de overage" />
-</Frame>
-
-## Sistema de Overage
-
-### ¿Qué es Overage?
-
-El **overage** permite a las clínicas exceder el límite de citas de su plan, pagando una tarifa adicional por cada cita extra.
-
-### Configuración de Overage
-
-- **Soporte universal**: Todos los planes soportan overage (definido en `plans.overage_rate`)
-- **Control por clínica**: `clinic_subscriptions.allow_overage` (Boolean) determina si está habilitado
-- **Precio por cita extra**: Definido en `plans.overage_rate` (ej: €0.35 para STARTER)
-
-### Ejemplo de Facturación con Overage
-
-**Escenario**: Clínica con plan STARTER (50 citas/mes, €29/mes, overage €0.35/cita)
-
-```
-Mes de Enero:
-- Citas reservadas: 65
-- Citas dentro del plan: 50 (incluidas en €29)
-- Citas en overage: 15 (exceso)
-- Cargo overage: 15 × €0.35 = €5.25
-- Total facturado: €29 + €5.25 = €34.25
-```
-
-## Integración con Stripe
-
-### Flujo de Pago
-
-1. **Checkout Session**: Usuario selecciona plan y completa pago en Stripe Checkout
-2. **Webhook `checkout.session.completed`**: Crea/actualiza `clinic_subscriptions` en BD
-3. **Facturación mensual**: Stripe factura automáticamente cada período
-4. **Webhook `invoice.paid`**: Actualiza `billing_period_start` y `billing_period_end`
-
-### Stripe Price IDs
-
-Los Stripe Price IDs se almacenan en la base de datos (`plans.stripe_price_id`), no en variables de entorno.
-
-```python
-# CORRECTO - Obtener price desde BD
-price_id = await StripeService.get_stripe_price_id_for_plan(db, "STARTER")
-
-# INCORRECTO - No usar variables de entorno
-# STRIPE_PRICE_STARTER (ELIMINADO de config.py)
-```
-
-<Warning>
-  La base de datos es la única fuente de verdad para los Stripe Price IDs. Esto garantiza consistencia entre checkout y webhooks.
-</Warning>
-
-## Subscription Schedules (Downgrades)
-
-Los **downgrades** utilizan Stripe Subscription Schedules para diferir el cambio de plan hasta el final del período de facturación actual.
-
-### Flujo de Downgrade
-
-1. Usuario solicita downgrade (ej: PRO → STARTER)
-2. Sistema crea `SubscriptionSchedule` en Stripe con dos fases:
-   - **Fase 1**: Plan actual (PRO) hasta `current_period_end`
-   - **Fase 2**: Nuevo plan (STARTER) a partir de `current_period_end`
-3. Schedule se almacena en tabla `subscription_schedules` (status: `active`)
-4. Cuando finaliza Fase 1, Stripe emite webhook `subscription_schedule.completed`
-5. Webhook actualiza `clinic_subscriptions.plan_id` al nuevo plan
-
-### Constraint de Integridad
-
-**Índice Parcial UNIQUE** (añadido 2026-01-15):
-```sql
-CREATE UNIQUE INDEX subscription_schedules_active_unique_idx
-ON subscription_schedules (clinic_subscription_id)
-WHERE status = 'active';
-```
-
-**Beneficios**:
-- ✅ Solo un schedule ACTIVO por suscripción (garantizado por base de datos)
-- ✅ Múltiples schedules históricos preservados (auditoría)
-- ✅ Previene data corruption (race conditions)
-
-## Invariantes del Sistema
-
-### INV-1: Suscripciones FREE sin Stripe
-
-```
-stripe_subscription_id IS NULL ⇒ plan_name MUST be FREE
-```
-
-Cuando una suscripción no tiene `stripe_subscription_id`, el plan DEBE ser FREE. Esta invariante es aplicada a nivel de aplicación.
-
-### INV-2: Stripe Price IDs Únicos
-
-Cada `stripe_price_id` debe ser único en la tabla `plans` (constraint de BD).
-
-### INV-3: Stripe Price IDs Válidos
-
-Todos los `stripe_price_id` deben existir en Stripe (validado por script `validate_stripe_prices.py`).
-
-### INV-4: Precios Sincronizados
-
-El campo `price_monthly` en BD debe coincidir con `unit_amount / 100` en Stripe.
-
-## Validación de Precios
-
-### Script de Validación
-
-```bash
-# Validar precios (FAIL HARD si hay drift)
-python scripts/validate_stripe_prices.py
-
-# Validar y corregir precios desde Stripe
-python scripts/validate_stripe_prices.py --fix
-```
-
-**Invariantes verificadas**:
-- INV-1: FREE no tiene stripe_price_id
-- INV-2: stripe_price_id es UNIQUE
-- INV-3: stripe_price_id existe en Stripe
-- INV-4: price_monthly coincide con Stripe
+    **Ejemplo:**
+    ```
+    Plan: STARTER (50 citas/mes)
+    Uso: 38/50 citas (76%)
+    Estado: 🟢 Normal
+    ```
+  </Step>
+</Steps>
 
 <Tip>
-  Ejecuta el script de validación antes de cada deploy para prevenir inconsistencias.
+Revisa tu uso regularmente, especialmente si te acercas al límite de tu plan. Puedes mejorar tu plan en cualquier momento.
 </Tip>
 
-## Endpoints REST API
+---
 
-### Admin Endpoints
+## Comparación de Planes
 
-**Base URL**: `/v1/admin/subscription-plans`
+Elige el plan que mejor se adapte al volumen mensual de citas de tu clínica.
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/v1/admin/subscription-plans` | Listar todos los planes activos |
-| GET | `/v1/admin/subscription-plans?include_inactive=true` | Incluir planes desactivados |
-| POST | `/v1/admin/subscription-plans` | Crear plan custom (enterprise) |
-| PUT | `/v1/admin/subscription-plans/{plan_name}` | Actualizar configuración de plan |
-| DELETE | `/v1/admin/subscription-plans/{plan_name}` | Desactivar plan (soft delete) |
-| POST | `/v1/admin/subscription-plans/{plan_name}/reactivate` | Reactivar plan |
+| Característica | FREE | STARTER | PRO | BUSINESS | ENTERPRISE |
+|----------------|------|---------|-----|----------|------------|
+| **Citas/mes** | 10 | 50 | 200 | 500 | Ilimitadas |
+| **Precio/mes** | $0 | $29 | $99 | $199 | $499 |
+| **Overage** | ❌ No | ✅ Sí ($0.35/cita) | ✅ Sí ($0.30/cita) | ✅ Sí ($0.25/cita) | ✅ Incluido |
+| **WhatsApp Bot** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Múltiples proveedores** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Reportes avanzados** | ❌ | ❌ | ✅ | ✅ | ✅ |
+| **Soporte prioritario** | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Onboarding personalizado** | ❌ | ❌ | ❌ | ❌ | ✅ |
 
-**Autenticación**: Requiere rol `admin` (enforced por `require_admin` dependency).
+<Info>
+**Overage:** Si activas overage y excedes tu límite mensual, pagas solo por las citas adicionales. Por ejemplo, si tienes STARTER (50 citas) y agendastes 60, pagas $29 (plan) + $3.50 (10 citas × $0.35) = $32.50 total.
+</Info>
 
-### Subscription Endpoints
+### ¿Qué Plan es Para Ti?
 
-**Base URL**: `/v1/subscription`
+**FREE (Prueba gratis):**
+- 🎯 Clínicas nuevas probando el sistema
+- 🎯 Consultorios con muy bajo volumen
+- ⚠️ Máximo 10 citas/mes
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/v1/subscription` | Ver suscripción actual |
-| POST | `/v1/subscription/upgrade` | Upgrade de plan |
-| POST | `/v1/subscription/downgrade` | Downgrade de plan |
-| GET | `/v1/subscription/usage` | Monitoreo de uso |
+**STARTER (Pequeñas clínicas):**
+- 🎯 Consultorios con 1-2 proveedores
+- 🎯 ~2-3 citas por día
+- ✅ Mejor relación costo-beneficio para empezar
 
-## Planes Enterprise Personalizados
+**PRO (Clínicas medianas):**
+- 🎯 Clínicas con 2-4 proveedores
+- 🎯 ~8-10 citas por día
+- ✅ Incluye reportes avanzados
 
-Para clientes enterprise con necesidades específicas, puedes crear planes custom:
+**BUSINESS (Clínicas grandes):**
+- 🎯 Centros con 4+ proveedores
+- 🎯 ~20-25 citas por día
+- ✅ Soporte prioritario
 
-```python
-from app.services.plan_service import PlanService
+**ENTERPRISE (Sin límites):**
+- 🎯 Hospitales o redes de clínicas
+- 🎯 Volumen muy alto o variable
+- ✅ Onboarding y configuración personalizada
 
-plan_service = PlanService(db)
-custom_plan = await plan_service.create_custom_enterprise_plan(
-    plan_name="ENTERPRISE_CUSTOM_HOSPITAL_X",
-    display_name="Hospital X Custom Plan",
-    appointment_limit=300,
-    price_monthly=350.0,
-    overage_rate=0.20,  # Precio por cita extra si overage habilitado
-    description="Custom plan for Hospital X - 300 appointments/month"
-)
-```
+---
 
-## Scripts de Gestión
+## Cambiar de Plan
 
-### Ver Estado de Suscripción
+Puedes mejorar (upgrade) o reducir (downgrade) tu plan en cualquier momento.
 
-```bash
-python scripts/check_subscription_limit.py --clinic-id <uuid>
-# Muestra plan actual, uso, límites, configuración overage
-```
+### Mejorar Plan (Upgrade)
 
-### Cambiar Plan
+El upgrade se aplica inmediatamente y pagas la diferencia prorrateada.
 
-```bash
-# Cambiar plan (mantiene uso actual)
-python scripts/change_subscription_plan.py \
-  --clinic-id <uuid> \
-  --plan STARTER
+<Steps>
+  <Step title="Seleccionar Nuevo Plan">
+    1. Ve a **"Suscripción"** en el menú lateral
+    2. Haz clic en **"Cambiar Plan"** o **"Mejorar Plan"**
+    3. Selecciona el plan que deseas (ej: STARTER → PRO)
+  </Step>
 
-# Cambiar plan y resetear uso
-python scripts/change_subscription_plan.py \
-  --clinic-id <uuid> \
-  --plan PRO \
-  --reset-usage
-```
+  <Step title="Revisar Costo">
+    El sistema te mostrará:
+    - **Costo del nuevo plan:** Precio mensual completo
+    - **Crédito por período no usado:** Reembolso proporcional del plan actual
+    - **Monto a pagar hoy:** Diferencia prorrateada
 
-### Configurar Todas las Clínicas con STARTER
+    **Ejemplo:**
+    ```
+    Plan actual: STARTER ($29/mes)
+    Nuevo plan: PRO ($99/mes)
+    Días restantes: 15 de 30
 
-```bash
-python scripts/configure_starter_plan.py
-```
+    Crédito por STARTER no usado: -$14.50
+    Cargo por PRO (15 días): +$49.50
+    Total a pagar hoy: $35.00
+    ```
+  </Step>
 
-### Setup para Nuevas Clínicas
+  <Step title="Confirmar Upgrade">
+    1. Revisa el resumen de cargos
+    2. Haz clic en **"Proceder al Pago"**
+    3. Completa el pago con tarjeta (procesado por Stripe)
+    4. El upgrade se aplica inmediatamente
+  </Step>
 
-```bash
-# Modo interactivo - elegir plan para cada clínica
-python scripts/setup_subscriptions.py
+  <Step title="Verificar Cambio">
+    - ✅ Tu límite de citas aumenta de inmediato
+    - ✅ Puedes agendar más citas desde ahora
+    - ✅ El próximo cobro será el precio completo del nuevo plan
+  </Step>
+</Steps>
 
-# Modo batch - asignar FREE a todas sin suscripción
-python scripts/setup_subscriptions.py --batch --plan FREE --yes
-```
+<Check>
+**Ventaja del Upgrade:** El cambio es inmediato. Si alcanzaste el límite de tu plan, puedes hacer upgrade y agendar más citas en el mismo día.
+</Check>
+
+### Reducir Plan (Downgrade)
+
+El downgrade se programa para el final de tu período de facturación actual.
+
+<Steps>
+  <Step title="Solicitar Downgrade">
+    1. Ve a **"Suscripción"** → **"Cambiar Plan"**
+    2. Selecciona un plan de menor nivel (ej: PRO → STARTER)
+    3. Revisa el resumen del cambio
+  </Step>
+
+  <Step title="Entender el Timing">
+    **Importante:** El downgrade NO es inmediato.
+
+    - ✅ Sigues usando tu plan actual hasta el final del período
+    - ✅ No hay cargos adicionales ni reembolsos
+    - ✅ El nuevo plan se activa al inicio del próximo período
+
+    **Ejemplo:**
+    ```
+    Hoy: 15 de Enero
+    Plan actual: PRO (hasta 31 de Enero)
+    Downgrade a: STARTER
+
+    Resultado:
+    - 15-31 Enero: Sigues en PRO (200 citas/mes)
+    - 1 Febrero: Cambio automático a STARTER (50 citas/mes)
+    - Próximo cobro (1 Feb): $29 (precio STARTER)
+    ```
+  </Step>
+
+  <Step title="Confirmar Downgrade">
+    1. Lee la advertencia sobre la reducción de límite
+    2. Confirma que entiendes que el cambio ocurre al final del período
+    3. Haz clic en **"Programar Downgrade"**
+    4. Verás una confirmación con la fecha efectiva
+  </Step>
+
+  <Step title="Verificar Cambio Programado">
+    En la sección de suscripción verás:
+
+    ```
+    Plan actual: PRO (200 citas/mes)
+    Válido hasta: 31 de Enero, 2026
+
+    ⚠️ Cambio programado:
+    Nuevo plan: STARTER (50 citas/mes)
+    Efectivo: 1 de Febrero, 2026
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+**Planifica el downgrade:** Si tu plan actual permite 200 citas/mes y bajas a 50 citas/mes, asegúrate de que tu volumen mensual se ajuste al nuevo límite. De lo contrario, necesitarás activar overage o hacer upgrade nuevamente.
+</Warning>
+
+### Cancelar Downgrade Programado
+
+Si cambiaste de opinión, puedes cancelar el downgrade antes de que se aplique:
+
+1. Ve a **"Suscripción"**
+2. Verás el mensaje **"Cambio programado"**
+3. Haz clic en **"Cancelar Downgrade"**
+4. Tu plan actual continuará sin cambios
+
+---
+
+## Overage (Citas Adicionales)
+
+El **overage** te permite exceder el límite de tu plan pagando solo por las citas adicionales.
+
+### Cómo Funciona
+
+1. **Plan con límite:** Tienes STARTER (50 citas/mes)
+2. **Activas overage:** Pagas $0.35 por cada cita extra
+3. **Excedes el límite:** Agendastes 60 citas en el mes
+4. **Facturación:**
+   - Plan STARTER: $29.00
+   - Overage (10 citas × $0.35): $3.50
+   - **Total:** $32.50
+
+### Activar/Desactivar Overage
+
+<Steps>
+  <Step title="Ir a Configuración de Overage">
+    1. Ve a **"Suscripción"** → **"Configuración de Overage"**
+    2. Verás el toggle de overage
+  </Step>
+
+  <Step title="Activar Overage">
+    1. Activa el toggle **"Permitir Overage"**
+    2. Confirma que entiendes el costo por cita adicional
+    3. Guarda cambios
+
+    **Resultado:** Puedes agendar citas ilimitadas, pagando por las extras
+  </Step>
+
+  <Step title="Desactivar Overage">
+    1. Desactiva el toggle **"Permitir Overage"**
+    2. Confirma el cambio
+
+    **Resultado:** Al alcanzar el límite, no podrás agendar más citas hasta el próximo período
+  </Step>
+</Steps>
+
+<Tip>
+**Cuándo usar overage:** Si tienes meses de alto volumen ocasional (ej: diciembre en peluquerías), activa overage en lugar de hacer upgrade permanente. Pagas solo cuando lo necesitas.
+</Tip>
+
+---
+
+## Períodos de Facturación
+
+Tu plan se renueva automáticamente cada mes en la misma fecha.
+
+**Ejemplo:**
+- Primera suscripción: 15 de Enero, 2026
+- Primer cobro: $29 (STARTER)
+- Período: 15 Ene - 14 Feb
+- Próximo cobro: 15 de Febrero, 2026
+- Uso se resetea: 15 de Febrero (vuelve a 0 citas)
+
+### Cómo Funciona el Reset de Uso
+
+Al inicio de cada nuevo período:
+- ✅ Tu contador de citas vuelve a 0
+- ✅ Tienes tu límite completo disponible nuevamente
+- ✅ El cobro mensual se procesa automáticamente
+- ⚠️ Las citas agendadas NO se cancelan (solo se resetea el contador)
+
+---
+
+## Facturación y Pagos
+
+Todos los pagos se procesan de forma segura a través de Stripe.
+
+### Métodos de Pago Aceptados
+
+- 💳 Tarjetas de crédito (Visa, Mastercard, Amex)
+- 💳 Tarjetas de débito
+- 🏦 Transferencia bancaria (solo ENTERPRISE)
+
+### Historial de Facturas
+
+<Steps>
+  <Step title="Ver Facturas">
+    1. Ve a **"Suscripción"** → **"Historial de Facturación"**
+    2. Verás lista de todas las facturas pagadas
+  </Step>
+
+  <Step title="Descargar Factura">
+    1. Haz clic en el ícono de descarga junto a cada factura
+    2. Se descarga un PDF con el detalle completo
+    3. Las facturas incluyen:
+       - Cargo del plan base
+       - Cargos por overage (si aplica)
+       - Impuestos (según tu país)
+       - Total pagado
+  </Step>
+</Steps>
+
+---
+
+## Preguntas Frecuentes
+
+<AccordionGroup>
+  <Accordion title="¿Qué pasa si alcanzo mi límite de citas?">
+    **Sin overage activado:**
+    - No podrás agendar más citas hasta el próximo período
+    - Verás un mensaje: "Límite de citas alcanzado"
+    - Opciones: Activar overage o hacer upgrade
+
+    **Con overage activado:**
+    - Puedes seguir agendando citas
+    - Pagas por cada cita adicional según la tarifa de overage
+  </Accordion>
+
+  <Accordion title="¿Puedo cancelar mi suscripción?">
+    Sí, puedes cancelar en cualquier momento:
+
+    1. Ve a **"Suscripción"** → **"Cancelar Suscripción"**
+    2. Tu plan continúa hasta el final del período pagado
+    3. Al finalizar, pasas automáticamente al plan FREE (10 citas/mes)
+    4. No se procesa reembolso por días no usados
+  </Accordion>
+
+  <Accordion title="¿El upgrade es inmediato o al final del período?">
+    **Upgrade (mejorar plan):** Inmediato
+
+    - Pagas la diferencia prorrateada hoy
+    - Tu límite aumenta al instante
+
+    **Downgrade (reducir plan):** Al final del período
+
+    - Sigues usando el plan actual hasta que termine
+    - El nuevo plan se activa al inicio del próximo período
+  </Accordion>
+
+  <Accordion title="¿Qué pasa con las citas ya agendadas si hago downgrade?">
+    **Las citas agendadas NO se cancelan.**
+
+    Solo cambia el límite para nuevas citas en el próximo período.
+
+    **Ejemplo:**
+    - Plan actual: PRO (200 citas/mes)
+    - Tienes 80 citas agendadas para el próximo mes
+    - Haces downgrade a STARTER (50 citas/mes)
+    - **Resultado:** Las 80 citas se mantienen, pero superarás tu límite del nuevo plan
+    - **Solución:** Activa overage o vuelve a PRO
+  </Accordion>
+
+  <Accordion title="¿Cómo funciona el pago con tarjeta?">
+    1. La primera vez, ingresas tu tarjeta en Stripe Checkout (seguro)
+    2. Stripe guarda la tarjeta de forma segura
+    3. Los cobros mensuales se procesan automáticamente
+    4. Recibes factura por email cada mes
+    5. Puedes actualizar tu tarjeta en **"Suscripción"** → **"Métodos de Pago"**
+  </Accordion>
+</AccordionGroup>
+
+---
 
 ## Próximos Pasos
 
 <CardGroup cols={2}>
-  <Card title="Ver Plan Actual" icon="eye" href="/subscription/view-current-plan">
-    Cómo consultar la suscripción activa de una clínica
-  </Card>
-  <Card title="Upgrade de Plan" icon="arrow-trend-up" href="/subscription/upgrade-plan">
-    Proceso de mejora de plan con Stripe Checkout
-  </Card>
-  <Card title="Downgrade de Plan" icon="arrow-trend-down" href="/subscription/downgrade-plan">
-    Reducción de plan con Subscription Schedules
-  </Card>
   <Card title="Monitoreo de Uso" icon="chart-line" href="/subscription/usage-monitoring">
-    Seguimiento de citas y límites del plan
+    Aprende a rastrear tu uso mensual y evitar exceder límites
+  </Card>
+
+  <Card title="Crear Citas" icon="calendar" href="/appointments/create-appointment">
+    Empieza a agendar citas con tu plan actual
+  </Card>
+
+  <Card title="Contactar Soporte" icon="headset" href="/troubleshooting/contact-support">
+    ¿Necesitas un plan personalizado? Contáctanos para planes enterprise
   </Card>
 </CardGroup>
-
-## Referencias
-
-- [Stripe Subscription API](https://stripe.com/docs/api/subscriptions)
-- [Stripe Subscription Schedules](https://stripe.com/docs/billing/subscriptions/subscription-schedules)
-- [PostgreSQL Partial Indexes](https://www.postgresql.org/docs/current/indexes-partial.html)

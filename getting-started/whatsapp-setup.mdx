@@ -1,0 +1,266 @@
+---
+title: "Configurar WhatsApp"
+description: "Activa el asistente de WhatsApp para gestionar citas automáticamente"
+---
+
+## Qué es el Asistente de WhatsApp
+
+El asistente de WhatsApp es un bot inteligente que puede:
+
+- **Agendar citas** - Pacientes pueden solicitar citas por WhatsApp
+- **Cancelar citas** - Cancelación automática con confirmación
+- **Reagendar citas** - Cambiar fecha/hora de citas existentes
+- **Enviar recordatorios** - Confirmaciones y recordatorios automáticos
+- **Responder preguntas** - Información sobre servicios, horarios y disponibilidad
+
+<Info>
+El bot funciona 24/7 y puede manejar múltiples conversaciones simultáneamente, liberando a tu equipo de tareas repetitivas.
+</Info>
+
+---
+
+## Requisitos Previos
+
+Antes de configurar WhatsApp, asegúrate de tener:
+
+<AccordionGroup>
+  <Accordion title="Configuración Inicial Completa" icon="check">
+    - Horarios de clínica configurados
+    - Al menos un servicio creado
+    - Al menos un proveedor con horarios asignados
+
+    <Card href="/getting-started/initial-setup">
+      Si no has completado esto, sigue la guía de Configuración Inicial primero
+    </Card>
+  </Accordion>
+
+  <Accordion title="Cuenta de Twilio" icon="mobile">
+    Necesitas una cuenta de Twilio con:
+    - **Número de WhatsApp Business** configurado
+    - **Account SID** y **Auth Token** disponibles
+    - **Sandbox de WhatsApp** activado (para pruebas) o número verificado (para producción)
+
+    <Tip>
+    Puedes empezar con el sandbox gratuito de Twilio para pruebas antes de usar un número de producción.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="API Key de OpenAI" icon="robot">
+    El bot usa OpenAI GPT para entender mensajes de pacientes:
+    - Cuenta de OpenAI con créditos disponibles
+    - API Key generada desde [platform.openai.com](https://platform.openai.com)
+
+    <Warning>
+    **Costos:** Cada conversación consume tokens de OpenAI. Un mensaje típico cuesta ~$0.01-0.05 USD.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Paso 1: Configurar Credenciales
+
+<Steps>
+  <Step title="Ir a Configuración de WhatsApp">
+    1. En el menú lateral, haz clic en **"Configuración"** (ícono de engranaje)
+    2. Selecciona la pestaña **"Integraciones"**
+    3. Busca la sección **"WhatsApp"**
+  </Step>
+
+  <Step title="Ingresar Credenciales de Twilio">
+    1. **Account SID:** Copia desde tu [Twilio Console](https://console.twilio.com)
+    2. **Auth Token:** Copia el Auth Token (haz clic en "Show" si está oculto)
+    3. **Número de WhatsApp:** Formato E.164 (ej: +14155238886)
+
+    <Info>
+    **Formato correcto:** El número debe incluir el código de país con + (ej: +52 para México, +1 para USA)
+    </Info>
+  </Step>
+
+  <Step title="Ingresar API Key de OpenAI">
+    1. Ve a [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+    2. Crea una nueva API Key (o usa una existente)
+    3. Copia la key completa (empieza con `sk-...`)
+    4. Pégala en el campo **"OpenAI API Key"**
+  </Step>
+
+  <Step title="Guardar Configuración">
+    1. Revisa que todos los campos estén completos
+    2. Haz clic en **"Guardar Cambios"**
+    3. Verás una confirmación de éxito
+  </Step>
+</Steps>
+
+---
+
+## Paso 2: Configurar Webhook en Twilio
+
+Para que Twilio envíe mensajes a tu sistema:
+
+<Steps>
+  <Step title="Copiar URL del Webhook">
+    1. En la sección de WhatsApp, verás un campo **"Webhook URL"**
+    2. Copia la URL completa (algo como: `https://tudominio.com/api/whatsapp/webhook`)
+  </Step>
+
+  <Step title="Configurar en Twilio Console">
+    1. Ve a [Twilio Console → Messaging → Settings](https://console.twilio.com/us1/develop/sms/settings/whatsapp-sender)
+    2. En **"Sandbox Settings"** (o tu número de WhatsApp)
+    3. En **"When a message comes in"**, pega la URL del webhook
+    4. Método: **POST**
+    5. Haz clic en **"Save"**
+  </Step>
+</Steps>
+
+<Warning>
+**Importante:** El webhook debe estar configurado correctamente o el bot no recibirá mensajes.
+</Warning>
+
+---
+
+## Paso 3: Activar el Bot
+
+<Steps>
+  <Step title="Habilitar WhatsApp">
+    1. En la configuración de WhatsApp en tu sistema
+    2. Activa el toggle **"Habilitar Bot de WhatsApp"**
+    3. Haz clic en **"Guardar"**
+  </Step>
+
+  <Step title="Verificar Estado">
+    Deberías ver un indicador verde que dice:
+    - ✅ **"Bot Activo"**
+    - ✅ **"Webhook Configurado"**
+    - ✅ **"Credenciales Válidas"**
+  </Step>
+</Steps>
+
+---
+
+## Paso 4: Probar el Bot
+
+Ahora envía un mensaje de prueba para verificar que todo funciona.
+
+<Steps>
+  <Step title="Conectar con WhatsApp Sandbox (Desarrollo)">
+    Si usas el sandbox de Twilio:
+
+    1. Ve a [Twilio WhatsApp Sandbox](https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn)
+    2. Verás un código como: **"join [palabra-clave]"**
+    3. Envía ese mensaje al número del sandbox desde tu WhatsApp personal
+    4. Recibirás confirmación de conexión
+  </Step>
+
+  <Step title="Enviar Mensaje de Prueba">
+    Desde tu WhatsApp, envía:
+
+    ```
+    Hola, quisiera agendar una cita
+    ```
+
+    El bot debería responder en 2-5 segundos con opciones de servicios disponibles.
+  </Step>
+
+  <Step title="Completar Flujo de Prueba">
+    Sigue las instrucciones del bot:
+
+    1. Selecciona un servicio
+    2. Elige un proveedor
+    3. Selecciona fecha y hora
+    4. Confirma tu número de teléfono
+    5. Confirma la cita
+
+    Si todo funciona, recibirás:
+    - ✅ Confirmación de cita creada
+    - ✅ La cita aparecerá en tu calendario
+  </Step>
+</Steps>
+
+<Check>
+**¡Éxito!** Si pudiste crear una cita vía WhatsApp, tu bot está funcionando correctamente.
+</Check>
+
+---
+
+## Configuración Adicional (Opcional)
+
+<AccordionGroup>
+  <Accordion title="Personalizar Mensajes del Bot" icon="message">
+    Puedes personalizar los mensajes automáticos:
+
+    1. Ve a **Configuración → WhatsApp → Mensajes**
+    2. Edita plantillas para:
+       - Mensaje de bienvenida
+       - Confirmación de cita
+       - Recordatorios
+       - Cancelaciones
+
+    <Tip>Mantén los mensajes claros y concisos para mejor experiencia de usuario</Tip>
+  </Accordion>
+
+  <Accordion title="Configurar Horario del Bot" icon="clock">
+    Puedes limitar cuándo el bot responde automáticamente:
+
+    1. Ve a **Configuración → WhatsApp → Horarios**
+    2. Define horario de atención (ej: Lunes-Viernes, 8 AM - 8 PM)
+    3. Fuera de horario, el bot enviará mensaje de "fuera de servicio"
+  </Accordion>
+
+  <Accordion title="Ver Conversaciones" icon="comments">
+    Para monitorear conversaciones del bot:
+
+    1. Ve a **Conversaciones WhatsApp** en el menú lateral
+    2. Verás lista de todas las conversaciones activas
+    3. Puedes pausar el bot y responder manualmente si es necesario
+
+    <Card href="/whatsapp/view-conversations">
+      Aprende más sobre gestión de conversaciones
+    </Card>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## ¿Problemas con WhatsApp?
+
+Si el bot no responde o encuentras errores:
+
+<CardGroup cols={2}>
+  <Card title="Problemas Comunes" icon="triangle-exclamation" href="/troubleshooting/common-issues">
+    Verifica configuración de webhook, credenciales y formato de número
+  </Card>
+
+  <Card title="Contactar Soporte" icon="headset" href="/troubleshooting/contact-support">
+    Si los problemas persisten, nuestro equipo puede revisar tu configuración
+  </Card>
+</CardGroup>
+
+---
+
+## Próximos Pasos
+
+Ahora que WhatsApp está configurado:
+
+<Steps>
+  <Step title="Informa a Tus Pacientes">
+    - Añade el número de WhatsApp a tu sitio web
+    - Envía mensaje a pacientes existentes informando del nuevo canal
+    - Incluye el número en materiales impresos
+  </Step>
+
+  <Step title="Monitorea Conversaciones">
+    - Revisa conversaciones diariamente al inicio
+    - Identifica preguntas frecuentes que el bot no maneja bien
+    - Pausa el bot manualmente si necesitas intervenir
+  </Step>
+
+  <Step title="Optimiza Respuestas">
+    - Ajusta plantillas de mensajes según feedback de pacientes
+    - Configura horarios del bot según tu flujo de trabajo
+    - Revisa uso de tokens de OpenAI para controlar costos
+  </Step>
+</Steps>
+
+<Check>
+**¡Configuración completa!** Tu sistema ahora puede gestionar citas automáticamente vía WhatsApp.
+</Check>
