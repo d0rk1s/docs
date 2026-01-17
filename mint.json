@@ -58,15 +58,6 @@
       ]
     },
     {
-      "group": "Catálogo de Servicios",
-      "pages": [
-        "catalog/overview",
-        "catalog/search-catalog",
-        "catalog/filter-by-category",
-        "catalog/import-service"
-      ]
-    },
-    {
       "group": "Horarios de Trabajo",
       "pages": [
         "work-hours/overview",
@@ -97,18 +88,32 @@
       ]
     },
     {
-      "group": "API Reference",
+      "group": "Proveedores",
       "pages": [
-        "api-reference/introduction"
+        "providers/overview",
+        "providers/view-providers",
+        "providers/create-provider",
+        "providers/assign-services",
+        "providers/configure-schedule"
       ]
     },
     {
-      "group": "Endpoints",
+      "group": "Dashboard",
       "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete",
-        "api-reference/endpoint/webhook"
+        "dashboard/stats-overview",
+        "dashboard/appointments-widget",
+        "dashboard/revenue-tracking",
+        "dashboard/plan-usage"
+      ]
+    },
+    {
+      "group": "Suscripción",
+      "pages": [
+        "subscription/overview",
+        "subscription/view-current-plan",
+        "subscription/upgrade-plan",
+        "subscription/downgrade-plan",
+        "subscription/usage-monitoring"
       ]
     }
   ],
