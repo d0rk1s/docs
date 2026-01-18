@@ -118,7 +118,7 @@ CANCELLED → (final, no cambia)
 ```
 
 <Note>
-El cambio de `CONFIRMED` a `COMPLETED` ocurre automáticamente cada 60 segundos (job del scheduler).
+El cambio de `CONFIRMED` a `COMPLETED` ocurre automáticamente cuando pasa la hora de fin de la cita.
 </Note>
 
 ---
@@ -485,22 +485,13 @@ El sistema soporta **decenas de miles de citas** sin problemas de rendimiento gr
 
 ### El estado no cambia de CONFIRMED a COMPLETED
 
-**Diagnóstico**:
-1. Verifica que el job del scheduler esté corriendo:
-   ```bash
-   curl http://localhost:8000/system/scheduler/status
-   ```
-2. Revisa los logs del scheduler:
-   ```bash
-   grep "complete_appointments" /var/log/clinic/app.log
-   ```
-
-**Causas comunes**:
-- **Job pausado**: El scheduler no está activo
-- **Error en la query**: Verifica logs de errores en PostgreSQL
+**Solución**:
+1. Espera unos minutos después de que termine la hora de la cita
+2. Refresca la página (F5) para ver los cambios
+3. Si el problema persiste después de 5-10 minutos, contacta a soporte técnico
 
 <Warning>
-Si el job no corre por &gt;1 hora, las citas NO se completarán automáticamente. Contacta a soporte.
+Si las citas no se completan automáticamente por más de 1 hora, contacta a soporte inmediatamente.
 </Warning>
 
 ---

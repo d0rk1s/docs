@@ -176,7 +176,6 @@ Depending on the issue type, include additional context:
 
     **Helpful**:
     - LangSmith conversation export (JSON) - see [WhatsApp Troubleshooting](/troubleshooting/whatsapp-not-working)
-    - Backend logs: `grep "WhatsApp" logs/app.log | tail -n 100`
     - Twilio webhook configuration screenshot
   </Tab>
 
@@ -190,12 +189,6 @@ Depending on the issue type, include additional context:
     **Helpful**:
     - Work hours configuration (screenshot)
     - Active closures for date (screenshot)
-    - Database export:
-      ```sql
-      SELECT * FROM work_hours WHERE clinic_id = 'your-id';
-      SELECT * FROM closures WHERE clinic_id = 'your-id' AND starts_at <= '2025-11-20';
-      ```
-    - Backend logs: `grep "calculate_availability" logs/app.log`
   </Tab>
 
   <Tab title="Appointment Issues">
@@ -234,8 +227,6 @@ Depending on the issue type, include additional context:
 
     **Helpful**:
     - Browser DevTools → Performance recording
-    - Backend logs with timestamps
-    - Database slow query log (if admin access)
     - Number of concurrent users (if known)
   </Tab>
 
@@ -250,10 +241,6 @@ Depending on the issue type, include additional context:
     **Helpful**:
     - When was entity created: `2025-11-15 10:30:00`
     - Last modification: `2025-11-18 14:20:00`
-    - Audit logs (if available):
-      ```sql
-      SELECT * FROM audit_logs WHERE resource_id = 'abc123def456' ORDER BY created_at DESC;
-      ```
   </Tab>
 </Tabs>
 

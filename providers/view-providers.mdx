@@ -1,188 +1,139 @@
 ---
-title: 'View Providers'
-description: 'How to view and filter your clinic providers list'
+title: 'Ver Proveedores'
+description: 'Cómo ver y filtrar la lista de proveedores de tu clínica'
 icon: 'list'
 ---
 
-## Overview
+## Resumen
 
-The providers list shows all team members who are flagged as providers in your clinic. This view allows you to quickly identify who can deliver services and manage their status.
+La lista de proveedores muestra a todos los miembros del equipo que están marcados como proveedores en tu clínica. Esta vista te permite identificar rápidamente quién puede ofrecer servicios y gestionar su estado.
 
 <Info>
-  **Per-Clinic View**: The providers list is filtered by the currently selected clinic. Users who are providers in other clinics but not yours will NOT appear in this list.
+  **Vista por Clínica**: La lista de proveedores se filtra por la clínica actualmente seleccionada. Los usuarios que son proveedores en otras clínicas pero no en la tuya NO aparecerán en esta lista.
 </Info>
 
-## Accessing Providers List
+## Acceder a la Lista de Proveedores
 
 <Steps>
-  <Step title="Navigate to Providers">
-    From the main menu, click **Providers** or navigate to `/providers`.
+  <Step title="Navegar a Proveedores">
+    Desde el menú principal, haz clic en **Proveedores** o navega a `/providers`.
   </Step>
-  <Step title="Select Clinic Context">
-    Ensure the correct clinic is selected in the clinic selector (top-right dropdown). The providers list is filtered by this selection.
+  <Step title="Seleccionar Contexto de Clínica">
+    Asegúrate de que la clínica correcta esté seleccionada en el selector de clínicas (menú desplegable superior derecho). La lista de proveedores se filtra por esta selección.
   </Step>
-  <Step title="View Provider Cards">
-    The system displays all users where `user_clinics.is_provider = true` for the selected clinic.
+  <Step title="Ver Tarjetas de Proveedores">
+    El sistema muestra todos los usuarios donde `user_clinics.is_provider = true` para la clínica seleccionada.
   </Step>
 </Steps>
 
-## API Endpoint
 
-```http
-GET /v1/clinics/{clinic_id}/providers?clinic_id={clinic_id}
-```
+## Información de la Tarjeta de Proveedor
 
-### Request
-
-```bash
-curl -X GET "https://api.clinic.example.com/v1/clinics/{clinic_id}/providers?clinic_id={clinic_id}" \
-  -H "Cookie: access_token={jwt_token}"
-```
-
-### Response
-
-```json
-{
-  "providers": [
-    {
-      "id": "abc-123-def-456",
-      "user_id": "user-789-xyz-012",
-      "full_name": "Dr. María García",
-      "email": "maria.garcia@namsec.es",
-      "phone_e164": "+34612345678",
-      "is_provider": true,
-      "clinic_role": "STAFF",
-      "status": "approved",
-      "created_at": "2025-12-01T10:30:00Z",
-      "updated_at": "2026-01-15T14:20:00Z"
-    },
-    {
-      "id": "def-456-ghi-789",
-      "user_id": "user-012-abc-345",
-      "full_name": "Dr. Juan López",
-      "email": "juan.lopez@namsec.es",
-      "phone_e164": "+34612345678",
-      "is_provider": true,
-      "clinic_role": "CLINIC_ADMIN",
-      "status": "approved",
-      "created_at": "2025-11-15T09:00:00Z",
-      "updated_at": "2026-01-10T16:45:00Z"
-    }
-  ]
-}
-```
-
-<Warning>
-  **Authentication Required**: This endpoint requires a valid JWT token in the `access_token` HttpOnly cookie. Unauthenticated requests will receive a 401 Unauthorized response.
-</Warning>
-
-## Provider Card Information
-
-Each provider card displays:
+Cada tarjeta de proveedor muestra:
 
 <AccordionGroup>
-  <Accordion title="Basic Information">
-    - **Full Name**: From `user_clinic_profiles.full_name` (per-clinic name)
-    - **Email**: Global identifier from `users.email`
-    - **Phone**: E.164 formatted phone number (e.g., `+34612345678`)
-    - **Status**: `approved`, `pending`, `suspended`
+  <Accordion title="Información Básica">
+    - **Nombre Completo**: Nombre completo del proveedor
+    - **Correo Electrónico**: Dirección de correo electrónico del proveedor
+    - **Teléfono**: Número de teléfono del proveedor
+    - **Estado**: `approved`, `pending`, `suspended`
   </Accordion>
 
-  <Accordion title="Role Information">
-    - **Clinic Role**: `CLINIC_ADMIN`, `STAFF`, or custom role
-    - **Provider Flag**: Badge showing "Provider" status
-    - **Created Date**: When the user was added to this clinic
+  <Accordion title="Información de Rol">
+    - **Rol de Clínica**: `CLINIC_ADMIN`, `STAFF`, o rol personalizado
+    - **Indicador de Proveedor**: Insignia mostrando estado de "Proveedor"
+    - **Fecha de Creación**: Cuándo se agregó el usuario a esta clínica
   </Accordion>
 
-  <Accordion title="Quick Actions">
-    - **Edit Provider**: Modify provider details, schedule, or services
-    - **View Schedule**: See provider's work hours
-    - **View Services**: List services assigned to this provider
-    - **Suspend/Reactivate**: Change provider status
+  <Accordion title="Acciones Rápidas">
+    - **Editar Proveedor**: Modificar detalles del proveedor, horario o servicios
+    - **Ver Horario**: Ver horarios de trabajo del proveedor
+    - **Ver Servicios**: Listar servicios asignados a este proveedor
+    - **Suspender/Reactivar**: Cambiar estado del proveedor
   </Accordion>
 </AccordionGroup>
 
-## Filtering and Searching
+## Filtrado y Búsqueda
 
-### By Status
+### Por Estado
 
-Filter providers by their current status:
+Filtra proveedores por su estado actual:
 
 <CardGroup cols={3}>
-  <Card title="Active Providers" icon="circle-check">
-    `status = 'approved'` - Providers currently delivering services
+  <Card title="Proveedores Activos" icon="circle-check">
+    `status = 'approved'` - Proveedores actualmente ofreciendo servicios
   </Card>
-  <Card title="Pending Providers" icon="clock">
-    `status = 'pending'` - Awaiting approval (new hires, pending verification)
+  <Card title="Proveedores Pendientes" icon="clock">
+    `status = 'pending'` - Esperando aprobación (nuevas contrataciones, verificación pendiente)
   </Card>
-  <Card title="Suspended Providers" icon="ban">
-    `status = 'suspended'` - Temporarily inactive (leave, suspension)
+  <Card title="Proveedores Suspendidos" icon="ban">
+    `status = 'suspended'` - Temporalmente inactivos (licencia, suspensión)
   </Card>
 </CardGroup>
 
-### By Name or Email
+### Por Nombre o Correo Electrónico
 
-Use the search bar to filter providers by:
-- Full name (partial match, case-insensitive)
-- Email address
+Usa la barra de búsqueda para filtrar proveedores por:
+- Nombre completo (coincidencia parcial, no distingue mayúsculas)
+- Dirección de correo electrónico
 
-**Example**:
+**Ejemplo**:
 ```
-Search: "garcía"
-Results: Dr. María García, Dr. Ana García López
+Búsqueda: "garcía"
+Resultados: Dr. María García, Dr. Ana García López
 ```
 
-### By Service
+### Por Servicio
 
-Filter providers by the services they deliver:
+Filtra proveedores por los servicios que ofrecen:
 
 <Steps>
-  <Step title="Select Service Filter">
-    Choose a service from the dropdown (e.g., "Haircut", "Consultation").
+  <Step title="Seleccionar Filtro de Servicio">
+    Elige un servicio del menú desplegable (ej: "Corte de Cabello", "Consulta").
   </Step>
-  <Step title="View Assigned Providers">
-    Only providers assigned to this service are shown.
+  <Step title="Ver Proveedores Asignados">
+    Solo se muestran los proveedores asignados a este servicio.
   </Step>
-  <Step title="Clear Filter">
-    Click "Clear" to show all providers again.
+  <Step title="Limpiar Filtro">
+    Haz clic en "Limpiar" para mostrar todos los proveedores nuevamente.
   </Step>
 </Steps>
 
 <Tip>
-  **Service Assignment**: If a provider doesn't appear when filtering by a specific service, they may not be assigned to that service yet. See [Assign Services](/providers/assign-services) to configure service assignments.
+  **Asignación de Servicios**: Si un proveedor no aparece al filtrar por un servicio específico, puede que no esté asignado a ese servicio todavía. Ver [Asignar Servicios](/providers/assign-services) para configurar asignaciones de servicios.
 </Tip>
 
-## Understanding Provider Status
+## Comprender el Estado del Proveedor
 
-### Status Values
+### Valores de Estado
 
 <AccordionGroup>
-  <Accordion title="approved - Active Provider">
-    **Meaning**: Provider is active and can deliver services.
+  <Accordion title="approved - Proveedor Activo">
+    **Significado**: El proveedor está activo y puede ofrecer servicios.
 
-    **Availability**: Appears in appointment booking, generates availability slots.
+    **Disponibilidad**: Aparece en la reserva de citas y genera franjas de disponibilidad.
 
-    **Actions**: Can suspend or edit configuration.
+    **Acciones**: Puede suspender o editar configuración.
   </Accordion>
 
-  <Accordion title="pending - Awaiting Approval">
-    **Meaning**: Provider has been added but not yet approved (new hire, onboarding).
+  <Accordion title="pending - Esperando Aprobación">
+    **Significado**: El proveedor ha sido agregado pero aún no aprobado (nueva contratación, incorporación).
 
-    **Availability**: Does NOT appear in appointment booking, no slots generated.
+    **Disponibilidad**: NO aparece en la reserva de citas ni genera franjas de disponibilidad.
 
-    **Actions**: Approve to activate, or reject to remove.
+    **Acciones**: Aprobar para activar, o rechazar para eliminar.
 
-    **Use Case**: Onboarding new team members before their start date.
+    **Caso de Uso**: Incorporación de nuevos miembros del equipo antes de su fecha de inicio.
   </Accordion>
 
-  <Accordion title="suspended - Temporarily Inactive">
-    **Meaning**: Provider is temporarily inactive (leave, suspension, medical leave).
+  <Accordion title="suspended - Temporalmente Inactivo">
+    **Significado**: El proveedor está temporalmente inactivo (licencia, suspensión, licencia médica).
 
-    **Availability**: Does NOT appear in appointment booking, no slots generated.
+    **Disponibilidad**: NO aparece en la reserva de citas ni genera franjas de disponibilidad.
 
-    **Actions**: Reactivate to restore access, or permanently remove.
+    **Acciones**: Reactivar para restaurar acceso, o eliminar permanentemente.
 
-    **Use Case**: Maternity leave, vacation, disciplinary suspension.
+    **Caso de Uso**: Licencia de maternidad, vacaciones, suspensión disciplinaria.
   </Accordion>
 </AccordionGroup>
 
@@ -191,155 +142,129 @@ Filter providers by the services they deliver:
 </Frame>
 
 <Warning>
-  **Suspended vs Closures**: Use `suspended` status for long-term inactivity (weeks/months). Use **provider-specific closures** for short-term absences (days/weeks) like vacation or sick leave. Closures preserve the provider's schedule and automatically restore availability when the closure ends.
+  **Suspendido vs Cierres**: Usa el estado `suspended` para inactividad a largo plazo (semanas/meses). Usa **cierres específicos de proveedor** para ausencias a corto plazo (días/semanas) como vacaciones o licencia por enfermedad. Los cierres preservan el horario del proveedor y automáticamente restauran la disponibilidad cuando el cierre termina.
 </Warning>
 
-## Multi-Clinic Providers
+## Proveedores Multi-Clínica
 
-When viewing providers, you may notice:
+Al ver proveedores, puedes notar:
 
 <Info>
-  **Same User, Different Clinics**: A user can be a provider in Clinic A but NOT in Clinic B. The `is_provider` flag is stored per-clinic in `user_clinics`.
+  **Mismo Usuario, Diferentes Clínicas**: Un usuario puede ser proveedor en la Clínica A pero NO en la Clínica B. El estado de proveedor se configura por separado para cada clínica.
 </Info>
 
-**Example Scenario**:
+**Escenario de Ejemplo**:
 - **Dr. María García**:
-  - Clinic A (Dental Clinic): `is_provider = true` (delivers dental services)
-  - Clinic B (Physical Therapy): `is_provider = false` (administrative staff only)
+  - Clínica A (Clínica Dental): `is_provider = true` (ofrece servicios dentales)
+  - Clínica B (Fisioterapia): `is_provider = false` (solo personal administrativo)
 
-When viewing Clinic A's providers, Dr. García appears. When viewing Clinic B's providers, she does NOT appear (even though she's a user in both clinics).
+Al ver los proveedores de la Clínica A, la Dra. García aparece. Al ver los proveedores de la Clínica B, ella NO aparece (aunque sea usuaria en ambas clínicas).
 
-## Provider Details Modal
+## Modal de Detalles del Proveedor
 
-Click on a provider card to open detailed information:
+Haz clic en una tarjeta de proveedor para abrir información detallada:
 
 <AccordionGroup>
-  <Accordion title="Profile Tab">
-    - Full name (per-clinic)
-    - Email (global)
-    - Phone (global)
-    - Clinic role
-    - Provider status
-    - Notes (per-clinic, from `user_clinic_profiles.notes`)
+  <Accordion title="Pestaña de Perfil">
+    - Nombre completo
+    - Correo electrónico
+    - Teléfono
+    - Rol de clínica
+    - Estado del proveedor
+    - Notas
   </Accordion>
 
-  <Accordion title="Schedule Tab">
-    - Work hours by weekday
-    - Multiple periods per day (if configured)
-    - Intersection with clinic hours (calculated)
-    - Upcoming closures (provider-specific)
+  <Accordion title="Pestaña de Horario">
+    - Horarios de trabajo por día de la semana
+    - Múltiples períodos por día (si está configurado)
+    - Intersección con horarios de clínica (calculado)
+    - Cierres próximos (específicos del proveedor)
   </Accordion>
 
-  <Accordion title="Services Tab">
-    - List of services assigned to this provider
-    - Service details (name, duration, price)
-    - Quick assign/unassign actions
+  <Accordion title="Pestaña de Servicios">
+    - Lista de servicios asignados a este proveedor
+    - Detalles del servicio (nombre, duración, precio)
+    - Acciones rápidas de asignar/desasignar
   </Accordion>
 
-  <Accordion title="Appointments Tab">
-    - Recent appointments
-    - Upcoming appointments
-    - Appointment history
-    - Performance metrics (completion rate, cancellations)
+  <Accordion title="Pestaña de Citas">
+    - Citas recientes
+    - Citas próximas
+    - Historial de citas
+    - Métricas de rendimiento (tasa de finalización, cancelaciones)
   </Accordion>
 </AccordionGroup>
 
-## Empty State
+## Estado Vacío
 
-If no providers are configured:
+Si no hay proveedores configurados:
 
 <Warning>
-  **No Providers Found**: Your clinic doesn't have any providers configured yet. Without providers, patients cannot book appointments.
+  **No Se Encontraron Proveedores**: Tu clínica aún no tiene proveedores configurados. Sin proveedores, los pacientes no pueden reservar citas.
 
-  **Next Steps**:
-  1. [Create your first provider](/providers/create-provider)
-  2. [Configure their schedule](/providers/configure-schedule)
-  3. [Assign them to services](/providers/assign-services)
+  **Próximos Pasos**:
+  1. [Crea tu primer proveedor](/providers/create-provider)
+  2. [Configura su horario](/providers/configure-schedule)
+  3. [Asígnales servicios](/providers/assign-services)
 </Warning>
 
-## Common Scenarios
+## Escenarios Comunes
 
 <CardGroup cols={2}>
-  <Card title="Provider Missing from List" icon="circle-question">
-    **Problem**: User exists but doesn't appear in providers list.
+  <Card title="Proveedor Faltante en la Lista" icon="circle-question">
+    **Problema**: El usuario existe pero no aparece en la lista de proveedores.
 
-    **Solution**: Check `user_clinics.is_provider` for this clinic. If `false`, the user is not flagged as a provider. Update via [Edit User](/users/edit-user) or create a new provider entry.
+    **Solución**: El usuario puede no estar marcado como proveedor para esta clínica. Actualiza el estado de proveedor del usuario o crea una nueva entrada de proveedor vía [Editar Usuario](/users/edit-user).
   </Card>
 
-  <Card title="Provider Appears in Wrong Clinic" icon="building">
-    **Problem**: Provider should only work in Clinic A but appears in Clinic B.
+  <Card title="Proveedor Aparece en Clínica Incorrecta" icon="building">
+    **Problema**: El proveedor debería trabajar solo en la Clínica A pero aparece en la Clínica B.
 
-    **Solution**: Each clinic has independent provider flags. Verify you're viewing the correct clinic context (clinic selector, top-right). If the provider should NOT be in Clinic B, edit their `user_clinic` entry and set `is_provider = false` for Clinic B.
+    **Solución**: Cada clínica tiene indicadores de proveedor independientes. Verifica que estés viendo el contexto de clínica correcto (selector de clínica, superior derecho). Si el proveedor NO debería estar en la Clínica B, edita su estado de proveedor para esa clínica específica.
   </Card>
 
-  <Card title="Provider Has No Schedule" icon="calendar-xmark">
-    **Problem**: Provider appears in list but has no availability.
+  <Card title="Proveedor Sin Horario" icon="calendar-xmark">
+    **Problema**: El proveedor aparece en la lista pero no tiene disponibilidad.
 
-    **Solution**: Provider may not have work_hours configured. Navigate to [Configure Schedule](/providers/configure-schedule) to set up their working hours.
+    **Solución**: El proveedor puede no tener work_hours configurados. Navega a [Configurar Horario](/providers/configure-schedule) para establecer sus horarios de trabajo.
   </Card>
 
-  <Card title="Provider Has No Services" icon="briefcase-blank">
-    **Problem**: Provider appears in list but isn't assigned to any services.
+  <Card title="Proveedor Sin Servicios" icon="briefcase-blank">
+    **Problema**: El proveedor aparece en la lista pero no está asignado a ningún servicio.
 
-    **Solution**: Navigate to [Assign Services](/providers/assign-services) to link the provider to the services they deliver.
+    **Solución**: Navega a [Asignar Servicios](/providers/assign-services) para vincular al proveedor con los servicios que ofrece.
   </Card>
 </CardGroup>
 
-## Database Query (For Developers)
+## Control de Acceso
 
-```sql
--- Get all providers for a clinic with profile data
-SELECT
-  uc.id AS user_clinic_id,
-  uc.user_id,
-  ucp.full_name,
-  u.email,
-  u.phone_e164,
-  uc.is_provider,
-  uc.status,
-  cr.name AS clinic_role
-FROM user_clinics uc
-JOIN users u ON uc.user_id = u.id
-LEFT JOIN user_clinic_profiles ucp ON uc.id = ucp.user_clinic_id
-LEFT JOIN clinic_roles cr ON uc.clinic_role_id = cr.id
-WHERE uc.clinic_id = '...'
-  AND uc.is_provider = true
-ORDER BY ucp.full_name ASC;
-```
+### Permisos Requeridos
 
-<Tip>
-  **Performance Optimization**: The query uses indexes on `user_clinics(clinic_id, is_provider)` and `user_clinic_profiles(user_clinic_id)` for fast retrieval.
-</Tip>
-
-## Access Control
-
-### Required Permissions
-
-| Action | Required Role | Notes |
+| Acción | Rol Requerido | Notas |
 |--------|--------------|-------|
-| View providers list | `STAFF` | All staff can view providers |
-| View provider details | `STAFF` | Read-only access to profile, schedule, services |
-| Edit provider | `CLINIC_ADMIN` | Modify profile, schedule, services |
-| Suspend/Reactivate | `CLINIC_ADMIN` | Change provider status |
-| Delete provider | `CLINIC_ADMIN` | Remove provider flag (sets `is_provider = false`) |
+| Ver lista de proveedores | `STAFF` | Todo el personal puede ver proveedores |
+| Ver detalles del proveedor | `STAFF` | Acceso de solo lectura a perfil, horario, servicios |
+| Editar proveedor | `CLINIC_ADMIN` | Modificar perfil, horario, servicios |
+| Suspender/Reactivar | `CLINIC_ADMIN` | Cambiar estado del proveedor |
+| Eliminar proveedor | `CLINIC_ADMIN` | Eliminar indicador de proveedor de esta clínica |
 
 <Warning>
-  **Global ADMIN Role**: System administrators (role `ADMIN`) can view and manage providers across ALL clinics. Regular users can only manage providers in clinics where they have `CLINIC_ADMIN` role.
+  **Rol Global ADMIN**: Los administradores del sistema (rol `ADMIN`) pueden ver y gestionar proveedores en TODAS las clínicas. Los usuarios regulares solo pueden gestionar proveedores en clínicas donde tienen el rol `CLINIC_ADMIN`.
 </Warning>
 
-## Next Steps
+## Próximos Pasos
 
 <CardGroup cols={2}>
-  <Card title="Create Provider" icon="user-plus" href="/providers/create-provider">
-    Add a new provider to your clinic
+  <Card title="Crear Proveedor" icon="user-plus" href="/providers/create-provider">
+    Agrega un nuevo proveedor a tu clínica
   </Card>
-  <Card title="Configure Schedule" icon="calendar-days" href="/providers/configure-schedule">
-    Set up provider work hours and availability
+  <Card title="Configurar Horario" icon="calendar-days" href="/providers/configure-schedule">
+    Establece horarios de trabajo y disponibilidad del proveedor
   </Card>
-  <Card title="Assign Services" icon="briefcase-medical" href="/providers/assign-services">
-    Link providers to the services they deliver
+  <Card title="Asignar Servicios" icon="briefcase-medical" href="/providers/assign-services">
+    Vincula proveedores a los servicios que ofrecen
   </Card>
-  <Card title="Manage Closures" icon="door-closed" href="/scheduling/closures">
-    Configure provider-specific closures (vacation, sick leave)
+  <Card title="Gestionar Cierres" icon="door-closed" href="/scheduling/closures">
+    Configura cierres específicos de proveedor (vacaciones, licencia por enfermedad)
   </Card>
 </CardGroup>

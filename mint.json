@@ -37,6 +37,14 @@
       ]
     },
     {
+      "group": "Dashboard",
+      "pages": [
+        "dashboard/stats-overview",
+        "dashboard/appointments-widget",
+        "dashboard/revenue-tracking"
+      ]
+    },
+    {
       "group": "Gestión de Citas",
       "pages": [
         "appointments/overview",
@@ -53,6 +61,7 @@
       "pages": [
         "services/overview",
         "services/view-services",
+        "services/create-service",
         "services/manage-services"
       ]
     },
@@ -62,7 +71,8 @@
         "work-hours/overview",
         "work-hours/clinic-hours",
         "work-hours/provider-hours",
-        "work-hours/multiple-periods"
+        "work-hours/multiple-periods",
+        "work-hours/edit-delete-hours"
       ]
     },
     {

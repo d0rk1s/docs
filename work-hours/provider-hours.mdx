@@ -1,391 +1,206 @@
 ---
-title: "Provider Hours"
-description: "Configure individual provider availability and understand intersection logic"
+title: "Horarios de Proveedor"
+description: "Configura la disponibilidad individual de proveedores"
 icon: "user-doctor"
 ---
 
-## Overview
-
-**Provider hours** define when individual providers (doctors, stylists, therapists, etc.) are available to take appointments.
-
 <Info>
-Provider hours **must intersect** with clinic hours. Providers cannot work when the clinic is closed.
+Para entender la jerarquía completa de horarios de trabajo y cómo funcionan las intersecciones entre horarios de clínica y proveedor, consulta [Horarios de Trabajo - Vista General](/work-hours/overview).
 </Info>
 
-## Clinic Hours vs Provider Hours
+## Descripción General
 
-The system uses an **intersection-based hierarchy**:
-
-```
-Priority: Clinic Hours → Provider Hours
-```
-
-**How it works**:
-
-1. System fetches **clinic hours** for the requested weekday
-2. System fetches **provider hours** for the same weekday
-3. System calculates **intersection** (overlap) of both periods
-4. Appointments can only be booked during the **intersected time**
-
-### Visual Example
-
-**Scenario**: Monday availability for Provider A
-
-```
-Clinic Hours (Monday):   08:00 ━━━━━━━━━━━━━━━━━━━━━━━━━━ 20:00
-
-Provider A Hours:              09:00 ━━━━━━━━━━━━━ 17:00
-
-Intersection (Available):      09:00 ━━━━━━━━━━━━━ 17:00 ✅
-```
-
-**Result**: Provider A can take appointments from **09:00-17:00** (intersection).
-
-### Example: Provider Outside Clinic Hours
-
-**Scenario**: Provider B tries to work before clinic opens
-
-```
-Clinic Hours (Monday):        08:00 ━━━━━━━━━━━━━━━━━━━━━━━ 20:00
-
-Provider B Hours:        07:00 ━━━━━━━━ 10:00
-
-Intersection (Available):     08:00 ━━━━━ 10:00 ✅
-```
-
-**Result**: Provider B can only work **08:00-10:00** (intersection starts when clinic opens).
+**Los horarios de proveedor** definen cuándo los proveedores individuales (médicos, estilistas, terapeutas, etc.) están disponibles para tomar citas.
 
 <Warning>
-Time before clinic opens (07:00-08:00) is **ignored**, even if configured in provider hours.
+Los horarios de proveedor **deben intersectar** con los horarios de clínica. Los proveedores no pueden trabajar cuando la clínica está cerrada.
 </Warning>
 
-## Critical Rule: Clinic Closed = No Provider Availability
-
-<Warning>
-If the clinic is **closed** on a specific day (no clinic-level work hours configured), **NO appointments** can be booked that day, regardless of provider availability.
-</Warning>
-
-**Example**:
-
-```
-Sunday (7):
-  Clinic Hours: NOT CONFIGURED (closed)
-  Provider A Hours: 10:00-14:00 (configured)
-
-Result: NO appointments can be booked ❌
-```
-
-**Why**: The system enforces clinic hours as the operational constraint. Provider hours cannot override clinic closure.
-
-## Step-by-Step: Configure Provider Hours
+## Paso a Paso: Configurar Horarios de Proveedor
 
 <Frame>
   <img src="/images/screenshots/work_hours_provider_01_selector.png" alt="Selector de proveedor para configurar horarios individuales" />
 </Frame>
 
 <Steps>
-  <Step title="Navigate to Provider Settings">
-    Go to **Proveedores > [Select Provider] > Horarios de Trabajo** (Providers > [Provider] > Work Hours).
+  <Step title="Navegar a Configuración de Proveedor">
+    Ve a **Proveedores > [Seleccionar Proveedor] > Horarios de Trabajo**.
   </Step>
 
-  <Step title="Select Weekday">
-    Choose the day of the week (1=Monday, 7=Sunday).
+  <Step title="Seleccionar Día de la Semana">
+    Elige el día de la semana (1=Lunes, 7=Domingo).
   </Step>
 
-  <Step title="Configure Time Period">
-    Enter opening and closing times in 24-hour format (HH:MM).
+  <Step title="Configurar Período de Tiempo">
+    Ingresa los horarios de apertura y cierre en formato de 24 horas (HH:MM).
 
     <Frame>
       <img src="/images/screenshots/work_hours_provider_02_form.png" alt="Formulario de configuración de horarios para proveedor específico" />
     </Frame>
 
-    **Example (Provider works mornings only)**:
-    - Opening: `09:00`
-    - Closing: `13:00`
+    **Ejemplo (Proveedor trabaja solo mañanas)**:
+    - Apertura: `09:00`
+    - Cierre: `13:00`
 
     <Tip>
-    You can create **multiple periods** for the same provider and weekday. See [Multiple Periods](/work-hours/multiple-periods).
+    Puedes crear **múltiples períodos** para el mismo proveedor y día de la semana. Consulta [Múltiples Períodos](/work-hours/multiple-periods).
     </Tip>
   </Step>
 
-  <Step title="Save Configuration">
-    Click **Guardar** (Save).
+  <Step title="Guardar Configuración">
+    Haz clic en **Guardar**.
 
-    The system will:
-    - Validate no overlaps with other periods for this provider/weekday
-    - Validate time range (close > open)
-    - Calculate intersection with clinic hours
-    - Invalidate availability cache automatically
+    El sistema:
+    - Validará que no haya solapamientos con otros períodos para este proveedor/día
+    - Validará el rango de tiempo (cierre > apertura)
+    - Calculará la intersección con los horarios de clínica
+    - Invalidará automáticamente la caché de disponibilidad
   </Step>
 </Steps>
 
-## Example: Multiple Providers with Different Schedules
+## Ejemplo: Múltiples Proveedores con Diferentes Horarios
 
-**Clinic Hours** (Monday): 08:00-20:00
+**Horarios de Clínica** (Lunes): 08:00-20:00
 
-**Provider Configurations**:
+**Configuraciones de Proveedores**:
 
-| Provider | Period 1 | Period 2 | Available Slots |
-|----------|----------|----------|-----------------|
-| Dr. Smith | 09:00-13:00 | *Not configured* | **09:00-13:00** (mornings only) |
-| Dr. Jones | *Not configured* | 15:00-19:00 | **15:00-19:00** (afternoons only) |
-| Dr. Brown | 09:00-13:00 | 15:00-19:00 | **09:00-13:00 + 15:00-19:00** (split shift) |
-| Dr. Wilson | *Not configured* | *Not configured* | **08:00-20:00** (full clinic hours) |
+| Proveedor | Período 1 | Período 2 | Espacios Disponibles |
+|-----------|-----------|-----------|----------------------|
+| Dr. Smith | 09:00-13:00 | *No configurado* | **09:00-13:00** (solo mañanas) |
+| Dr. Jones | *No configurado* | 15:00-19:00 | **15:00-19:00** (solo tardes) |
+| Dr. Brown | 09:00-13:00 | 15:00-19:00 | **09:00-13:00 + 15:00-19:00** (turno dividido) |
+| Dr. Wilson | *No configurado* | *No configurado* | **08:00-20:00** (horarios completos de clínica) |
 
-### Slot Generation by Provider
+### Generación de Espacios por Proveedor
 
-**Service Duration**: 30 minutes
+**Duración del Servicio**: 30 minutos
 
-**Dr. Smith** (mornings only):
+**Dr. Smith** (solo mañanas):
 ```
-Available: 09:00-13:00
-Slots: 09:00, 09:30, 10:00, 10:30, 11:00, 11:30, 12:00, 12:30
-```
-
-**Dr. Jones** (afternoons only):
-```
-Available: 15:00-19:00
-Slots: 15:00, 15:30, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30
+Disponible: 09:00-13:00
+Espacios: 09:00, 09:30, 10:00, 10:30, 11:00, 11:30, 12:00, 12:30
 ```
 
-**Dr. Brown** (split shift):
+**Dr. Jones** (solo tardes):
 ```
-Available: 09:00-13:00 + 15:00-19:00
-Slots:
-  Morning: 09:00, 09:30, ..., 12:30
-  Afternoon: 15:00, 15:30, ..., 18:30
-NO slots in gap: 13:00-15:00 ✅
+Disponible: 15:00-19:00
+Espacios: 15:00, 15:30, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30
 ```
 
-**Dr. Wilson** (no provider hours configured):
+**Dr. Brown** (turno dividido):
 ```
-Available: 08:00-20:00 (defaults to clinic hours)
-Slots: 08:00, 08:30, 09:00, ..., 19:00, 19:30
+Disponible: 09:00-13:00 + 15:00-19:00
+Espacios:
+  Mañana: 09:00, 09:30, ..., 12:30
+  Tarde: 15:00, 15:30, ..., 18:30
+SIN espacios en el intervalo: 13:00-15:00 ✅
+```
+
+**Dr. Wilson** (sin horarios de proveedor configurados):
+```
+Disponible: 08:00-20:00 (usa horarios de clínica por defecto)
+Espacios: 08:00, 08:30, 09:00, ..., 19:00, 19:30
 ```
 
 <Info>
-When a provider has **no hours configured**, the system uses **clinic hours** as the default.
+Cuando un proveedor **no tiene horarios configurados**, el sistema usa los **horarios de clínica** como predeterminados.
 </Info>
 
-## Multiple Periods for Providers
-
-Providers can have **multiple non-contiguous time periods** per day, just like clinics.
-
-### Example: Provider with Split Shift
-
-**Scenario**: Provider C works split shift (morning + afternoon)
-
-**Configuration** (Monday):
-- Period 1: 09:00-13:00 (morning)
-- Period 2: 15:00-19:00 (afternoon)
-- Gap: 13:00-15:00 (lunch break)
-
-**Clinic Hours** (Monday): 08:00-20:00
-
-**Intersection**:
-```
-Clinic:    08:00 ━━━━━━━━━━━━━━━━━━━━━━━━━━ 20:00
-Provider:        09:00 ━━━━━ 13:00  15:00 ━━━━━ 19:00
-
-Result:          09:00 ━━━━━ 13:00  15:00 ━━━━━ 19:00 ✅
-```
-
-**Available Slots**:
-- Morning: 09:00, 09:30, ..., 12:30
-- Afternoon: 15:00, 15:30, ..., 18:30
-- **NO slots**: 08:00-09:00, 13:00-15:00, 19:00-20:00
-
-See [Multiple Periods Per Day](/work-hours/multiple-periods) for detailed configuration.
-
-## Edge Cases and Intersection Logic
+## Casos Especiales
 
 <AccordionGroup>
-  <Accordion title="Provider works outside clinic hours">
-    **Scenario**: Provider hours extend beyond clinic hours
+  <Accordion title="Múltiples proveedores, diferentes días libres">
+    **Escenario**: Los proveedores tienen diferentes patrones de disponibilidad
 
-    **Example**:
-    - Clinic: 08:00-18:00
-    - Provider: 07:00-20:00
+    **Ejemplo**:
+    - Proveedor A: Trabaja solo Lun-Vie
+    - Proveedor B: Trabaja solo Mar-Sáb
+    - Proveedor C: Trabaja solo Sáb-Dom
 
-    **Intersection**: 08:00-18:00 ✅ (clinic hours only)
+    **Resultado**: Al menos un proveedor disponible cada día (si la clínica está abierta).
 
-    **Why**: Provider cannot work when clinic is closed.
-  </Accordion>
-
-  <Accordion title="Provider has no hours configured">
-    **Scenario**: Provider hours not configured for a specific weekday
-
-    **Behavior**: System uses **clinic hours** as the default.
-
-    **Example**:
-    - Clinic (Monday): 09:00-20:00
-    - Provider (Monday): *Not configured*
-
-    **Result**: Provider available 09:00-20:00 ✅
-  </Accordion>
-
-  <Accordion title="Clinic closed, provider has hours">
-    **Scenario**: Clinic closed (no hours), but provider has hours configured
-
-    **Example**:
-    - Clinic (Sunday): *Not configured* (closed)
-    - Provider (Sunday): 10:00-14:00
-
-    **Result**: **NO appointments** can be booked ❌
-
-    **Why**: Clinic closure overrides provider availability.
-  </Accordion>
-
-  <Accordion title="Multiple providers, different days off">
-    **Scenario**: Providers have different availability patterns
-
-    **Example**:
-    - Provider A: Works Mon-Fri only
-    - Provider B: Works Tue-Sat only
-    - Provider C: Works Sat-Sun only
-
-    **Result**: At least one provider available every day (if clinic is open).
-
-    **Configuration**:
-    | Day | Provider A | Provider B | Provider C |
-    |-----|------------|------------|------------|
-    | Mon | ✅ 09:00-17:00 | ❌ | ❌ |
-    | Tue | ✅ 09:00-17:00 | ✅ 09:00-17:00 | ❌ |
-    | Sat | ❌ | ✅ 10:00-14:00 | ✅ 10:00-14:00 |
-    | Sun | ❌ | ❌ | ✅ 10:00-14:00 |
+    **Configuración**:
+    | Día | Proveedor A | Proveedor B | Proveedor C |
+    |-----|-------------|-------------|-------------|
+    | Lun | ✅ 09:00-17:00 | ❌ | ❌ |
+    | Mar | ✅ 09:00-17:00 | ✅ 09:00-17:00 | ❌ |
+    | Sáb | ❌ | ✅ 10:00-14:00 | ✅ 10:00-14:00 |
+    | Dom | ❌ | ❌ | ✅ 10:00-14:00 |
   </Accordion>
 </AccordionGroup>
 
-## What Happens When You Save Provider Hours?
+## ¿Qué Sucede Cuando Guardas Horarios de Proveedor?
 
-When you configure provider hours, the system:
+Cuando configuras horarios de proveedor, el sistema:
 
-1. **Validates** no overlaps with existing periods for this provider/weekday
-2. **Validates** time range (close > open)
-3. **Saves** to database (`work_hours` table with `provider_id`)
-4. **Invalidates** availability cache for this provider
-5. **Recalculates** available slots based on intersection with clinic hours
+1. **Valida** que no haya solapamientos con períodos existentes para este proveedor/día
+2. **Valida** el rango de tiempo (cierre > apertura)
+3. **Guarda** en la base de datos (tabla `work_hours` con `provider_id`)
+4. **Invalida** la caché de disponibilidad para este proveedor
+5. **Recalcula** los espacios disponibles basándose en la intersección con los horarios de clínica
 
 <Info>
-Cache invalidation is **automatic**. Availability updates immediately.
+La invalidación de caché es **automática**. La disponibilidad se actualiza inmediatamente.
 </Info>
 
-## Visual Summary: Intersection Examples
-
-### Example 1: Provider Within Clinic Hours
-
-```
-Clinic:    08:00 ━━━━━━━━━━━━━━━━━━━━━━━━━━ 20:00
-Provider:        09:00 ━━━━━━━━━━━━━ 17:00
-
-Available:       09:00 ━━━━━━━━━━━━━ 17:00 ✅
-```
-
-### Example 2: Provider Extends Beyond Clinic Hours
-
-```
-Clinic:          08:00 ━━━━━━━━━━━━━━━━━━━━ 18:00
-Provider:  06:00 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20:00
-
-Available:       08:00 ━━━━━━━━━━━━━━━━━━━━ 18:00 ✅
-```
-
-### Example 3: Provider with Split Shift (Multiple Periods)
-
-```
-Clinic:    08:00 ━━━━━━━━━━━━━━━━━━━━━━━━━━ 20:00
-Provider:        09:00 ━━━━━ 13:00  15:00 ━━━━━ 19:00
-
-Available:       09:00 ━━━━━ 13:00  15:00 ━━━━━ 19:00 ✅
-```
-
-### Example 4: Clinic Closed (No Intersection)
-
-```
-Clinic:    [CLOSED - No hours configured]
-Provider:  10:00 ━━━━━━━━━━━━━━ 14:00
-
-Available: [CLOSED - No appointments] ❌
-```
-
-## Best Practices
+## Mejores Prácticas
 
 <Tip>
-**Configure clinic hours first**: Always set up clinic-level hours before configuring provider hours. Provider hours are validated against clinic hours.
+**Configura primero los horarios de clínica**: Siempre establece los horarios a nivel de clínica antes de configurar los horarios de proveedor. Los horarios de proveedor se validan contra los horarios de clínica.
 </Tip>
 
 <Tip>
-**Use multiple periods for provider flexibility**: If a provider works split shifts, configure multiple periods (e.g., 09:00-13:00 + 15:00-19:00).
+**Usa múltiples períodos para flexibilidad del proveedor**: Si un proveedor trabaja turnos divididos, configura múltiples períodos (ej., 09:00-13:00 + 15:00-19:00).
 </Tip>
 
 <Warning>
-**Don't rely on provider hours to override clinic closure**: If the clinic is closed, providers cannot work. Configure clinic hours for all operational days.
+**No confíes en los horarios de proveedor para anular el cierre de la clínica**: Si la clínica está cerrada, los proveedores no pueden trabajar. Configura los horarios de clínica para todos los días operativos.
 </Warning>
 
 <Info>
-**Default behavior**: If a provider has no hours configured for a specific day, the system defaults to **clinic hours** for that day.
+**Comportamiento predeterminado**: Si un proveedor no tiene horarios configurados para un día específico, el sistema usa los **horarios de clínica** para ese día.
 </Info>
 
-## Common Questions
+## Preguntas Frecuentes
 
 <AccordionGroup>
-  <Accordion title="Can a provider work when the clinic is closed?">
-    **No**. Clinic hours are the operational constraint. Provider hours cannot override clinic closure.
+  <Accordion title="¿Pueden múltiples proveedores tener diferentes horarios para el mismo día?">
+    **Sí**. Cada proveedor puede tener horarios independientes.
 
-    **Example**:
-    - Clinic (Sunday): Closed
-    - Provider (Sunday): 10:00-14:00 configured
+    **Ejemplo (Lunes)**:
+    - Proveedor A: 09:00-13:00 (mañanas)
+    - Proveedor B: 15:00-19:00 (tardes)
+    - Proveedor C: 09:00-20:00 (día completo)
 
-    **Result**: NO appointments can be booked ❌
+    Todas las configuraciones son válidas e independientes.
   </Accordion>
 
-  <Accordion title="What happens if I don't configure provider hours?">
-    The system uses **clinic hours** as the default.
+  <Accordion title="¿Puedo editar horarios de proveedor sin afectar los horarios de clínica?">
+    **Sí**. Los horarios de proveedor son **independientes** de los horarios de clínica (excepto para la validación de intersección).
 
-    **Example**:
-    - Clinic (Monday): 09:00-20:00
-    - Provider (Monday): *Not configured*
-
-    **Result**: Provider available 09:00-20:00 ✅
-  </Accordion>
-
-  <Accordion title="Can multiple providers have different hours for the same day?">
-    **Yes**. Each provider can have independent hours.
-
-    **Example (Monday)**:
-    - Provider A: 09:00-13:00 (mornings)
-    - Provider B: 15:00-19:00 (afternoons)
-    - Provider C: 09:00-20:00 (full day)
-
-    All configurations are valid and independent.
-  </Accordion>
-
-  <Accordion title="Can I edit provider hours without affecting clinic hours?">
-    **Yes**. Provider hours are **independent** from clinic hours (except for intersection validation).
-
-    Editing provider hours:
-    - Does NOT affect clinic hours
-    - Does NOT affect other providers
-    - Only affects the specific provider
+    Editar horarios de proveedor:
+    - NO afecta los horarios de clínica
+    - NO afecta a otros proveedores
+    - Solo afecta al proveedor específico
   </Accordion>
 </AccordionGroup>
 
-## Next Steps
+## Próximos Pasos
 
 <CardGroup cols={2}>
-  <Card title="Multiple Periods" icon="calendar-days" href="/work-hours/multiple-periods">
-    Configure split shifts for providers
+  <Card title="Múltiples Períodos" icon="calendar-days" href="/work-hours/multiple-periods">
+    Configura turnos divididos para proveedores
   </Card>
 
-  <Card title="Edit Provider Hours" icon="pen-to-square" href="/work-hours/edit-delete-hours">
-    Modify existing provider schedules
+  <Card title="Editar Horarios de Proveedor" icon="pen-to-square" href="/work-hours/edit-delete-hours">
+    Modifica horarios de proveedor existentes
   </Card>
 
-  <Card title="Closures" icon="calendar-xmark" href="/closures/overview">
-    Configure one-time provider closures
+  <Card title="Cierres" icon="calendar-xmark" href="/closures/overview">
+    Configura cierres únicos de proveedor
   </Card>
 
-  <Card title="Availability API" icon="code" href="/api-reference/availability">
-    Understand intersection logic in API
+  <Card title="API de Disponibilidad" icon="code" href="/api-reference/availability">
+    Comprende la lógica de intersección en la API
   </Card>
 </CardGroup>

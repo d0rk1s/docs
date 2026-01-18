@@ -150,22 +150,15 @@ Después de cancelar, el sistema habrá realizado:
 
 ### 1. Cierre Eliminado de Base de Datos
 
-El cierre se elimina completamente (hard delete):
+El cierre se elimina completamente del sistema:
 
-**Antes**:
-```sql
-SELECT * FROM closures WHERE id = 'abc-123';
--- Resultado: 1 row
-```
-
-**Después**:
-```sql
-SELECT * FROM closures WHERE id = 'abc-123';
--- Resultado: 0 rows (eliminado)
-```
+**Resultado**:
+- El cierre desaparece de la lista de cierres activos
+- Las citas previamente bloqueadas vuelven a estar disponibles para agendar
+- El cierre NO se puede recuperar (eliminación permanente)
 
 <Note>
-**Hard delete vs Soft delete**: A diferencia de las citas (que usan soft delete con status), los cierres se eliminan permanentemente. Esto es intencional para simplificar la gestión y evitar confusiones.
+**Eliminación permanente**: A diferencia de las citas (que se marcan como canceladas), los cierres se eliminan completamente. Esto simplifica la gestión y evita confusiones con cierres pasados.
 </Note>
 
 ### 2. Jobs Dinámicos Cancelados

@@ -3,74 +3,51 @@ title: "Estados de Cita"
 description: "Entender los diferentes estados de una cita y sus transiciones"
 ---
 
+<Info>
+Para una introducción rápida a los 4 estados de citas (Pending, Confirmed, Completed, Cancelled), consulta [Vista General de Citas](/appointments/overview#estados-de-una-cita).
+Esta página es una referencia avanzada con detalles técnicos sobre transiciones, casos especiales y troubleshooting.
+</Info>
+
 ## Introducción
 
-Cada cita en el sistema pasa por diferentes **estados** durante su ciclo de vida. Entender estos estados es fundamental para:
+Esta página cubre los aspectos avanzados del sistema de estados de citas. Si ya conoces los estados básicos, aquí aprenderás:
 
-- **Gestionar correctamente** el calendario y la disponibilidad
-- **Saber qué citas cuentan** para tu plan de suscripción
-- **Entender el flujo de trabajo** desde que se crea hasta que se completa una cita
-- **Interpretar reportes y estadísticas** de tu clínica
+- **Transiciones automáticas** y su lógica interna
+- **Gestión manual de estados** y reglas de negocio
+- **Impacto en facturación y límites** de plan
+- **Reportes y métricas** basadas en estados
+- **Casos especiales y troubleshooting** de situaciones excepcionales
 
 El sistema gestiona automáticamente muchas transiciones de estado, pero también permite cambios manuales cuando sea necesario.
 
 ---
 
-## Los 4 Estados de Cita
+## Diagrama Detallado de Transiciones
 
-<CardGroup cols={2}>
-  <Card title="Pending" icon="clock" color="#F59E0B">
-    **Cita Pendiente**
-
-    La cita ha sido creada pero aún no confirmada por el paciente. Es el estado inicial cuando se agenda una cita.
-  </Card>
-
-  <Card title="Confirmed" icon="check-circle" color="green">
-    **Cita Confirmada**
-
-    El paciente confirmó la cita (por teléfono, WhatsApp o automáticamente). La cita está asegurada.
-  </Card>
-
-  <Card title="Completed" icon="square-check" color="gray">
-    **Cita Completada**
-
-    El servicio fue prestado y la cita finalizó. El sistema marca automáticamente citas pasadas como completadas.
-  </Card>
-
-  <Card title="Cancelled" icon="circle-xmark" color="#EF4444">
-    **Cita Cancelada**
-
-    La cita fue cancelada por el paciente o la clínica. Se mantiene en el historial pero no cuenta para el plan.
-  </Card>
-</CardGroup>
-
----
-
-## Flujo de Estados
-
-El ciclo de vida de una cita sigue este flujo:
+El sistema implementa un flujo unidireccional con transiciones automáticas y manuales:
 
 ```mermaid
 graph LR
-    A[Pending] -->|Confirmar| B[Confirmed]
-    B -->|Automático| C[Completed]
-    A-->|Cancelar| D[Cancelled]
-    B -->|Cancelar| D
+    A[Pending] -->|Confirmar Manual/WhatsApp| B[Confirmed]
+    B -->|Automático cada 60s| C[Completed]
+    A-->|Cancelar Manual| D[Cancelled]
+    B -->|Cancelar Manual| D
 ```
 
-### Transiciones Válidas
+### Tabla de Transiciones Válidas
 
-| Desde | Hacia | Cómo |
-|-------|-------|------|
-| **Pending** | Confirmed | Manual (staff) o automático (WhatsApp) |
-| **Pending** | Cancelled | Manual (staff cancela) |
-| **Confirmed** | Completed | Automático (sistema cada 60s) |
-| **Confirmed** | Cancelled | Manual (staff cancela) |
+| Desde | Hacia | Tipo | Detalles Técnicos |
+|-------|-------|------|-------------------|
+| **Pending** | Confirmed | Manual/Automático | Staff confirma o WhatsApp agenda directamente |
+| **Pending** | Cancelled | Manual | Staff cancela antes de confirmar |
+| **Confirmed** | Completed | **Automático** | Job cada 60s marca pasadas como completadas |
+| **Confirmed** | Cancelled | Manual | Staff cancela después de confirmar |
 
 <Warning>
-**Transiciones NO permitidas:**
-- No se puede cambiar de `Completed` a `Pending` o `Confirmed` (flujo unidireccional)
-- No se puede cambiar de `Cancelled` a cualquier otro estado (debe crear nueva cita)
+**Transiciones NO permitidas (flujo unidireccional):**
+- `Completed` → cualquier estado (irreversible por integridad de reportes)
+- `Cancelled` → cualquier estado (debe crear nueva cita)
+- `Completed` → `Pending` o `Confirmed` (compromete facturación)
 </Warning>
 
 ---
@@ -84,16 +61,12 @@ El sistema gestiona automáticamente ciertas transiciones para reducir trabajo m
     Cuando un paciente agenda una cita a través del bot de WhatsApp, la cita se crea automáticamente como **Confirmed** (no pasa por Pending).
 
     **Razón**: El paciente ya interactuó directamente con el sistema, lo que implica confirmación implícita.
-
-    **Configuración**: Esta lógica está en `app/services/appointment_orchestrator.py`
   </Accordion>
 
-  <Accordion title="Confirmed → Completed (Automático cada minuto)">
-    Un **job automático** se ejecuta cada 60 segundos y marca como `Completed` todas las citas confirmadas cuya fecha/hora de inicio ya pasó.
+  <Accordion title="Confirmed → Completed (Automático)">
+    El sistema automáticamente marca como `Completed` todas las citas confirmadas cuya fecha/hora de inicio ya pasó.
 
-    **Ejemplo**: Una cita confirmada para las 15:00 será marcada como `Completed` automáticamente a las 15:01.
-
-    **Job**: `complete_appointments` en `app/scheduler.py` (línea 238)
+    **Ejemplo**: Una cita confirmada para las 15:00 será marcada como `Completed` automáticamente poco después de ese horario.
 
     <Tip>
     No necesitas marcar citas como Completed manualmente. El sistema lo hace automáticamente.
@@ -105,10 +78,9 @@ El sistema gestiona automáticamente ciertas transiciones para reducir trabajo m
 
     Cuando se cancela una cita:
     - El estado cambia a `Cancelled`
-    - La cita permanece en el historial (soft delete)
+    - La cita permanece en el historial
     - El slot queda disponible nuevamente
-    - Se invalida el cache de disponibilidad
-    - Se registra en `audit_logs` quién canceló y cuándo
+    - El sistema registra quién canceló y cuándo
   </Accordion>
 </AccordionGroup>
 
@@ -142,105 +114,39 @@ Puedes cambiar el estado de una cita cuando sea necesario (excepto transiciones 
 
   <Step title="Confirmar Cambio">
     Confirma el cambio. El sistema:
-    - Actualiza el estado en la base de datos
-    - Registra el cambio en audit logs
-    - Invalida caches si es necesario
+    - Actualiza el estado
+    - Registra el cambio
     - Envía notificación al paciente si corresponde
   </Step>
 </Steps>
 
 ---
 
-## Impacto de Cada Estado
+## Impacto en Facturación y Límites de Plan
 
-Cada estado tiene diferentes efectos en el sistema.
+### Regla de Conteo por Estado
 
-| Estado | Cuenta para Plan? | Aparece en Calendario? | Notifica al Paciente? |
-|--------|-------------------|------------------------|------------------------|
-| **Pending** | ✅ Sí | ✅ Sí (naranja) | ✅ Al crear |
-| **Confirmed** | ✅ Sí | ✅ Sí (verde) | ✅ Al confirmar |
-| **Completed** | ✅ Sí | ✅ Sí (gris) | ❌ No |
-| **Cancelled** | ❌ No | ⚠️ Opcional (rojo) | ✅ Al cancelar |
+| Estado | ¿Cuenta para límite mensual? | Razón |
+|--------|------------------------------|-------|
+| **Pending** | ✅ Sí | Ocupa slot en calendario |
+| **Confirmed** | ✅ Sí | Ocupa slot en calendario |
+| **Completed** | ✅ Sí | Servicio prestado (genera facturación) |
+| **Cancelled** | ❌ No | Slot liberado, no genera valor |
 
-<Note>
-**Cuenta para Plan** significa que la cita se contabiliza en el límite mensual de tu plan de suscripción. Las citas canceladas NO cuentan.
-</Note>
+### Lógica Anti-Abuso
 
-### Detalles por Estado
+<Warning>
+**¿Por qué Pending/Confirmed cuentan aunque no estén completadas?**
 
-<AccordionGroup>
-  <Accordion title="Pending - Cita Pendiente">
-    **Color**: Naranja
+Previene abuso del sistema: crear/cancelar repetidamente para bloquear slots de competidores. Al cancelar una cita, el slot queda disponible pero la cita ya contó en tu límite mensual.
+</Warning>
 
-    **Comportamiento**:
-    - ✅ Ocupa slot en el calendario (bloquea disponibilidad)
-    - ✅ Cuenta para el límite mensual del plan
-    - ✅ Aparece en reportes de citas pendientes
-    - ⚠️ Alta probabilidad de no-show si no se confirma
+### Caso de Uso: Optimización de Plan
 
-    **Notificaciones**:
-    - Se envió notificación al crear la cita
-    - Se puede enviar recordatorio manual
-  </Accordion>
-
-  <Accordion title="Confirmed - Cita Confirmada">
-    **Color**: Verde
-
-    **Comportamiento**:
-    - ✅ Ocupa slot en el calendario (bloquea disponibilidad)
-    - ✅ Cuenta para el límite mensual del plan
-    - ✅ Aparece en reportes de citas confirmadas
-    - ✅ Baja probabilidad de no-show
-
-    **Notificaciones**:
-    - Se envió confirmación al paciente
-    - Se envían recordatorios automáticos (24h y 2h antes)
-
-    **Transición Automática**:
-    - Después de la fecha/hora, pasa automáticamente a `Completed`
-  </Accordion>
-
-  <Accordion title="Completed - Cita Completada">
-    **Color**: Gris/Verde Oscuro
-
-    **Comportamiento**:
-    - ✅ Cuenta para el límite mensual del plan
-    - ✅ Aparece en historial del paciente
-    - ✅ Aparece en reportes de productividad
-    - ❌ No bloquea slots (está en el pasado)
-
-    **Notificaciones**:
-    - No se envía notificación al completar
-    - Puedes enviar encuesta de satisfacción manualmente
-
-    <Tip>
-    Las citas completadas son la métrica clave para facturación y productividad. Revisa regularmente el reporte de citas completadas.
-    </Tip>
-  </Accordion>
-
-  <Accordion title="Cancelled - Cita Cancelada">
-    **Color**: Rojo
-
-    **Comportamiento**:
-    - ❌ NO cuenta para el límite mensual del plan
-    - ✅ Libera el slot inmediatamente (disponible para reagendar)
-    - ✅ Aparece en historial del paciente (soft delete)
-    - ✅ Aparece en reportes de cancelaciones
-
-    **Notificaciones**:
-    - Se envió notificación de cancelación al paciente
-    - Puedes enviar mensaje de reprogramación
-
-    **Soft Delete**:
-    - La cita NO se elimina de la base de datos
-    - Se mantiene en el historial para auditoría
-    - Se registra quién canceló y cuándo en `audit_logs`
-
-    <Warning>
-    No se puede "des-cancelar" una cita. Debes crear una nueva cita si el paciente quiere reagendar.
-    </Warning>
-  </Accordion>
-</AccordionGroup>
+Si tienes muchas citas **Pending** que nunca se confirman:
+- ✅ Cancélalas antes de que cuenten hacia tu límite
+- ✅ Implementa política de confirmación (llamar 24h antes)
+- ✅ Usa recordatorios automáticos de WhatsApp
 
 ---
 
@@ -255,15 +161,15 @@ Llama al paciente o envía WhatsApp para confirmar citas Pending. Esto aumenta l
 <Warning>
 **No marcar como Completed manualmente**
 
-Deja que el sistema marque automáticamente las citas como completadas (job cada 60s). Esto garantiza consistencia y evita errores humanos.
+Deja que el sistema marque automáticamente las citas como completadas. Esto garantiza consistencia y evita errores humanos.
 
 **Excepción**: Si olvidaste registrar una cita del pasado, puedes crearla y el sistema la marcará como Completed automáticamente.
 </Warning>
 
 <Note>
-**Cancelled es soft delete**
+**Cancelled mantiene historial**
 
-Las citas canceladas NO se eliminan de la base de datos. Esto permite:
+Las citas canceladas NO se eliminan del sistema. Esto permite:
 - Mantener historial completo del paciente
 - Auditoría de cancelaciones
 - Análisis de no-show y patrones de cancelación
@@ -399,15 +305,10 @@ El sistema genera reportes automáticos basados en estados de cita.
   <Accordion title="¿Qué pasa con las citas del pasado si nunca se marcaron como Completed?">
     El sistema las marca automáticamente como `Completed`.
 
-    **Job automático** (`complete_appointments`):
-    - Se ejecuta cada 60 segundos
-    - Busca todas las citas `Confirmed` cuya `starts_at` ya pasó
-    - Las marca como `Completed` automáticamente
+    El sistema revisa periódicamente todas las citas confirmadas cuya fecha/hora ya pasó y las marca como completadas automáticamente.
 
     **Si no se marcaron**:
-    - Verifica que el job esté activo: `GET /system/scheduler/status`
-    - Revisa logs del scheduler: `grep "complete_appointments" app.log`
-    - Puedes ejecutar manualmente: `POST /system/scheduler/jobs/complete_appointments/run` (requiere admin)
+    Contacta a soporte para verificar que el proceso automático está funcionando correctamente.
   </Accordion>
 </AccordionGroup>
 
@@ -429,16 +330,3 @@ El sistema genera reportes automáticos basados en estados de cita.
   </Card>
 </CardGroup>
 
----
-
-## Referencias Técnicas
-
-<Tip>
-**Para desarrolladores**
-
-- **Estados definidos**: `app/models/appointment.py` (enum `AppointmentStatus`)
-- **Job auto-complete**: `app/scheduler.py` (línea 238, frecuencia 60s)
-- **Transiciones**: `app/services/appointments_service.py`
-- **Audit logs**: `app/models/audit_log.py` (acciones: `APPOINTMENT_CREATED`, `APPOINTMENT_CANCELLED`, etc.)
-- **Cache invalidation**: `app/services/clinic_agent/tools/cache.py`
-</Tip>

@@ -1,207 +1,137 @@
 ---
-title: 'Create Provider'
-description: 'Step-by-step guide to adding a new provider to your clinic'
+title: 'Crear Proveedor'
+description: 'Guía paso a paso para agregar un nuevo proveedor a tu clínica'
 icon: 'user-plus'
 ---
 
-## Overview
+## Resumen
 
-Creating a provider involves either flagging an existing user as a provider or creating a new user with the provider flag enabled. This guide covers both scenarios.
+Crear un proveedor implica marcar a un usuario existente como proveedor o crear un nuevo usuario con el indicador de proveedor habilitado. Esta guía cubre ambos escenarios.
 
 <Info>
-  **Per-Clinic Providers**: When you create a provider, they are flagged as a provider ONLY in the current clinic. The same user can be a regular staff member in other clinics.
+  **Proveedores por Clínica**: Cuando creas un proveedor, se marca como proveedor SOLO en la clínica actual. El mismo usuario puede ser un miembro regular del personal en otras clínicas.
 </Info>
 
-## Prerequisites
+## Requisitos Previos
 
-Before creating a provider:
+Antes de crear un proveedor:
 
 <Steps>
-  <Step title="Required Permissions">
-    You must have `CLINIC_ADMIN` role in the clinic where you're creating the provider.
+  <Step title="Permisos Requeridos">
+    Debes tener el rol `CLINIC_ADMIN` en la clínica donde estás creando el proveedor.
   </Step>
-  <Step title="Clinic Context">
-    Ensure the correct clinic is selected in the clinic selector (top-right dropdown).
+  <Step title="Contexto de Clínica">
+    Asegúrate de que la clínica correcta esté seleccionada en el selector de clínicas (menú desplegable superior derecho).
   </Step>
-  <Step title="User Information">
-    Prepare the provider's email, phone number, and full name.
+  <Step title="Información del Usuario">
+    Prepara el correo electrónico, número de teléfono y nombre completo del proveedor.
   </Step>
 </Steps>
 
-## Method 1: Flag Existing User as Provider
+## Método 1: Marcar Usuario Existente como Proveedor
 
-Use this method when the user already exists in your clinic (e.g., administrative staff becoming a provider).
+Usa este método cuando el usuario ya existe en tu clínica (por ejemplo, personal administrativo que se convierte en proveedor).
 
 <Steps>
-  <Step title="Navigate to Users">
-    Go to **Users** section from the main menu.
+  <Step title="Navegar a Usuarios">
+    Ve a la sección **Usuarios** desde el menú principal.
   </Step>
-  <Step title="Find the User">
-    Use search to locate the user by name or email.
+  <Step title="Encontrar el Usuario">
+    Usa la búsqueda para localizar al usuario por nombre o correo electrónico.
   </Step>
-  <Step title="Open Edit Dialog">
-    Click the **Edit** icon on the user's card.
+  <Step title="Abrir Diálogo de Edición">
+    Haz clic en el ícono **Editar** en la tarjeta del usuario.
   </Step>
-  <Step title="Enable Provider Flag">
-    Toggle **Is Provider** to `true`.
+  <Step title="Habilitar Indicador de Proveedor">
+    Cambia **Es Proveedor** a `true`.
   </Step>
-  <Step title="Save Changes">
-    Click **Save** to update the user's profile.
+  <Step title="Guardar Cambios">
+    Haz clic en **Guardar** para actualizar el perfil del usuario.
   </Step>
 </Steps>
 
-### API Request (Method 1)
-
-```http
-PATCH /v1/users/{user_clinic_id}?clinic_id={clinic_id}
-```
-
-```bash
-curl -X PATCH "https://api.clinic.example.com/v1/users/{user_clinic_id}?clinic_id={clinic_id}" \
-  -H "Cookie: access_token={jwt_token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "is_provider": true
-  }'
-```
-
-### Response
-
-```json
-{
-  "id": "abc-123-def-456",
-  "user_id": "user-789-xyz-012",
-  "full_name": "Dr. María García",
-  "email": "maria.garcia@namsec.es",
-  "phone_e164": "+34612345678",
-  "is_provider": true,
-  "clinic_role": "STAFF",
-  "status": "approved",
-  "created_at": "2025-12-01T10:30:00Z",
-  "updated_at": "2026-01-17T09:15:00Z"
-}
-```
 
 <Warning>
-  **Existing Appointments**: If the user had existing appointments scheduled BEFORE being flagged as a provider, those appointments remain valid. Future appointments will now be calculated using this user's provider availability.
+  **Citas Existentes**: Si el usuario tenía citas programadas ANTES de ser marcado como proveedor, esas citas permanecen válidas. Las citas futuras ahora se calcularán usando la disponibilidad de proveedor de este usuario.
 </Warning>
 
-## Method 2: Create New User as Provider
+## Método 2: Crear Nuevo Usuario como Proveedor
 
-Use this method when hiring a new team member who will be a provider.
+Usa este método cuando contratas a un nuevo miembro del equipo que será proveedor.
 
 <Frame>
   <img src="/images/screenshots/providers_create_form.png" alt="Formulario de creación de proveedor con campos de información y flag de proveedor" />
 </Frame>
 
 <Steps>
-  <Step title="Navigate to Create User">
-    Go to **Users** → **Create User** or click the **Add User** button.
+  <Step title="Navegar a Crear Usuario">
+    Ve a **Usuarios** → **Crear Usuario** o haz clic en el botón **Agregar Usuario**.
   </Step>
-  <Step title="Fill User Information">
-    - **Full Name**: Provider's full name
-    - **Email**: Professional email address (must be unique globally)
-    - **Phone**: E.164 format (e.g., `+34612345678`)
-    - **Role**: Select clinic role (`STAFF` or `CLINIC_ADMIN`)
+  <Step title="Completar Información del Usuario">
+    - **Nombre Completo**: Nombre completo del proveedor
+    - **Correo Electrónico**: Dirección de correo profesional (debe ser única globalmente)
+    - **Teléfono**: Formato E.164 (ej: `+34612345678`)
+    - **Rol**: Selecciona el rol de clínica (`STAFF` o `CLINIC_ADMIN`)
   </Step>
-  <Step title="Enable Provider Flag">
-    Toggle **Is Provider** to `true`.
+  <Step title="Habilitar Indicador de Proveedor">
+    Cambia **Es Proveedor** a `true`.
   </Step>
-  <Step title="Set Initial Status">
-    Choose `approved` (active immediately) or `pending` (requires approval).
+  <Step title="Establecer Estado Inicial">
+    Elige `approved` (activo inmediatamente) o `pending` (requiere aprobación).
   </Step>
-  <Step title="Submit Form">
-    Click **Create User** to save.
+  <Step title="Enviar Formulario">
+    Haz clic en **Crear Usuario** para guardar.
   </Step>
 </Steps>
 
-### API Request (Method 2)
+### Solicitud API (Método 2)
 
-```http
-POST /v1/users?clinic_id={clinic_id}
-```
 
-```bash
-curl -X POST "https://api.clinic.example.com/v1/users?clinic_id={clinic_id}" \
-  -H "Cookie: access_token={jwt_token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "juan.lopez@namsec.es",
-    "full_name": "Dr. Juan López",
-    "phone_e164": "+34612345678",
-    "clinic_role": "STAFF",
-    "is_provider": true,
-    "status": "approved",
-    "password": "SecurePassword123!"
-  }'
-```
+## Detalles de Campos
 
-### Response
-
-```json
-{
-  "id": "def-456-ghi-789",
-  "user_id": "user-012-abc-345",
-  "full_name": "Dr. Juan López",
-  "email": "juan.lopez@namsec.es",
-  "phone_e164": "+34612345678",
-  "is_provider": true,
-  "clinic_role": "STAFF",
-  "status": "approved",
-  "created_at": "2026-01-17T09:20:00Z",
-  "updated_at": "2026-01-17T09:20:00Z"
-}
-```
-
-<Info>
-  **Audit Logging**: Provider creation is automatically logged in `audit_logs` with action `USER_CREATED` and details including `is_provider: true`.
-</Info>
-
-## Field Details
-
-### Email
+### Correo Electrónico
 
 <AccordionGroup>
-  <Accordion title="Uniqueness Constraint">
-    Email must be unique **globally** (across all clinics). Two users cannot share the same email address.
+  <Accordion title="Restricción de Unicidad">
+    El correo electrónico debe ser único **globalmente** (en todas las clínicas). Dos usuarios no pueden compartir la misma dirección de correo electrónico.
 
-    **Error Example**:
+    **Ejemplo de Error**:
     ```json
     {
       "detail": "Email already in use"
     }
     ```
 
-    **Solution**: Use a different email or identify the existing user and flag them as a provider instead (Method 1).
+    **Solución**: Usa un correo electrónico diferente o identifica al usuario existente y márcalo como proveedor en su lugar (Método 1).
   </Accordion>
 
-  <Accordion title="Format Validation">
-    Email must be a valid email address format.
+  <Accordion title="Validación de Formato">
+    El correo electrónico debe tener un formato de dirección de correo válido.
 
-    **Valid**: `maria.garcia@namsec.es`, `juan+provider@example.org`
+    **Válido**: `maria.garcia@namsec.es`, `juan+provider@example.org`
 
-    **Invalid**: `maria.garcia`, `juan@`, `@namsec.es`
+    **Inválido**: `maria.garcia`, `juan@`, `@namsec.es`
   </Accordion>
 </AccordionGroup>
 
-### Phone Number
+### Número de Teléfono
 
 <AccordionGroup>
-  <Accordion title="E.164 Format Required">
-    Phone numbers MUST be in E.164 format: `+[country code][number]`
+  <Accordion title="Formato E.164 Requerido">
+    Los números de teléfono DEBEN estar en formato E.164: `+[código de país][número]`
 
-    **Examples**:
-    - Spain: `+34612345678`
-    - US: `+14155551234`
-    - Mexico: `+525512345678`
+    **Ejemplos**:
+    - España: `+34612345678`
+    - EE.UU.: `+14155551234`
+    - México: `+525512345678`
 
-    **Invalid**: `612345678`, `(415) 555-1234`, `+34 612 345 678`
+    **Inválido**: `612345678`, `(415) 555-1234`, `+34 612 345 678`
   </Accordion>
 
-  <Accordion title="Global Uniqueness">
-    Phone numbers must be unique **globally** (across all clinics), similar to email.
+  <Accordion title="Unicidad Global">
+    Los números de teléfono deben ser únicos **globalmente** (en todas las clínicas), similar al correo electrónico.
 
-    **Error Example**:
+    **Ejemplo de Error**:
     ```json
     {
       "detail": "Phone number already in use"
@@ -209,222 +139,145 @@ curl -X POST "https://api.clinic.example.com/v1/users?clinic_id={clinic_id}" \
     ```
   </Accordion>
 
-  <Accordion title="Normalization">
-    The system uses `normalize_phone_to_e164()` to convert various formats:
+  <Accordion title="Normalización">
+    El sistema usa `normalize_phone_to_e164()` para convertir varios formatos:
 
     ```python
-    # Input: "612345678" (Spain, assuming +34 prefix)
-    # Output: "+34612345678"
+    # Entrada: "612345678" (España, asumiendo prefijo +34)
+    # Salida: "+34612345678"
 
-    # Input: "+34 612 345 678"
-    # Output: "+34612345678"
+    # Entrada: "+34 612 345 678"
+    # Salida: "+34612345678"
     ```
 
-    **Best Practice**: Always provide phone numbers in E.164 format to avoid parsing issues.
+    **Mejor Práctica**: Siempre proporciona números de teléfono en formato E.164 para evitar problemas de análisis.
   </Accordion>
 </AccordionGroup>
 
-### Full Name
+### Nombre Completo
 
 <AccordionGroup>
-  <Accordion title="Per-Clinic Storage">
-    Full name is stored in `user_clinic_profiles.full_name`, meaning:
-    - The same user can have different names in different clinics
-    - Name is tied to the `user_clinic` relationship, not the global `users` table
+  <Accordion title="Almacenamiento por Clínica">
+    El nombre completo se almacena en `user_clinic_profiles.full_name`, lo que significa:
+    - El mismo usuario puede tener nombres diferentes en diferentes clínicas
+    - El nombre está vinculado a la relación `user_clinic`, no a la tabla global `users`
 
-    **Example**:
-    - Clinic A: "Dr. María García Rodríguez"
-    - Clinic B: "María García" (same user, informal name)
+    **Ejemplo**:
+    - Clínica A: "Dr. María García Rodríguez"
+    - Clínica B: "María García" (mismo usuario, nombre informal)
   </Accordion>
 
-  <Accordion title="Multi-Clinic Name Updates">
-    When a patient exists in Clinic A as "Manuel López" and books in Clinic B as "Eduardo Cassanovas", the system:
-    1. Associates the user to Clinic B (creates new `user_clinic`)
-    2. Updates the global name to "Eduardo Cassanovas" (respects most recent input)
+  <Accordion title="Actualizaciones de Nombres Multi-Clínica">
+    Cuando un paciente existe en la Clínica A como "Manuel López" y reserva en la Clínica B como "Eduardo Cassanovas", el sistema:
+    1. Asocia al usuario con la Clínica B (crea nuevo `user_clinic`)
+    2. Actualiza el nombre global a "Eduardo Cassanovas" (respeta la entrada más reciente)
 
-    See `docs/FIX_MULTI_CLINIC_PATIENT_NAME_UPDATE.md` for full details.
+    Ver `docs/FIX_MULTI_CLINIC_PATIENT_NAME_UPDATE.md` para detalles completos.
   </Accordion>
 </AccordionGroup>
 
-### Clinic Role
+### Rol de Clínica
 
 <CardGroup cols={3}>
   <Card title="STAFF" icon="user">
-    Standard team member with access to their clinic's data.
+    Miembro estándar del equipo con acceso a los datos de su clínica.
   </Card>
   <Card title="CLINIC_ADMIN" icon="user-shield">
-    Can manage clinic configuration, users, providers, and services.
+    Puede gestionar la configuración de la clínica, usuarios, proveedores y servicios.
   </Card>
   <Card title="ADMIN" icon="crown">
-    System administrator with access to ALL clinics (global role).
+    Administrador del sistema con acceso a TODAS las clínicas (rol global).
   </Card>
 </CardGroup>
 
 <Tip>
-  **Role Independence**: A user can be `CLINIC_ADMIN` in Clinic A and `STAFF` in Clinic B. Roles are per-clinic, stored in `user_clinics.clinic_role_id`.
+  **Independencia de Roles**: Un usuario puede ser `CLINIC_ADMIN` en la Clínica A y `STAFF` en la Clínica B. Los roles son por clínica, almacenados en `user_clinics.clinic_role_id`.
 </Tip>
 
-### Status
+### Estado
 
 <CardGroup cols={3}>
   <Card title="approved" icon="circle-check">
-    **Active Provider**: Can deliver services immediately. Availability slots are generated.
+    **Proveedor Activo**: Puede ofrecer servicios inmediatamente. Se generan franjas de disponibilidad.
   </Card>
   <Card title="pending" icon="clock">
-    **Awaiting Approval**: Provider is not yet active. No availability slots generated. Use for onboarding.
+    **Esperando Aprobación**: El proveedor aún no está activo. No se generan franjas de disponibilidad. Usar para incorporación.
   </Card>
   <Card title="suspended" icon="ban">
-    **Temporarily Inactive**: Provider is suspended (leave, disciplinary action). No availability slots.
+    **Temporalmente Inactivo**: El proveedor está suspendido (licencia, acción disciplinaria). Sin franjas de disponibilidad.
   </Card>
 </CardGroup>
 
-## Post-Creation Steps
+## Pasos Posteriores a la Creación
 
-After creating a provider, complete their setup:
+Después de crear un proveedor, completa su configuración:
 
 <Steps>
-  <Step title="Configure Work Hours">
-    Navigate to [Configure Schedule](/providers/configure-schedule) to set the provider's working hours.
+  <Step title="Configurar Horarios de Trabajo">
+    Navega a [Configurar Horario](/providers/configure-schedule) para establecer los horarios de trabajo del proveedor.
 
-    **Without work hours**: Provider will have NO availability (no slots generated).
+    **Sin horarios de trabajo**: El proveedor NO tendrá disponibilidad (no se generan franjas).
   </Step>
-  <Step title="Assign Services">
-    Navigate to [Assign Services](/providers/assign-services) to link the provider to services they deliver.
+  <Step title="Asignar Servicios">
+    Navega a [Asignar Servicios](/providers/assign-services) para vincular al proveedor con los servicios que ofrece.
 
-    **Without service assignments**: Provider won't appear when patients book specific services.
+    **Sin asignaciones de servicios**: El proveedor no aparecerá cuando los pacientes reserven servicios específicos.
   </Step>
-  <Step title="Verify Availability">
-    Test availability by simulating an appointment booking for a service assigned to this provider.
+  <Step title="Verificar Disponibilidad">
+    Prueba la disponibilidad simulando una reserva de cita para un servicio asignado a este proveedor.
   </Step>
-  <Step title="Notify Provider">
-    Send login credentials and onboarding information to the new provider.
+  <Step title="Notificar al Proveedor">
+    Envía credenciales de inicio de sesión e información de incorporación al nuevo proveedor.
   </Step>
 </Steps>
 
-## Common Errors
+## Errores Comunes
 
 <AccordionGroup>
   <Accordion title="403 Forbidden - Cannot Manage Clinic">
-    **Cause**: You don't have `CLINIC_ADMIN` role in the selected clinic.
+    **Causa**: No tienes el rol `CLINIC_ADMIN` en la clínica seleccionada.
 
-    **Solution**: Contact your system administrator to grant you `CLINIC_ADMIN` permissions for this clinic.
+    **Solución**: Contacta a tu administrador del sistema para que te otorgue permisos `CLINIC_ADMIN` para esta clínica.
   </Accordion>
 
   <Accordion title="400 Bad Request - Email Already in Use">
-    **Cause**: A user with this email already exists globally.
+    **Causa**: Ya existe un usuario con este correo electrónico globalmente.
 
-    **Solution**:
-    1. Search for the existing user in the **Users** section
-    2. If they exist in your clinic, use Method 1 to flag them as a provider
-    3. If they exist in another clinic but not yours, add them to your clinic first (Create UserClinic association)
+    **Solución**:
+    1. Busca al usuario existente en la sección **Usuarios**
+    2. Si existe en tu clínica, usa el Método 1 para marcarlo como proveedor
+    3. Si existe en otra clínica pero no en la tuya, agrégalo primero a tu clínica (crear asociación UserClinic)
   </Accordion>
 
   <Accordion title="400 Bad Request - Phone Already in Use">
-    **Cause**: A user with this phone number already exists globally.
+    **Causa**: Ya existe un usuario con este número de teléfono globalmente.
 
-    **Solution**: Similar to email conflict. Locate the existing user and either flag them as a provider or verify the phone number is correct.
+    **Solución**: Similar al conflicto de correo electrónico. Localiza al usuario existente y márcalo como proveedor o verifica que el número de teléfono sea correcto.
   </Accordion>
 
   <Accordion title="400 Bad Request - Invalid Phone Format">
-    **Cause**: Phone number is not in E.164 format.
+    **Causa**: El número de teléfono no está en formato E.164.
 
-    **Solution**: Reformat the phone number to E.164. Examples:
-    - Spain: `+34` + 9-digit number
-    - US: `+1` + 10-digit number
-    - Mexico: `+52` + 10-digit number
+    **Solución**: Reformatea el número de teléfono a E.164. Ejemplos:
+    - España: `+34` + número de 9 dígitos
+    - EE.UU.: `+1` + número de 10 dígitos
+    - México: `+52` + número de 10 dígitos
   </Accordion>
 </AccordionGroup>
 
-## Validation Logic
-
-The system performs several validations when creating a provider:
-
-```python
-# From app/api/v1/users.py (simplified)
-
-# 1. Check email uniqueness (global)
-existing_user = await db.scalar(select(User).where(User.email == email))
-if existing_user:
-    raise HTTPException(status_code=400, detail="Email already in use")
-
-# 2. Check phone uniqueness (global)
-existing_phone = await db.scalar(select(User).where(User.phone_e164 == phone))
-if existing_phone:
-    raise HTTPException(status_code=400, detail="Phone already in use")
-
-# 3. Normalize phone to E.164
-normalized_phone = normalize_phone_to_e164(phone_e164)
-if not normalized_phone:
-    raise HTTPException(status_code=400, detail="Invalid phone format")
-
-# 4. Validate clinic access
-if not current_user.can_manage_clinic(clinic_id):
-    raise HTTPException(status_code=403, detail="Cannot manage this clinic")
-
-# 5. Create user + user_clinic + user_clinic_profile
-# ... (database operations)
-```
-
-## Database Changes
-
-Creating a provider modifies three tables:
-
-### 1. users Table (Global Identity)
-
-```sql
-INSERT INTO users (id, email, phone_e164, password_hash, is_active)
-VALUES (
-  'user-012-abc-345',
-  'juan.lopez@namsec.es',
-  '+34612345678',
-  '<bcrypt_hash>',
-  true
-);
-```
-
-### 2. user_clinics Table (Clinic Association + Provider Flag)
-
-```sql
-INSERT INTO user_clinics (id, user_id, clinic_id, is_provider, clinic_role_id, status)
-VALUES (
-  'def-456-ghi-789',
-  'user-012-abc-345',  -- FK to users
-  'clinic-abc-123',
-  true,  -- PROVIDER FLAG
-  'role-staff-uuid',
-  'approved'
-);
-```
-
-### 3. user_clinic_profiles Table (Per-Clinic PII)
-
-```sql
-INSERT INTO user_clinic_profiles (user_clinic_id, full_name, notes, preferences)
-VALUES (
-  'def-456-ghi-789',  -- FK to user_clinics (PK = FK, 1:1 relationship)
-  'Dr. Juan López',
-  NULL,
-  '{}'::jsonb
-);
-```
-
-<Info>
-  **GDPR Compliance**: PII (full_name, notes) is stored separately in `user_clinic_profiles` to enable GDPR-compliant deletion without losing access audit trail.
-</Info>
-
-## Next Steps
+## Próximos Pasos
 
 <CardGroup cols={2}>
-  <Card title="Configure Schedule" icon="calendar-days" href="/providers/configure-schedule">
-    Set up the provider's work hours (REQUIRED for availability)
+  <Card title="Configurar Horario" icon="calendar-days" href="/providers/configure-schedule">
+    Establece los horarios de trabajo del proveedor (REQUERIDO para disponibilidad)
   </Card>
-  <Card title="Assign Services" icon="briefcase-medical" href="/providers/assign-services">
-    Link the provider to services they deliver
+  <Card title="Asignar Servicios" icon="briefcase-medical" href="/providers/assign-services">
+    Vincula al proveedor con los servicios que ofrece
   </Card>
-  <Card title="View Providers" icon="list" href="/providers/view-providers">
-    See the updated providers list with your new provider
+  <Card title="Ver Proveedores" icon="list" href="/providers/view-providers">
+    Ve la lista actualizada de proveedores con tu nuevo proveedor
   </Card>
-  <Card title="Test Availability" icon="calendar-check" href="/scheduling/test-availability">
-    Verify the provider appears in appointment booking
+  <Card title="Probar Disponibilidad" icon="calendar-check" href="/scheduling/test-availability">
+    Verifica que el proveedor aparezca en la reserva de citas
   </Card>
 </CardGroup>

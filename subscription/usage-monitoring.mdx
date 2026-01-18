@@ -47,147 +47,9 @@ Devuelve estadísticas de uso detalladas para el período de facturación actual
   <img src="/images/screenshots/subscription_usage_chart.png" alt="Gráfico de uso del plan mostrando citas consumidas, restantes y proyección de costos" />
 </Frame>
 
-## Ejemplo de Uso
+## Cómo Ver tu Uso
 
-### cURL
-
-```bash
-curl -X GET "https://api.sonrisafeliz.com/v1/subscription/usage?clinic_id=abc-123-def-456" \
-  -H "Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
-  -H "Accept: application/json"
-```
-
-### Python
-
-```python
-import httpx
-from uuid import UUID
-from typing import TypedDict
-
-class EstimatedCost(TypedDict):
-    base_cost: float
-    overage_cost: float
-    total_cost: float
-
-class UsageResponse(TypedDict):
-    period_start: str
-    period_end: str
-    days_remaining: int
-    plan_name: str
-    plan_display_name: str
-    appointment_limit: int
-    appointments_used: int
-    appointments_remaining: int
-    usage_percent: float
-    overage_enabled: bool
-    overage_count: int
-    overage_rate: float
-    conversations_count: int
-    estimated_monthly_cost: EstimatedCost
-
-async def get_usage_stats(clinic_id: UUID, access_token: str) -> UsageResponse:
-    """
-    Obtiene estadísticas de uso de la clínica.
-
-    Args:
-        clinic_id: UUID de la clínica
-        access_token: Token JWT de autenticación
-
-    Returns:
-        UsageResponse: Estadísticas de uso detalladas
-    """
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            "https://api.sonrisafeliz.com/v1/subscription/usage",
-            params={"clinic_id": str(clinic_id)},
-            cookies={"access_token": access_token},
-        )
-        response.raise_for_status()
-        return response.json()
-
-# Ejemplo de uso
-usage = await get_usage_stats(
-    clinic_id=UUID("abc-123-def-456"),
-    access_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-)
-
-print(f"Plan: {usage['plan_name']}")
-print(f"Uso: {usage['appointments_used']}/{usage['appointment_limit']} ({usage['usage_percent']:.1f}%)")
-print(f"Quedan: {usage['appointments_remaining']} citas")
-print(f"Días restantes: {usage['days_remaining']}")
-
-if usage['overage_count'] > 0:
-    print(f"⚠️ Overage: {usage['overage_count']} citas × €{usage['overage_rate']} = €{usage['estimated_monthly_cost']['overage_cost']:.2f}")
-
-print(f"💰 Costo estimado: €{usage['estimated_monthly_cost']['total_cost']:.2f}")
-```
-
-### JavaScript/TypeScript
-
-```typescript
-interface EstimatedCost {
-  base_cost: number;
-  overage_cost: number;
-  total_cost: number;
-}
-
-interface UsageResponse {
-  period_start: string;
-  period_end: string;
-  days_remaining: number;
-  plan_name: string;
-  plan_display_name: string;
-  appointment_limit: number;
-  appointments_used: number;
-  appointments_remaining: number;
-  usage_percent: number;
-  overage_enabled: boolean;
-  overage_count: number;
-  overage_rate: number;
-  conversations_count: number;
-  estimated_monthly_cost: EstimatedCost;
-}
-
-async function getUsageStats(
-  clinicId: string,
-  accessToken: string
-): Promise<UsageResponse> {
-  const response = await fetch(
-    `https://api.sonrisafeliz.com/v1/subscription/usage?clinic_id=${clinicId}`,
-    {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'Cookie': `access_token=${accessToken}`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
-  }
-
-  return response.json();
-}
-
-// Ejemplo de uso
-const usage = await getUsageStats(
-  'abc-123-def-456',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-);
-
-console.log(`Plan: ${usage.plan_name}`);
-console.log(`Uso: ${usage.appointments_used}/${usage.appointment_limit} (${usage.usage_percent.toFixed(1)}%)`);
-console.log(`Quedan: ${usage.appointments_remaining} citas`);
-console.log(`Días restantes: ${usage.days_remaining}`);
-
-if (usage.overage_count > 0) {
-  console.log(`⚠️ Overage: ${usage.overage_count} citas × €${usage.overage_rate} = €${usage.estimated_monthly_cost.overage_cost.toFixed(2)}`);
-}
-
-console.log(`💰 Costo estimado: €${usage.estimated_monthly_cost.total_cost.toFixed(2)}`);
-```
+Puedes consultar tu uso actual desde el Dashboard principal de la clínica. El widget de suscripción muestra en tiempo real todas las métricas importantes.
 
 ## Interpretación de Campos
 
@@ -199,10 +61,7 @@ console.log(`💰 Costo estimado: €${usage.estimated_monthly_cost.total_cost.t
 | `period_end` | datetime | Fin del período actual (UTC) |
 | `days_remaining` | integer | Días hasta el próximo período |
 
-**Cálculo de días restantes**:
-```python
-days_remaining = (period_end - datetime.now(timezone.utc)).days
-```
+El sistema calcula automáticamente cuántos días quedan hasta el próximo período de facturación.
 
 ### Uso de Citas
 
@@ -213,11 +72,8 @@ days_remaining = (period_end - datetime.now(timezone.utc)).days
 | `appointments_remaining` | integer | Citas disponibles (limit - used) |
 | `usage_percent` | float | Porcentaje de uso (0-100+) |
 
-**Cálculo de porcentaje de uso**:
-```python
-usage_percent = (appointments_used / appointment_limit) * 100
-# Ejemplo: 35 / 50 * 100 = 70.0%
-```
+**Cálculo de porcentaje de uso**: Se calcula dividiendo las citas usadas entre el límite y multiplicando por 100.
+Ejemplo: 35 citas usadas / 50 límite = 70%
 
 <Note>
   `usage_percent` puede ser mayor a 100% si overage está habilitado y la clínica excedió el límite.
@@ -231,11 +87,7 @@ usage_percent = (appointments_used / appointment_limit) * 100
 | `overage_count` | integer | Citas extras sobre el límite (max(0, used - limit)) |
 | `overage_rate` | float | Precio por cita extra |
 
-**Cálculo de overage**:
-```python
-overage_count = max(0, appointments_used - appointment_limit)
-# Ejemplo: max(0, 65 - 50) = 15 citas en overage
-```
+**Cálculo de overage**: Si excedes el límite, el sistema cuenta las citas extras. Ejemplo: 65 citas usadas - 50 límite = 15 citas en overage
 
 ### Costo Estimado
 
@@ -246,57 +98,19 @@ overage_count = max(0, appointments_used - appointment_limit)
 | `total_cost` | float | Costo total estimado del mes |
 
 **Cálculo de costo estimado**:
-```python
-base_cost = plan.price_monthly
-overage_cost = overage_count * plan.overage_rate if overage_enabled else 0
-total_cost = base_cost + overage_cost
+- Costo base = Precio mensual de tu plan
+- Costo overage = Citas extras × Tarifa de overage
+- Total = Costo base + Costo overage
 
-# Ejemplo:
-# base_cost = 29.0 (STARTER)
-# overage_count = 15
-# overage_rate = 0.35
-# overage_cost = 15 × 0.35 = 5.25
-# total_cost = 29.0 + 5.25 = 34.25
-```
+Ejemplo: Plan STARTER (€29) + 15 citas extras × €0.35 = €29 + €5.25 = €34.25
 
-## Servicio de Suscripciones
+## Verificación de Límite
 
-El sistema incluye `SubscriptionService.check_appointment_limit()` para verificaciones de límite:
+El sistema verifica automáticamente si puedes crear nuevas citas:
 
-```python
-from app.services.subscription_service import SubscriptionService
-
-service = SubscriptionService(db)
-
-# Verificar si puede crear una cita nueva
-limit_check = await service.check_appointment_limit(clinic_id)
-
-print(f"Límite: {limit_check['limit']}")
-print(f"Uso actual: {limit_check['current_count']}")
-print(f"¿Excedido?: {limit_check['over_limit']}")
-print(f"¿Overage permitido?: {limit_check['overage_allowed']}")
-
-if limit_check['over_limit']:
-    if limit_check['overage_allowed']:
-        print(f"✅ Overage activo - Cargo adicional: €{limit_check['overage_cost']:.2f}")
-    else:
-        print("❌ Límite alcanzado - Upgrade requerido")
-else:
-    remaining = limit_check['limit'] - limit_check['current_count']
-    print(f"✅ {remaining} citas disponibles")
-```
-
-**Response Schema** (`check_appointment_limit`):
-```python
-{
-    "limit": 50,                      # Límite del plan
-    "current_count": 35,              # Citas usadas
-    "over_limit": False,              # Si excedió el límite
-    "overage_allowed": True,          # Si overage habilitado
-    "overage_count": 0,               # Citas en overage
-    "overage_cost": 0.0,              # Costo overage
-}
-```
+- **Límite NO excedido**: Puedes crear citas normalmente
+- **Límite excedido + Overage habilitado**: Puedes continuar creando citas (con cargo adicional)
+- **Límite excedido + Overage NO habilitado**: Debes hacer upgrade para crear más citas
 
 ## Casos de Uso Comunes
 
@@ -324,257 +138,26 @@ else:
   - Costo de overage (si aplica)
   - Total estimado del mes
 
-**Implementación**: Usar `GET /v1/subscription/usage` en `useEffect` con polling cada 30-60s.
+El widget se actualiza automáticamente cada minuto para mostrarte información actualizada.
 
-### 2. Alerta de Límite Próximo
+### 2. Alertas Automáticas
 
-```python
-async def check_and_alert_near_limit(clinic_id: UUID, db: AsyncSession) -> None:
-    """
-    Envía alerta si la clínica está cerca del límite de citas.
-
-    Umbrales:
-    - 80%: Alerta amarilla (advertencia)
-    - 100%: Alerta roja (límite alcanzado, overage activo)
-    """
-    service = SubscriptionService(db)
-    subscription = await service.get_subscription_for_clinic(clinic_id)
-
-    usage_percent = (subscription.appointments_billed / subscription.appointment_limit) * 100
-
-    if usage_percent >= 100 and not subscription.allow_overage:
-        # Límite alcanzado, overage NO habilitado
-        await send_email_alert(
-            clinic_id=clinic_id,
-            subject="🚨 Límite de citas alcanzado",
-            template="limit_reached.html",
-            context={
-                "plan_name": subscription.plan_display_name,
-                "limit": subscription.appointment_limit,
-                "used": subscription.appointments_billed,
-            },
-        )
-    elif usage_percent >= 100 and subscription.allow_overage:
-        # Límite excedido, overage activo
-        overage_count = subscription.appointments_billed - subscription.appointment_limit
-        overage_cost = overage_count * subscription.overage_rate
-
-        await send_email_alert(
-            clinic_id=clinic_id,
-            subject="⚠️ Overage activo en tu plan",
-            template="overage_active.html",
-            context={
-                "plan_name": subscription.plan_display_name,
-                "overage_count": overage_count,
-                "overage_cost": overage_cost,
-            },
-        )
-    elif usage_percent >= 80:
-        # Advertencia - cerca del límite
-        remaining = subscription.appointment_limit - subscription.appointments_billed
-
-        await send_email_alert(
-            clinic_id=clinic_id,
-            subject="📊 Cerca del límite de citas",
-            template="near_limit.html",
-            context={
-                "plan_name": subscription.plan_display_name,
-                "usage_percent": usage_percent,
-                "remaining": remaining,
-            },
-        )
-```
-
-### 3. Exportar Reporte de Uso
-
-```python
-import csv
-from datetime import datetime, timezone
-from io import StringIO
-
-async def export_usage_report(clinic_id: UUID, db: AsyncSession) -> str:
-    """
-    Genera reporte CSV de uso mensual.
-
-    Returns:
-        str: CSV content
-    """
-    service = SubscriptionService(db)
-    subscription = await service.get_subscription_for_clinic(clinic_id)
-
-    # Calcular métricas
-    usage_percent = (subscription.appointments_billed / subscription.appointment_limit) * 100
-    overage_count = max(0, subscription.appointments_billed - subscription.appointment_limit)
-    overage_cost = overage_count * subscription.overage_rate if subscription.allow_overage else 0
-    total_cost = subscription.price_monthly + overage_cost
-
-    # Generar CSV
-    output = StringIO()
-    writer = csv.writer(output)
-
-    # Header
-    writer.writerow([
-        "Período",
-        "Plan",
-        "Límite",
-        "Usadas",
-        "Disponibles",
-        "Uso %",
-        "Overage",
-        "Costo Base",
-        "Costo Overage",
-        "Total",
-    ])
-
-    # Data
-    writer.writerow([
-        f"{subscription.billing_period_start.date()} - {subscription.billing_period_end.date()}",
-        subscription.plan_display_name,
-        subscription.appointment_limit,
-        subscription.appointments_billed,
-        max(0, subscription.appointment_limit - subscription.appointments_billed),
-        f"{usage_percent:.1f}%",
-        overage_count if subscription.allow_overage else "N/A",
-        f"€{subscription.price_monthly:.2f}",
-        f"€{overage_cost:.2f}" if subscription.allow_overage else "N/A",
-        f"€{total_cost:.2f}",
-    ])
-
-    return output.getvalue()
-
-# Ejemplo de uso
-csv_content = await export_usage_report(clinic_id, db)
-
-# Guardar a archivo
-with open(f"usage_report_{datetime.now().date()}.csv", "w", encoding="utf-8") as f:
-    f.write(csv_content)
-```
-
-### 4. Predicción de Fin de Mes
-
-```python
-from datetime import datetime, timezone
-
-async def predict_end_of_month_usage(clinic_id: UUID, db: AsyncSession) -> dict:
-    """
-    Predice uso de citas al final del mes basándose en tendencia actual.
-
-    Returns:
-        dict: {
-            "current_usage": int,
-            "days_elapsed": int,
-            "days_total": int,
-            "daily_average": float,
-            "predicted_total": int,
-            "predicted_overage": int,
-            "predicted_cost": float,
-        }
-    """
-    service = SubscriptionService(db)
-    subscription = await service.get_subscription_for_clinic(clinic_id)
-
-    now = datetime.now(timezone.utc)
-    period_start = subscription.billing_period_start
-    period_end = subscription.billing_period_end
-
-    # Calcular días
-    days_elapsed = (now - period_start).days
-    days_total = (period_end - period_start).days
-
-    if days_elapsed == 0:
-        return {
-            "current_usage": subscription.appointments_billed,
-            "days_elapsed": 0,
-            "days_total": days_total,
-            "daily_average": 0.0,
-            "predicted_total": subscription.appointments_billed,
-            "predicted_overage": 0,
-            "predicted_cost": subscription.price_monthly,
-        }
-
-    # Calcular promedio diario
-    daily_average = subscription.appointments_billed / days_elapsed
-
-    # Proyectar a fin de mes
-    predicted_total = int(daily_average * days_total)
-
-    # Calcular overage predicho
-    predicted_overage = max(0, predicted_total - subscription.appointment_limit)
-    predicted_overage_cost = predicted_overage * subscription.overage_rate if subscription.allow_overage else 0
-    predicted_cost = subscription.price_monthly + predicted_overage_cost
-
-    return {
-        "current_usage": subscription.appointments_billed,
-        "days_elapsed": days_elapsed,
-        "days_total": days_total,
-        "daily_average": daily_average,
-        "predicted_total": predicted_total,
-        "predicted_overage": predicted_overage,
-        "predicted_cost": predicted_cost,
-    }
-
-# Ejemplo de uso
-prediction = await predict_end_of_month_usage(clinic_id, db)
-
-print(f"Uso actual: {prediction['current_usage']} citas")
-print(f"Promedio diario: {prediction['daily_average']:.1f} citas/día")
-print(f"Proyección fin de mes: {prediction['predicted_total']} citas")
-
-if prediction['predicted_overage'] > 0:
-    print(f"⚠️ Overage predicho: {prediction['predicted_overage']} citas")
-    print(f"💰 Costo estimado: €{prediction['predicted_cost']:.2f}")
-```
+El sistema envía alertas por email cuando:
+- **80% de uso**: Advertencia de que te acercas al límite
+- **100% de uso**: Límite alcanzado (si NO tienes overage habilitado)
+- **Overage activo**: Confirmación de que estás usando citas extras con cargo adicional
 
 ## Reset de Contador
 
-El contador `appointments_billed` se resetea automáticamente al inicio de cada nuevo período de facturación:
+El contador de citas usadas se resetea automáticamente al inicio de cada nuevo período de facturación.
 
-### Webhook `invoice.paid`
-
-```python
-# app/api/v1/stripe.py
-
-async def _handle_invoice_paid(
-    invoice: stripe.Invoice,
-    db: AsyncSession,
-):
-    """
-    Procesa factura pagada (renovación de período).
-
-    Flow:
-    1. Buscar subscription por stripe_subscription_id
-    2. Fetch nueva información de período desde Stripe
-    3. UPDATE billing_period_start y billing_period_end
-    4. RESET appointments_billed a 0
-    5. RESET conversations_count a 0
-    """
-    subscription_id = invoice.subscription
-
-    # Buscar subscription
-    subscription = await db.scalar(
-        select(ClinicSubscription).where(
-            ClinicSubscription.stripe_subscription_id == subscription_id
-        )
-    )
-
-    if not subscription:
-        raise ValueError(f"No subscription found with stripe_subscription_id={subscription_id}")
-
-    # Fetch subscription desde Stripe para obtener nuevo período
-    stripe_sub = stripe.Subscription.retrieve(subscription_id)
-    new_period_start, new_period_end = calculate_billing_period(stripe_sub)
-
-    # Actualizar período y resetear contadores
-    subscription.billing_period_start = new_period_start
-    subscription.billing_period_end = new_period_end
-    subscription.appointments_billed = 0  # ✅ RESET
-    subscription.conversations_count = 0  # ✅ RESET
-
-    await db.commit()
-```
+Cuando se procesa el pago de tu factura mensual, el sistema:
+1. Actualiza las fechas del nuevo período de facturación
+2. Resetea el contador de citas a 0
+3. Resetea el contador de conversaciones a 0
 
 <Note>
-  El reset de `appointments_billed` es automático. No requiere intervención manual.
+Este reset es completamente automático. No requiere ninguna acción de tu parte.
 </Note>
 
 ## Errores Comunes
@@ -589,10 +172,7 @@ async def _handle_invoice_paid(
 
 **Causa**: La clínica no tiene suscripción configurada.
 
-**Solución**: Ejecutar script de setup:
-```bash
-python scripts/setup_subscriptions.py --batch --plan FREE --yes
-```
+**Solución**: Contacta a soporte técnico para configurar tu suscripción.
 
 ### 403 Forbidden
 

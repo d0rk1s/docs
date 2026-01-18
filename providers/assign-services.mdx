@@ -1,184 +1,117 @@
 ---
-title: 'Assign Services to Providers'
-description: 'Link providers to the services they deliver for specialized scheduling'
+title: 'Asignar Servicios a Proveedores'
+description: 'Vincula proveedores a los servicios que ofrecen para una programación especializada'
 icon: 'briefcase-medical'
 ---
 
-## Overview
+## Resumen
 
-Service assignment links providers to the services they can deliver. This enables:
-- **Specialized scheduling**: Only show availability for providers who offer the requested service
-- **Provider filtering**: Patients can select specific providers when booking
-- **Service-based availability**: System calculates availability based on provider's schedule AND service assignment
+La asignación de servicios vincula a los proveedores con los servicios que pueden ofrecer. Esto permite:
+- **Programación especializada**: Mostrar solo la disponibilidad de proveedores que ofrecen el servicio solicitado
+- **Filtrado de proveedores**: Los pacientes pueden seleccionar proveedores específicos al reservar
+- **Disponibilidad basada en servicios**: El sistema calcula la disponibilidad según el horario del proveedor Y la asignación del servicio
 
 <Info>
-  **Per-Service Assignment**: Each service can have ONE assigned provider. If multiple providers offer the same service (e.g., "General Consultation"), create separate service entries for each provider.
+  **Asignación por Servicio**: Cada servicio puede tener UN proveedor asignado. Si varios proveedores ofrecen el mismo servicio (ej: "Consulta General"), crea entradas de servicio separadas para cada proveedor.
 </Info>
 
-## Prerequisites
+## Requisitos Previos
 
 <Steps>
-  <Step title="Services Created">
-    Services must exist before assignment. See [Create Service](/services/create-service).
+  <Step title="Servicios Creados">
+    Los servicios deben existir antes de la asignación. Ver [Crear Servicio](/services/create-service).
   </Step>
-  <Step title="Provider Configured">
-    Provider must have `is_provider = true` and work hours configured.
+  <Step title="Proveedor Configurado">
+    El proveedor debe tener `is_provider = true` y horarios de trabajo configurados.
   </Step>
-  <Step title="Required Permissions">
-    You must have `CLINIC_ADMIN` role to assign services.
+  <Step title="Permisos Requeridos">
+    Debes tener el rol `CLINIC_ADMIN` para asignar servicios.
   </Step>
 </Steps>
 
-## Service Assignment Architecture
-
-### Database Schema
-
-```sql
-CREATE TABLE services (
-    id UUID PRIMARY KEY,
-    clinic_id UUID REFERENCES clinics(id),
-    name VARCHAR NOT NULL,
-    duration_min INTEGER NOT NULL,
-    price DECIMAL(10,2),
-    provider_id UUID REFERENCES users(id) NULL,  -- NULL = any provider can deliver
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ
-);
-
--- Index for provider lookups
-CREATE INDEX idx_services_provider
-ON services(clinic_id, provider_id)
-WHERE is_active = true;
-```
+## Arquitectura de Asignación de Servicios
 
 <Warning>
-  **One Provider Per Service**: The `provider_id` column is a single foreign key, NOT a many-to-many relationship. If multiple providers offer the same service, create separate service entries.
+  **Un Proveedor por Servicio**: Cada servicio solo puede asignarse a un proveedor a la vez. Si varios proveedores ofrecen el mismo servicio, crea entradas de servicio separadas.
 </Warning>
 
-## Method 1: Assign During Service Creation
+## Método 1: Asignar Durante la Creación del Servicio
 
-When creating a new service, you can immediately assign it to a provider.
+Al crear un nuevo servicio, puedes asignarlo inmediatamente a un proveedor.
 
 <Steps>
-  <Step title="Navigate to Services">
-    Go to **Services** from the main menu.
+  <Step title="Navegar a Servicios">
+    Ve a **Servicios** desde el menú principal.
   </Step>
-  <Step title="Click Create Service">
-    Click the **Create Service** button.
+  <Step title="Clic en Crear Servicio">
+    Haz clic en el botón **Crear Servicio**.
   </Step>
-  <Step title="Fill Service Details">
-    - **Name**: Service name (e.g., "Haircut", "Dental Cleaning")
-    - **Duration**: Service duration in minutes (e.g., 30, 60)
-    - **Price**: Service price (optional)
+  <Step title="Completar Detalles del Servicio">
+    - **Nombre**: Nombre del servicio (ej: "Corte de Cabello", "Limpieza Dental")
+    - **Duración**: Duración del servicio en minutos (ej: 30, 60)
+    - **Precio**: Precio del servicio (opcional)
   </Step>
-  <Step title="Select Provider">
-    In the **Provider** dropdown, select the provider who will deliver this service.
+  <Step title="Seleccionar Proveedor">
+    En el menú desplegable **Proveedor**, selecciona el proveedor que ofrecerá este servicio.
   </Step>
-  <Step title="Save Service">
-    Click **Create** to save the service with provider assignment.
+  <Step title="Guardar Servicio">
+    Haz clic en **Crear** para guardar el servicio con la asignación del proveedor.
   </Step>
 </Steps>
 
-### API Request
+### Confirmación
 
-```http
-POST /v1/services?clinic_id={clinic_id}
-```
-
-```bash
-curl -X POST "https://api.clinic.example.com/v1/services?clinic_id={clinic_id}" \
-  -H "Cookie: access_token={jwt_token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Haircut - Dr. García",
-    "duration_min": 30,
-    "price": 25.00,
-    "provider_id": "user-789-xyz-012",
-    "is_active": true
-  }'
-```
-
-### Response
-
-```json
-{
-  "id": "svc-abc-123-def-456",
-  "clinic_id": "clinic-abc-123",
-  "name": "Haircut - Dr. García",
-  "duration_min": 30,
-  "price": 25.00,
-  "provider_id": "user-789-xyz-012",
-  "provider_name": "Dr. María García",
-  "is_active": true,
-  "created_at": "2026-01-17T11:00:00Z",
-  "updated_at": "2026-01-17T11:00:00Z"
-}
-```
+El sistema confirmará la creación del servicio con todos los detalles asignados, incluido el nombre del proveedor.
 
 <Tip>
-  **Naming Convention**: Include provider name in service name when multiple providers offer the same service (e.g., "Haircut - Dr. García", "Haircut - Dr. López"). This helps patients distinguish between options.
+  **Convención de Nomenclatura**: Incluye el nombre del proveedor en el nombre del servicio cuando varios proveedores ofrecen el mismo servicio (ej: "Corte de Cabello - Dr. García", "Corte de Cabello - Dr. López"). Esto ayuda a los pacientes a distinguir entre opciones.
 </Tip>
 
-## Method 2: Assign to Existing Service
+## Método 2: Asignar a Servicio Existente
 
-To assign a provider to an existing service:
+Para asignar un proveedor a un servicio existente:
 
 <Steps>
-  <Step title="Navigate to Services">
-    Go to **Services** from the main menu.
+  <Step title="Navegar a Servicios">
+    Ve a **Servicios** desde el menú principal.
   </Step>
-  <Step title="Find the Service">
-    Locate the service in the list (use search if needed).
+  <Step title="Encontrar el Servicio">
+    Localiza el servicio en la lista (usa la búsqueda si es necesario).
   </Step>
-  <Step title="Click Edit">
-    Click the edit icon on the service card.
+  <Step title="Clic en Editar">
+    Haz clic en el ícono de editar en la tarjeta del servicio.
   </Step>
-  <Step title="Select Provider">
-    In the **Provider** dropdown, select the provider to assign.
+  <Step title="Seleccionar Proveedor">
+    En el menú desplegable **Proveedor**, selecciona el proveedor a asignar.
   </Step>
-  <Step title="Save Changes">
-    Click **Save** to update the service.
+  <Step title="Guardar Cambios">
+    Haz clic en **Guardar** para actualizar el servicio.
   </Step>
 </Steps>
 
-### API Request
 
-```http
-PATCH /v1/services/{service_id}?clinic_id={clinic_id}
-```
+## Método 3: Asignación Masiva desde Vista de Proveedor
 
-```bash
-curl -X PATCH "https://api.clinic.example.com/v1/services/{service_id}?clinic_id={clinic_id}" \
-  -H "Cookie: access_token={jwt_token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "provider_id": "user-789-xyz-012"
-  }'
-```
-
-## Method 3: Bulk Assign from Provider View
-
-Assign multiple services to a provider from the provider's detail view.
+Asigna múltiples servicios a un proveedor desde la vista de detalles del proveedor.
 
 <Steps>
-  <Step title="Navigate to Providers">
-    Go to **Providers** from the main menu.
+  <Step title="Navegar a Proveedores">
+    Ve a **Proveedores** desde el menú principal.
   </Step>
-  <Step title="Open Provider Details">
-    Click on the provider card to open their details modal.
+  <Step title="Abrir Detalles del Proveedor">
+    Haz clic en la tarjeta del proveedor para abrir su modal de detalles.
   </Step>
-  <Step title="Go to Services Tab">
-    Click the **Services** tab.
+  <Step title="Ir a Pestaña de Servicios">
+    Haz clic en la pestaña **Servicios**.
   </Step>
-  <Step title="Click Assign Services">
-    Click **Assign Services** button.
+  <Step title="Clic en Asignar Servicios">
+    Haz clic en el botón **Asignar Servicios**.
   </Step>
-  <Step title="Select Services">
-    Check the services to assign to this provider (multi-select).
+  <Step title="Seleccionar Servicios">
+    Marca los servicios a asignar a este proveedor (selección múltiple).
   </Step>
-  <Step title="Save Assignments">
-    Click **Save** to update all selected services.
+  <Step title="Guardar Asignaciones">
+    Haz clic en **Guardar** para actualizar todos los servicios seleccionados.
   </Step>
 </Steps>
 
@@ -187,350 +120,226 @@ Assign multiple services to a provider from the provider's detail view.
 </Frame>
 
 <Info>
-  **Bulk Assignment**: This method updates the `provider_id` field for all selected services in a single transaction.
+  **Asignación Masiva**: Este método actualiza el campo `provider_id` para todos los servicios seleccionados en una sola transacción.
 </Info>
 
-## Unassigning Services
+## Desasignar Servicios
 
-To remove a provider from a service:
+Para eliminar un proveedor de un servicio:
 
 <Steps>
-  <Step title="Open Service Edit Dialog">
-    Navigate to the service and click **Edit**.
+  <Step title="Abrir Diálogo de Edición de Servicio">
+    Navega al servicio y haz clic en **Editar**.
   </Step>
-  <Step title="Clear Provider Selection">
-    In the **Provider** dropdown, select **"None"** or **"Any Provider"**.
+  <Step title="Limpiar Selección de Proveedor">
+    En el menú desplegable **Proveedor**, selecciona **"Ninguno"** o **"Cualquier Proveedor"**.
   </Step>
-  <Step title="Save Changes">
-    Click **Save** to remove the assignment.
+  <Step title="Guardar Cambios">
+    Haz clic en **Guardar** para eliminar la asignación.
   </Step>
 </Steps>
 
-### API Request
-
-```bash
-curl -X PATCH "https://api.clinic.example.com/v1/services/{service_id}?clinic_id={clinic_id}" \
-  -H "Cookie: access_token={jwt_token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "provider_id": null
-  }'
-```
 
 <Warning>
-  **Impact on Availability**: Removing provider assignment changes availability calculation. If the service had provider-specific slots, they will now be calculated using clinic-level availability (any provider).
+  **Impacto en la Disponibilidad**: Eliminar la asignación del proveedor cambia el cálculo de disponibilidad. Si el servicio tenía franjas específicas del proveedor, ahora se calcularán usando la disponibilidad a nivel de clínica (cualquier proveedor).
 </Warning>
 
-## How Service Assignment Affects Availability
+## Cómo Afecta la Asignación de Servicios a la Disponibilidad
 
-### Scenario 1: Service with Assigned Provider
+### Escenario 1: Servicio con Proveedor Asignado
 
-**Configuration**:
-- Service: "Dental Cleaning" (30 min, assigned to Dr. García)
-- Dr. García work hours: Monday 09:00-17:00
-- Clinic hours: Monday 08:00-20:00
+**Configuración**:
+- Servicio: "Limpieza Dental" (30 min, asignado a Dr. García)
+- Horario de trabajo Dr. García: Lunes 09:00-17:00
+- Horario de clínica: Lunes 08:00-20:00
 
-**Availability Calculation**:
-1. System fetches Dr. García's work hours (09:00-17:00)
-2. Intersects with clinic hours (08:00-20:00)
-3. Effective availability: 09:00-17:00
-4. Generates slots: 09:00, 09:30, 10:00, ..., 16:30
+**Cálculo de Disponibilidad**:
+1. El sistema obtiene el horario del Dr. García (09:00-17:00)
+2. Intersecta con el horario de clínica (08:00-20:00)
+3. Disponibilidad efectiva: 09:00-17:00
+4. Genera franjas: 09:00, 09:30, 10:00, ..., 16:30
 
-**Result**: Only Dr. García's availability is shown. Other providers are ignored.
+**Resultado**: Solo se muestra la disponibilidad del Dr. García. Otros proveedores se ignoran.
 
-### Scenario 2: Service Without Assigned Provider
+### Escenario 2: Servicio Sin Proveedor Asignado
 
-**Configuration**:
-- Service: "General Consultation" (30 min, NO assigned provider)
-- Multiple providers available
+**Configuración**:
+- Servicio: "Consulta General" (30 min, SIN proveedor asignado)
+- Múltiples proveedores disponibles
 
-**Availability Calculation**:
-1. System fetches ALL providers with work hours
-2. Generates availability across all providers
-3. Patient can book with any available provider
+**Cálculo de Disponibilidad**:
+1. El sistema obtiene TODOS los proveedores con horarios de trabajo
+2. Genera disponibilidad a través de todos los proveedores
+3. El paciente puede reservar con cualquier proveedor disponible
 
-**Result**: Maximum availability (union of all provider schedules).
+**Resultado**: Máxima disponibilidad (unión de todos los horarios de proveedores).
 
 <Tip>
-  **When to Use Unassigned Services**: Use unassigned services for general services where any provider can deliver (e.g., "Reception Appointment", "Document Pickup"). Use assigned services for specialized services (e.g., "Orthodontic Consultation - Dr. Specialist").
+  **Cuándo Usar Servicios Sin Asignar**: Usa servicios sin asignar para servicios generales donde cualquier proveedor puede atender (ej: "Cita de Recepción", "Retiro de Documentos"). Usa servicios asignados para servicios especializados (ej: "Consulta de Ortodoncia - Dr. Especialista").
 </Tip>
 
-### Scenario 3: Multiple Services, Same Provider
+### Escenario 3: Múltiples Servicios, Mismo Proveedor
 
-**Configuration**:
-- Service A: "Haircut" (30 min, assigned to Dr. García)
-- Service B: "Hair Coloring" (60 min, assigned to Dr. García)
-- Dr. García work hours: Monday 09:00-17:00
+**Configuración**:
+- Servicio A: "Corte de Cabello" (30 min, asignado a Dr. García)
+- Servicio B: "Tinte de Cabello" (60 min, asignado a Dr. García)
+- Horario de trabajo Dr. García: Lunes 09:00-17:00
 
-**Availability Calculation**:
-- **For Haircut**: Slots at 09:00, 09:30, 10:00, ..., 16:30 (30-min duration)
-- **For Hair Coloring**: Slots at 09:00, 10:00, 11:00, ..., 16:00 (60-min duration, needs continuous 60-min window)
+**Cálculo de Disponibilidad**:
+- **Para Corte de Cabello**: Franjas a las 09:00, 09:30, 10:00, ..., 16:30 (duración 30 min)
+- **Para Tinte de Cabello**: Franjas a las 09:00, 10:00, 11:00, ..., 16:00 (duración 60 min, necesita ventana continua de 60 min)
 
-**Result**: Same provider, different slot patterns based on service duration.
+**Resultado**: Mismo proveedor, diferentes patrones de franjas según la duración del servicio.
 
-## Service Assignment Best Practices
+## Mejores Prácticas de Asignación de Servicios
 
 <AccordionGroup>
-  <Accordion title="Specialized Providers">
-    **Use Case**: Dental clinic with general dentists and orthodontists.
+  <Accordion title="Proveedores Especializados">
+    **Caso de Uso**: Clínica dental con dentistas generales y ortodoncistas.
 
-    **Pattern**:
-    - Service: "Dental Cleaning" → Assigned to general dentists (create separate services per dentist)
-    - Service: "Orthodontic Consultation" → Assigned to orthodontist specialist
-    - Service: "Emergency Visit" → NO assignment (any provider can handle)
+    **Patrón**:
+    - Servicio: "Limpieza Dental" → Asignado a dentistas generales (crear servicios separados por dentista)
+    - Servicio: "Consulta de Ortodoncia" → Asignado a ortodoncista especialista
+    - Servicio: "Visita de Emergencia" → SIN asignación (cualquier proveedor puede atender)
 
-    **Benefit**: Patients automatically get the right specialist without manual filtering.
+    **Beneficio**: Los pacientes obtienen automáticamente al especialista correcto sin filtrado manual.
   </Accordion>
 
-  <Accordion title="Part-Time Providers">
-    **Use Case**: Provider works mornings only (09:00-13:00).
+  <Accordion title="Proveedores de Medio Tiempo">
+    **Caso de Uso**: Proveedor trabaja solo por las mañanas (09:00-13:00).
 
-    **Pattern**:
-    - Assign specialized services to this provider
-    - System automatically limits availability to morning slots
-    - No need to manually filter by time of day
+    **Patrón**:
+    - Asignar servicios especializados a este proveedor
+    - El sistema automáticamente limita la disponibilidad a franjas matutinas
+    - No es necesario filtrar manualmente por hora del día
 
-    **Benefit**: Availability is calculated based on provider's actual schedule.
+    **Beneficio**: La disponibilidad se calcula según el horario real del proveedor.
   </Accordion>
 
-  <Accordion title="Multi-Provider Services">
-    **Use Case**: Multiple providers offer the same service (e.g., "Haircut").
+  <Accordion title="Servicios Multi-Proveedor">
+    **Caso de Uso**: Múltiples proveedores ofrecen el mismo servicio (ej: "Corte de Cabello").
 
-    **Pattern**:
-    - Create separate services: "Haircut - Dr. García", "Haircut - Dr. López"
-    - Assign each to the respective provider
-    - Patients can choose their preferred provider
+    **Patrón**:
+    - Crear servicios separados: "Corte de Cabello - Dr. García", "Corte de Cabello - Dr. López"
+    - Asignar cada uno al proveedor respectivo
+    - Los pacientes pueden elegir su proveedor preferido
 
-    **Alternative**: Create ONE unassigned service "Haircut" and let patients book with any available provider (no provider preference).
+    **Alternativa**: Crear UN servicio sin asignar "Corte de Cabello" y permitir que los pacientes reserven con cualquier proveedor disponible (sin preferencia de proveedor).
   </Accordion>
 
-  <Accordion title="Provider on Leave">
-    **Use Case**: Provider is on vacation for 2 weeks.
+  <Accordion title="Proveedor de Licencia">
+    **Caso de Uso**: Proveedor está de vacaciones por 2 semanas.
 
-    **Pattern**:
-    - Do NOT unassign services
-    - Create a **provider-specific closure** for the vacation period
-    - System automatically excludes this provider's availability during closure
-    - Services remain assigned, availability resumes after closure ends
+    **Patrón**:
+    - NO desasignar servicios
+    - Crear un **cierre específico de proveedor** para el período de vacaciones
+    - El sistema automáticamente excluye la disponibilidad de este proveedor durante el cierre
+    - Los servicios permanecen asignados, la disponibilidad se reanuda después de que termine el cierre
 
-    **Benefit**: No manual reassignment needed.
+    **Beneficio**: No se necesita reasignación manual.
   </Accordion>
 </AccordionGroup>
 
-## Viewing Service Assignments
+## Ver Asignaciones de Servicios
 
-### From Services List
+### Desde la Lista de Servicios
 
-Each service card shows the assigned provider (if any):
+Cada tarjeta de servicio muestra el proveedor asignado (si lo hay):
 
 ```
 ┌─────────────────────────────────────┐
-│ Haircut - Dr. García                │
-│ Duration: 30 min | Price: €25       │
-│ Provider: Dr. María García          │
-│ [Edit] [Delete]                     │
+│ Corte de Cabello - Dr. García       │
+│ Duración: 30 min | Precio: €25      │
+│ Proveedor: Dr. María García         │
+│ [Editar] [Eliminar]                 │
 └─────────────────────────────────────┘
 ```
 
-### From Provider View
+### Desde la Vista de Proveedor
 
-The provider's Services tab lists all services assigned to them:
+La pestaña de Servicios del proveedor lista todos los servicios asignados a ellos:
 
 ```
 ┌─────────────────────────────────────┐
-│ Dr. María García - Services         │
+│ Dr. María García - Servicios        │
 ├─────────────────────────────────────┤
-│ ✓ Haircut (30 min)                  │
-│ ✓ Hair Coloring (60 min)            │
-│ ✓ Hair Treatment (45 min)           │
+│ ✓ Corte de Cabello (30 min)        │
+│ ✓ Tinte de Cabello (60 min)        │
+│ ✓ Tratamiento Capilar (45 min)     │
 │                                     │
-│ [Assign More Services]              │
+│ [Asignar Más Servicios]             │
 └─────────────────────────────────────┘
 ```
 
-### API: List Services by Provider
+### Ver Servicios por Proveedor
 
-```http
-GET /v1/services?clinic_id={clinic_id}&provider_id={provider_id}
-```
+Puedes filtrar servicios por proveedor para ver todos los servicios asignados a un proveedor específico. Esta vista muestra detalles del servicio incluyendo nombre, duración y precio.
 
-```bash
-curl -X GET "https://api.clinic.example.com/v1/services?clinic_id={clinic_id}&provider_id={provider_id}" \
-  -H "Cookie: access_token={jwt_token}"
-```
-
-Response:
-```json
-{
-  "services": [
-    {
-      "id": "svc-abc-123",
-      "name": "Haircut - Dr. García",
-      "duration_min": 30,
-      "price": 25.00,
-      "provider_id": "user-789-xyz-012",
-      "provider_name": "Dr. María García"
-    },
-    {
-      "id": "svc-def-456",
-      "name": "Hair Coloring - Dr. García",
-      "duration_min": 60,
-      "price": 50.00,
-      "provider_id": "user-789-xyz-012",
-      "provider_name": "Dr. María García"
-    }
-  ]
-}
-```
-
-## Common Errors
+## Errores Comunes
 
 <AccordionGroup>
   <Accordion title="403 Forbidden - Cannot Manage Clinic">
-    **Cause**: You don't have `CLINIC_ADMIN` role in the selected clinic.
+    **Causa**: No tienes el rol `CLINIC_ADMIN` en la clínica seleccionada.
 
-    **Solution**: Contact your system administrator to grant you `CLINIC_ADMIN` permissions.
+    **Solución**: Contacta a tu administrador del sistema para que te otorgue permisos `CLINIC_ADMIN`.
   </Accordion>
 
   <Accordion title="404 Not Found - Provider Not Found">
-    **Cause**: The `provider_id` doesn't exist or the user is not a provider in this clinic.
+    **Causa**: El `provider_id` no existe o el usuario no es un proveedor en esta clínica.
 
-    **Solution**:
-    1. Verify the provider ID is correct
-    2. Check `user_clinics` table: `is_provider = true` for this clinic?
-    3. Ensure you're using the `user_id`, not the `user_clinic_id`
+    **Solución**: Contacta a soporte para verificar que la configuración del proveedor sea correcta para esta clínica.
   </Accordion>
 
   <Accordion title="400 Bad Request - Service Already Assigned">
-    **Cause**: Attempting to assign a service that's already assigned to another provider.
+    **Causa**: Intentando asignar un servicio que ya está asignado a otro proveedor.
 
-    **Solution**:
-    1. If you want to reassign: Use PATCH to update the existing service's `provider_id`
-    2. If you want multiple providers: Create separate service entries (e.g., "Haircut - Dr. A", "Haircut - Dr. B")
+    **Solución**:
+    1. Si quieres reasignar: Usa PATCH para actualizar el `provider_id` del servicio existente
+    2. Si quieres múltiples proveedores: Crea entradas de servicio separadas (ej: "Corte - Dr. A", "Corte - Dr. B")
   </Accordion>
 
   <Accordion title="Provider Has Services But No Availability">
-    **Cause**: Provider has services assigned but no work hours configured.
+    **Causa**: El proveedor tiene servicios asignados pero no tiene horarios de trabajo configurados.
 
-    **Solution**: Navigate to [Configure Schedule](/providers/configure-schedule) to add work hours for the provider.
+    **Solución**: Navega a [Configurar Horario](/providers/configure-schedule) para agregar horarios de trabajo al proveedor.
   </Accordion>
 </AccordionGroup>
 
-## Database Query Examples
+## Cómo Afecta a las Citas
 
-### Get All Services for a Provider
+Cuando asignas un proveedor a un servicio:
 
-```sql
-SELECT
-  s.id,
-  s.name,
-  s.duration_min,
-  s.price,
-  s.is_active
-FROM services s
-WHERE s.clinic_id = '...'
-  AND s.provider_id = '...'
-  AND s.is_active = true
-ORDER BY s.name ASC;
-```
+<Steps>
+  <Step title="Disponibilidad Filtrada">
+    Solo se mostrarán los horarios disponibles del proveedor asignado para ese servicio específico.
+  </Step>
 
-### Get All Providers for a Service (Alternative Architecture)
+  <Step title="Reserva Automática">
+    Cuando un paciente reserva ese servicio (por WhatsApp o manualmente), la cita se crea automáticamente con el proveedor asignado.
+  </Step>
 
-**Note**: Current schema supports ONE provider per service. For many-to-many relationship, you would need a junction table:
+  <Step title="Optimización de Agenda">
+    Cada proveedor solo verá citas de sus servicios asignados, simplificando la gestión de su calendario.
+  </Step>
+</Steps>
 
-```sql
--- Hypothetical junction table (NOT in current schema)
-CREATE TABLE service_providers (
-    service_id UUID REFERENCES services(id),
-    provider_id UUID REFERENCES users(id),
-    PRIMARY KEY (service_id, provider_id)
-);
+<Info>
+**Múltiples proveedores para el mismo servicio**: Si varios proveedores ofrecen el mismo servicio (ej: "Consulta General"), crea entradas separadas del servicio para cada proveedor (ej: "Consulta General - Dr. García", "Consulta General - Dr. López").
+</Info>
 
--- Query providers for a service
-SELECT
-  u.id AS user_id,
-  ucp.full_name AS provider_name,
-  uc.is_provider
-FROM service_providers sp
-JOIN users u ON sp.provider_id = u.id
-JOIN user_clinics uc ON u.id = uc.user_id
-LEFT JOIN user_clinic_profiles ucp ON uc.id = ucp.user_clinic_id
-WHERE sp.service_id = '...'
-  AND uc.clinic_id = '...'
-  AND uc.is_provider = true;
-```
-
-<Warning>
-  **Current Architecture**: The current schema does NOT support many-to-many relationships between services and providers. Each service can have ONE assigned provider. To support multiple providers per service, create separate service entries.
-</Warning>
-
-## Impact on Appointment Booking
-
-### Patient-Facing Booking Flow
-
-1. **Patient selects service**: "Haircut - Dr. García"
-2. **System fetches provider**: `provider_id = user-789-xyz-012`
-3. **Availability calculated**: Only Dr. García's schedule is considered
-4. **Patient selects time slot**: From Dr. García's available slots
-5. **Appointment created**: Linked to service AND provider
-
-### WhatsApp Agent Booking Flow
-
-1. **Patient says**: "Quiero una cita para corte de pelo"
-2. **Agent uses ServiceMapper**: Fuzzy match "corte de pelo" → "Haircut - Dr. García"
-3. **Agent calls get_availability**: Filtered by `provider_id` from service
-4. **Agent shows slots**: Only Dr. García's available times
-5. **Patient confirms**: Appointment created with service + provider
-
-<Tip>
-  **ServiceMapper**: The WhatsApp agent uses fuzzy string matching to map patient's natural language (e.g., "corte") to service names (e.g., "Haircut"). For best results, use clear, descriptive service names.
-</Tip>
-
-## Audit Logging
-
-Service assignments are tracked in `audit_logs`:
-
-```sql
-SELECT
-  al.action,
-  al.user_email,
-  al.details,
-  al.created_at
-FROM audit_logs al
-WHERE al.resource_type = 'service'
-  AND al.resource_id = '...'
-  AND al.action IN ('SERVICE_CREATED', 'SERVICE_UPDATED')
-ORDER BY al.created_at DESC;
-```
-
-**Example Log Entry**:
-```json
-{
-  "action": "SERVICE_UPDATED",
-  "user_email": "admin@namsec.es",
-  "resource_id": "svc-abc-123",
-  "details": {
-    "old_provider_id": null,
-    "new_provider_id": "user-789-xyz-012",
-    "provider_name": "Dr. María García"
-  },
-  "created_at": "2026-01-17T11:00:00Z"
-}
-```
-
-## Next Steps
+## Próximos Pasos
 
 <CardGroup cols={2}>
-  <Card title="Test Availability" icon="calendar-check" href="/scheduling/test-availability">
-    Verify provider's availability appears correctly for assigned services
+  <Card title="Probar Disponibilidad" icon="calendar-check" href="/scheduling/test-availability">
+    Verifica que la disponibilidad del proveedor aparezca correctamente para los servicios asignados
   </Card>
-  <Card title="Create Appointment" icon="calendar-plus" href="/appointments/create-appointment">
-    Book a test appointment with the assigned provider
+  <Card title="Crear Cita" icon="calendar-plus" href="/appointments/create-appointment">
+    Reserva una cita de prueba con el proveedor asignado
   </Card>
-  <Card title="Manage Closures" icon="door-closed" href="/scheduling/closures">
-    Configure provider-specific closures for vacation or leave
+  <Card title="Gestionar Cierres" icon="door-closed" href="/scheduling/closures">
+    Configura cierres específicos de proveedor para vacaciones o licencias
   </Card>
-  <Card title="View Services" icon="list" href="/services/view-services">
-    Return to services list to view all assignments
+  <Card title="Ver Servicios" icon="list" href="/services/view-services">
+    Regresa a la lista de servicios para ver todas las asignaciones
   </Card>
 </CardGroup>

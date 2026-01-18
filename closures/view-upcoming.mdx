@@ -29,7 +29,7 @@ El período de 14 días fue elegido porque:
 - Configurable en backend si necesitas otro valor
 
 <Note>
-**Configuración backend**: El valor de 14 días está en `app/services/configuration_status_service.py` (variable `UPCOMING_CLOSURES_DAYS = 14`). Solo admins pueden modificarlo.
+**Configuración**: El período de 14 días puede ser ajustado por administradores del sistema si su clínica requiere un período diferente.
 </Note>
 
 ## Dónde Ver Upcoming Closures
@@ -303,25 +303,15 @@ Puedes filtrar upcoming closures por tipo:
 
 ### Configuración del Período (14 días)
 
-El período de 14 días es configurable en backend:
-
-**Archivo**: `app/services/configuration_status_service.py`
-```python
-UPCOMING_CLOSURES_DAYS = 14  # Días anticipados para mostrar cierres
-```
-
-**Modificación** (solo admins):
-1. Editar variable `UPCOMING_CLOSURES_DAYS`
-2. Reiniciar servidor
-3. Nuevas consultas usarán el nuevo valor
+El período de 14 días puede ser ajustado según las necesidades de su clínica. Contacte a soporte si necesita modificar este período.
 
 **Valores recomendados**:
 - **7 días**: Para clínicas pequeñas con planificación semanal
-- **14 días**: Balance entre relevancia y anticipación (default)
+- **14 días**: Balance entre relevancia y anticipación (predeterminado)
 - **30 días**: Para clínicas grandes con planificación mensual
 
 <Warning>
-Aumentar a &gt;30 días puede llenar la lista con cierres muy lejanos que no son relevantes.
+Aumentar a más de 30 días puede llenar la lista con cierres muy lejanos que no son relevantes.
 </Warning>
 
 ## Casos Especiales
@@ -351,15 +341,11 @@ Aumentar a &gt;30 días puede llenar la lista con cierres muy lejanos que no son
   <Accordion title="Veo cierres que ya pasaron en upcoming closures">
     **Problema**: Upcoming closures muestra cierres con fechas pasadas.
 
-    **Causa**: Bug en el sistema (no debería pasar).
+    **Causa**: Problema en el sistema.
 
     **Solución**:
-    1. Reportar a soporte con detalles:
-       - IDs de los cierres afectados
-       - Fechas de inicio/fin
-       - Timestamp de cuando viste el error
-    2. Temporary workaround: Refrescar la página (Ctrl+F5)
-    3. Si persiste, verificar zona horaria del servidor vs cliente
+    1. Refrescar la página (Ctrl+F5)
+    2. Si persiste, contacte a soporte con los detalles de los cierres afectados
   </Accordion>
 
   <Accordion title="Countdown no se actualiza en tiempo real">
@@ -368,11 +354,8 @@ Aumentar a &gt;30 días puede llenar la lista con cierres muy lejanos que no son
     **Causa**: El countdown se calcula al cargar la página, no se actualiza automáticamente.
 
     **Solución**:
-    - Refrescar la página para ver countdown actualizado
-    - El sistema NO usa WebSocket para countdown (solo para status changes)
-    - Recomendación: Revisar upcoming closures diariamente
-
-    **Feature request**: Agregar actualización automática de countdown cada minuto (pendiente).
+    - Refrescar la página para ver el countdown actualizado
+    - Recomendación: Revisar upcoming closures diariamente para tener la información más actualizada
   </Accordion>
 
   <Accordion title="¿Cómo ver cierres de &gt;14 días?">
@@ -380,11 +363,11 @@ Aumentar a &gt;30 días puede llenar la lista con cierres muy lejanos que no son
 
     **Solución**:
     1. Navega a lista completa de cierres: Gestión → Cierres → "Todos"
-    2. Filtra por rango de fechas: `starts_at >= hoy` AND `starts_at <= hoy + 30 días`
-    3. Ordena por `starts_at` ascendente
+    2. Filtra por rango de fechas para ver cierres más lejanos
+    3. Ordena por fecha de inicio
 
     **Alternativa**:
-    - Pedir a admin que aumente `UPCOMING_CLOSURES_DAYS` a 30 (configuración backend)
+    - Contacta a soporte para solicitar un ajuste en el período de visualización
   </Accordion>
 </AccordionGroup>
 

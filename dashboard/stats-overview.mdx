@@ -56,8 +56,8 @@ Cuenta todas las citas con estado `COMPLETED` para la fecha actual.
 
 **¿Cómo se marcan como completadas?**
 
-El sistema ejecuta un job automático cada 60 segundos que:
-1. Busca citas cuya hora de fin ya pasó
+El sistema actualiza automáticamente el estado de las citas:
+1. Cuando la hora de fin de una cita ya pasó
 2. Cambia el estado de `CONFIRMED` → `COMPLETED`
 3. Actualiza el contador en el Dashboard
 
@@ -75,7 +75,7 @@ Ejemplo:
 - **Reportes**: Base para informes de actividad mensual
 
 <Tip>
-Si una cita se completó pero el estado no cambió, espera 1 minuto. El job se ejecuta cada 60 segundos.
+Si una cita se completó pero el estado no cambió, espera unos minutos. El sistema actualiza automáticamente.
 </Tip>
 
 ---
@@ -177,11 +177,7 @@ Si te acercas al límite, considera:
 
 ### ¿Cómo funciona?
 
-El Dashboard usa **polling** (consultas periódicas):
-
-1. Frontend hace una petición GET `/v1/dashboard/stats?clinic_id=...` cada 5 minutos
-2. Backend calcula las métricas en tiempo real (query a PostgreSQL)
-3. Frontend actualiza las tarjetas sin refrescar la página
+El Dashboard se actualiza automáticamente cada 5 minutos:
 
 ```
 Línea de tiempo:
@@ -269,10 +265,9 @@ Para análisis histórico más robusto, necesitas exportar datos a Excel o usar 
 
 ### Las estadísticas no se actualizan
 
-**Causas posibles**:
-1. **Cache del navegador**: Refresca con Ctrl+F5 (Windows) o Cmd+Shift+R (Mac)
-2. **Backend caído**: Verifica que el servidor FastAPI esté corriendo
-3. **Base de datos desconectada**: Ejecuta `python -m app.db.management health`
+**Solución**:
+- Refresca la página con Ctrl+F5 (Windows) o Cmd+Shift+R (Mac)
+- Si el problema persiste, contacta a soporte técnico
 
 ---
 

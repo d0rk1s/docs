@@ -1,171 +1,171 @@
 ---
-title: "Work Hours Overview"
-description: "Comprehensive guide to clinic and provider work hours management"
+title: "Horarios de Trabajo - Vista General"
+description: "Guía completa para la gestión de horarios de trabajo de la clínica y proveedores"
 icon: "clock"
 ---
 
-## What Are Work Hours?
+## ¿Qué Son los Horarios de Trabajo?
 
 <Frame>
   <img src="/images/screenshots/work_hours_list_overview.png" alt="Vista general de horarios de trabajo configurados para la clínica y proveedores" />
 </Frame>
 
-Work hours define the **availability windows** for your clinic and providers. They control when appointments can be booked in your system.
+Los horarios de trabajo definen las **ventanas de disponibilidad** para tu clínica y proveedores. Controlan cuándo se pueden agendar citas en tu sistema.
 
-The work hours system supports two levels:
+El sistema de horarios de trabajo admite dos niveles:
 
-1. **Clinic Hours**: Define when your clinic is operational
-2. **Provider Hours**: Define when individual providers are available (must intersect with clinic hours)
+1. **Horarios de Clínica**: Definen cuándo está operativa tu clínica
+2. **Horarios de Proveedor**: Definen cuándo están disponibles los proveedores individuales (deben intersectar con los horarios de clínica)
 
 <Note>
-**New Feature (2025-11-21)**: Multiple non-contiguous time periods per day are now supported. You can configure split shifts like 09:00-13:00 + 15:00-19:00 with lunch breaks.
+**Nueva Funcionalidad (2025-11-21)**: Ahora se admiten múltiples períodos no contiguos por día. Puedes configurar turnos divididos como 09:00-13:00 + 15:00-19:00 con pausas para almuerzo.
 </Note>
 
-## Hierarchy: Clinic Hours → Provider Hours
+## Jerarquía: Horarios de Clínica → Horarios de Proveedor
 
-The system uses an **intersection-based hierarchy**:
+El sistema usa una **jerarquía basada en intersección**:
 
 ```
-Clinic Hours:    08:00 ━━━━━━━━━━━━━━━━━━━━━━━━━━ 20:00
-Provider A:            09:00 ━━━━━ 13:00
-Provider B:                             15:00 ━━━━━ 19:00
-Provider C:            09:00 ━━━━━ 13:00 + 15:00 ━━━━━ 19:00
+Horarios Clínica:    08:00 ━━━━━━━━━━━━━━━━━━━━━━━━━━ 20:00
+Proveedor A:                09:00 ━━━━━ 13:00
+Proveedor B:                                     15:00 ━━━━━ 19:00
+Proveedor C:                09:00 ━━━━━ 13:00 + 15:00 ━━━━━ 19:00
 
-Available Slots:
-  - Provider A: 09:00-13:00 ✅
-  - Provider B: 15:00-19:00 ✅
-  - Provider C: 09:00-13:00 + 15:00-19:00 ✅
+Espacios Disponibles:
+  - Proveedor A: 09:00-13:00 ✅
+  - Proveedor B: 15:00-19:00 ✅
+  - Proveedor C: 09:00-13:00 + 15:00-19:00 ✅
 ```
 
 <Warning>
-If the clinic is **closed** on a day (no clinic-level work hours configured), NO appointments can be booked that day, regardless of provider availability.
+Si la clínica está **cerrada** en un día (sin horarios de trabajo configurados a nivel de clínica), NO se pueden agendar citas ese día, independientemente de la disponibilidad del proveedor.
 </Warning>
 
-## Weekday Numbering
+## Numeración de Días de la Semana
 
-The system uses numeric weekday identifiers:
+El sistema usa identificadores numéricos para los días de la semana:
 
-| Number | Day |
+| Número | Día |
 |--------|-----|
-| 1 | Monday (Lunes) |
-| 2 | Tuesday (Martes) |
-| 3 | Wednesday (Miércoles) |
-| 4 | Thursday (Jueves) |
-| 5 | Friday (Viernes) |
-| 6 | Saturday (Sábado) |
-| 7 | Sunday (Domingo) |
+| 1 | Lunes (Monday) |
+| 2 | Martes (Tuesday) |
+| 3 | Miércoles (Wednesday) |
+| 4 | Jueves (Thursday) |
+| 5 | Viernes (Friday) |
+| 6 | Sábado (Saturday) |
+| 7 | Domingo (Sunday) |
 
-## Multiple Periods Per Day
+## Múltiples Períodos por Día
 
-You can configure multiple non-contiguous time periods for the same day:
+Puedes configurar múltiples períodos de tiempo no contiguos para el mismo día:
 
-**Example: Split Shift**
+**Ejemplo: Turno Dividido**
 ```
-Monday (1):
-  Period 1: 09:00-13:00 (Morning)
-  Period 2: 15:00-19:00 (Afternoon)
-  Gap: 13:00-15:00 (Lunch break - NO appointments)
+Lunes (1):
+  Período 1: 09:00-13:00 (Mañana)
+  Período 2: 15:00-19:00 (Tarde)
+  Espacio: 13:00-15:00 (Pausa para almuerzo - SIN citas)
 ```
 
 <Info>
-The system generates slots **only within configured periods**, not in gaps. This ensures professional scheduling aligned with your actual availability.
+El sistema genera espacios **solo dentro de los períodos configurados**, no en los espacios vacíos. Esto asegura una programación profesional alineada con tu disponibilidad real.
 </Info>
 
-## Overlap Validation
+## Validación de Solapamiento
 
-The system **prevents overlapping time periods** for the same clinic/provider/weekday:
+El sistema **previene períodos de tiempo solapados** para la misma clínica/proveedor/día de la semana:
 
-- **Overlap Formula**: `A_start < B_end AND B_start < A_end`
-- **Contiguous Periods**: Allowed when `A_end == B_start` (e.g., 09:00-13:00 and 13:00-17:00)
-- **Validation**: Performed at application level before saving
+- **Fórmula de Solapamiento**: `A_inicio < B_fin AND B_inicio < A_fin`
+- **Períodos Contiguos**: Permitidos cuando `A_fin == B_inicio` (ej., 09:00-13:00 y 13:00-17:00)
+- **Validación**: Se realiza a nivel de aplicación antes de guardar
 
-**Examples**:
+**Ejemplos**:
 
-✅ **Valid**: 09:00-13:00 + 15:00-19:00 (gap 13:00-15:00)
+✅ **Válido**: 09:00-13:00 + 15:00-19:00 (espacio 13:00-15:00)
 
-✅ **Valid**: 09:00-13:00 + 13:00-17:00 (contiguous)
+✅ **Válido**: 09:00-13:00 + 13:00-17:00 (contiguos)
 
-❌ **Invalid**: 09:00-14:00 + 13:00-17:00 (overlap 13:00-14:00)
+❌ **Inválido**: 09:00-14:00 + 13:00-17:00 (solapamiento 13:00-14:00)
 
-## Quick Start Guides
+## Guías de Inicio Rápido
 
 <CardGroup cols={2}>
-  <Card title="Configure Clinic Hours" icon="building" href="/work-hours/clinic-hours">
-    Set up your clinic's operational hours for each day of the week
+  <Card title="Configurar Horarios de Clínica" icon="building" href="/work-hours/clinic-hours">
+    Establece los horarios operativos de tu clínica para cada día de la semana
   </Card>
 
-  <Card title="Multiple Periods Per Day" icon="calendar-days" href="/work-hours/multiple-periods">
-    Configure split shifts and non-contiguous time periods
+  <Card title="Múltiples Períodos por Día" icon="calendar-days" href="/work-hours/multiple-periods">
+    Configura turnos divididos y períodos de tiempo no contiguos
   </Card>
 
-  <Card title="Provider Hours" icon="user-doctor" href="/work-hours/provider-hours">
-    Set individual availability for each provider
+  <Card title="Horarios de Proveedor" icon="user-doctor" href="/work-hours/provider-hours">
+    Establece la disponibilidad individual para cada proveedor
   </Card>
 
-  <Card title="Edit & Delete Hours" icon="pen-to-square" href="/work-hours/edit-delete-hours">
-    Modify or remove existing work hour configurations
+  <Card title="Editar y Eliminar Horarios" icon="pen-to-square" href="/work-hours/edit-delete-hours">
+    Modifica o elimina configuraciones de horarios de trabajo existentes
   </Card>
 </CardGroup>
 
-## Best Practices
+## Mejores Prácticas
 
 <AccordionGroup>
-  <Accordion title="Start with clinic hours first">
-    Always configure clinic-level hours before setting provider hours. Provider hours are validated against clinic hours.
+  <Accordion title="Comienza con los horarios de clínica primero">
+    Siempre configura los horarios a nivel de clínica antes de establecer los horarios de proveedor. Los horarios de proveedor se validan contra los horarios de clínica.
   </Accordion>
 
-  <Accordion title="Use multiple periods for split shifts">
-    Instead of one long period with manual blocking, use multiple periods (e.g., 09:00-13:00 + 15:00-19:00) for automatic gap handling.
+  <Accordion title="Usa múltiples períodos para turnos divididos">
+    En lugar de un período largo con bloqueo manual, usa múltiples períodos (ej., 09:00-13:00 + 15:00-19:00) para manejo automático de espacios.
   </Accordion>
 
-  <Accordion title="Review overlap validation errors">
-    If you get overlap errors, check the formula: `A_start < B_end AND B_start < A_end`. Adjust times to create a gap or make periods contiguous.
+  <Accordion title="Revisa los errores de validación de solapamiento">
+    Si obtienes errores de solapamiento, verifica la fórmula: `A_inicio < B_fin AND B_inicio < A_fin`. Ajusta los tiempos para crear un espacio o hacer períodos contiguos.
   </Accordion>
 
-  <Accordion title="Use closures for one-time changes">
-    For holidays or exceptional days, use the **Closures** feature instead of deleting work hours. Work hours define your regular weekly schedule.
+  <Accordion title="Usa cierres para cambios únicos">
+    Para días festivos o días excepcionales, usa la funcionalidad de **Cierres** en lugar de eliminar horarios de trabajo. Los horarios de trabajo definen tu horario semanal regular.
   </Accordion>
 
-  <Accordion title="Cache invalidation is automatic">
-    When you create, update, or delete work hours, the system automatically clears availability caches. No manual action needed.
+  <Accordion title="La invalidación de caché es automática">
+    Cuando creas, actualizas o eliminas horarios de trabajo, el sistema automáticamente limpia las cachés de disponibilidad. No se necesita acción manual.
   </Accordion>
 </AccordionGroup>
 
-## How Work Hours Affect Availability
+## Cómo Afectan los Horarios de Trabajo a la Disponibilidad
 
-The availability system follows this logic:
+El sistema de disponibilidad sigue esta lógica:
 
-1. **Fetch clinic work hours** for the requested weekday
-2. **Fetch provider work hours** for the same weekday
-3. **Calculate intersection** of clinic and provider hours
-4. **Generate slots** within intersected periods (e.g., every 30 minutes)
-5. **Filter conflicts** (existing appointments, closures, external calendars)
+1. **Obtener horarios de trabajo de la clínica** para el día de la semana solicitado
+2. **Obtener horarios de trabajo del proveedor** para el mismo día de la semana
+3. **Calcular intersección** de los horarios de clínica y proveedor
+4. **Generar espacios** dentro de los períodos intersectados (ej., cada 30 minutos)
+5. **Filtrar conflictos** (citas existentes, cierres, calendarios externos)
 
-**Example**:
+**Ejemplo**:
 
 ```
-Request: Availability for Monday (1), 30-minute service
+Solicitud: Disponibilidad para Lunes (1), servicio de 30 minutos
 
-Clinic Hours (Monday): 08:00-20:00
-Provider Hours (Monday): 09:00-13:00 + 15:00-19:00
+Horarios Clínica (Lunes): 08:00-20:00
+Horarios Proveedor (Lunes): 09:00-13:00 + 15:00-19:00
 
-Intersection: 09:00-13:00 + 15:00-19:00
+Intersección: 09:00-13:00 + 15:00-19:00
 
-Generated Slots:
+Espacios Generados:
   09:00, 09:30, 10:00, 10:30, 11:00, 11:30, 12:00, 12:30
   15:00, 15:30, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30
 
-NO slots generated: 08:00-09:00, 13:00-15:00, 19:00-20:00
+NO se generan espacios: 08:00-09:00, 13:00-15:00, 19:00-20:00
 ```
 
-## Next Steps
+## Próximos Pasos
 
 <CardGroup cols={2}>
-  <Card title="Configure Clinic Hours" icon="building" href="/work-hours/clinic-hours">
-    Set up your clinic's operational schedule
+  <Card title="Configurar Horarios de Clínica" icon="building" href="/work-hours/clinic-hours">
+    Establece el horario operativo de tu clínica
   </Card>
 
-  <Card title="Multiple Periods" icon="calendar-days" href="/work-hours/multiple-periods">
-    Learn how to configure split shifts
+  <Card title="Múltiples Períodos" icon="calendar-days" href="/work-hours/multiple-periods">
+    Aprende cómo configurar turnos divididos
   </Card>
 </CardGroup>
